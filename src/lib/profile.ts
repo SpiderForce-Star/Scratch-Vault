@@ -77,3 +77,58 @@ export function homeStateLabel(id: ProfileHomeState | StateId | "other"): string
   };
   return labels[id as ProfileHomeState] ?? id;
 }
+
+export function parseBillingProfileInput(raw: unknown): BillingProfileInput {
+  if (!raw || typeof raw !== "object") {
+    throw new Error("Invalid profile");
+  }
+  const data = raw as Record<string, unknown>;
+  const legalName = typeof data.legalName === "string" ? data.legalName.trim() : "";
+  const dob = typeof data.dob === "string" ? data.dob.trim() : "";
+  const homeState = data.homeState;
+  if (legalName.length < 2 || legalName.length > 120) {
+    throw new Error("Enter the legal name on the card.");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+    throw new Error("Enter a valid date of birth.");
+  }
+  if (!isProfileHomeState(homeState)) {
+    throw new Error("Select your home state.");
+  }
+  const age = ageOnDate(dob);
+  if (age === null || age < 18) {
+    throw new Error("You must be 18 or older to use Scratch Vault.");
+  }
+  const need = requiredAgeForHomeState(homeState);
+  if (age < need) {
+    throw new Error(
+      homeState === "az"
+        ? "Arizona Lottery tickets are 21+. You must be 21 or older to complete a profile with Arizona as your home state."
+        : "Iowa Lottery tickets are 21+. You must be 21 or older to complete a profile with Iowa as your home state.",
+    );
+  }
+  if (age > 120) {
+    throw new Error("Enter a valid date of birth.");
+  }
+  if (data.ageAttested !== true) {
+    throw new Error("Confirm you meet the age requirement.");
+  }
+  if (data.termsAccepted !== true) {
+    throw new Error("You must agree to the Terms of Service.");
+  }
+  if (data.noRefundsAccepted !== true) {
+    throw new Error("You must acknowledge that fees are non-refundable.");
+  }
+  if (data.billingConsent !== true) {
+    throw new Error("You must authorize the trial and auto-renewal terms.");
+  }
+  return {
+    legalName,
+    dob,
+    homeState,
+    ageAttested: true,
+    termsAccepted: true,
+    noRefundsAccepted: true,
+    billingConsent: true,
+  };
+}

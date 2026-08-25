@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { getBillingProfile, saveBillingProfile } from "@/lib/profile.server";
+import { getBillingProfile, saveBillingProfile } from "@/lib/profile-api";
 import {
   PROFILE_HOME_STATES,
   homeStateLabel,

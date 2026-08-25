@@ -31,9 +31,10 @@ import { pageHead } from "@/lib/site";
 import { NO_REFUNDS_LINE } from "@/lib/billing-policy";
 
 export const Route = createFileRoute("/account")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    complete: search.complete === "1" || search.complete === true,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const complete = search.complete === "1" || search.complete === true;
+    return complete ? { complete: true as const } : {};
+  },
   component: AccountPage,
   head: () =>
     pageHead({
