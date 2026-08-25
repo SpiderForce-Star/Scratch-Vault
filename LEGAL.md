@@ -16,7 +16,9 @@ operation.
 
 1. **No ticket sales.** Each listed lottery is a state monopoly. The site and
    native apps must never buy, courier, print, or redeem tickets. Texas in
-   particular restricted third-party lottery couriers in 2025.
+   particular banned lottery couriers in 2025 (TLC policy Feb 24, 2025;
+   SB 3070 signed June 20, 2025 — Class A misdemeanor to sell or buy tickets
+   online or by mobile app, including facilitation).
 2. **No affiliation.** Do not use official logos, wordmarks, or ticket scans.
    Game names identify publicly offered games only.
 3. **Public remaining counts are facts.** Rankings compile numbers the lottery
@@ -30,9 +32,14 @@ operation.
 7. **Subscriptions.** ROSCA still requires (a) clear material terms before
    collecting a card, (b) express consent, (c) a simple same-medium cancel.
    Illinois 815 ILCS 601 also requires a 30–60 day notice before a 12-month
-   plan auto-renews for more than one month. “No refunds” is disclosed; opt-out
-   still stops the *next* charge. Apple / Google IAP refund rules still apply
-   in the native apps.
+   plan auto-renews for more than one month, and online-only cancel when the
+   customer signed up online (601(b-5)). The FTC’s 2024 “Click to Cancel”
+   Negative Option Rule was vacated by the Eighth Circuit in July 2025;
+   ROSCA and the FTC Act still govern. A subscriber may live in a state that
+   is not one of the 16 lottery desks (California ARL, New York GBL § 527,
+   etc.); cancel remains one click on /account from every state. “No refunds”
+   is disclosed; opt-out still stops the *next* charge. Apple / Google IAP
+   refund rules still apply in the native apps.
 
 ## Billing rules shipped with this review
 
@@ -57,7 +64,7 @@ See `src/lib/state-legal.ts` and the public page `/legal`. Highlights:
 | AZ | **21** | Top prizes remaining; mids only when published | No internet ticket sales |
 | NC | 18 | Remaining column | — |
 | PA | 18 | Top six prizes only | — |
-| TX | 18 | Printed − claimed | No courier / no TLC marks |
+| TX | 18 | Printed − claimed | SB 3070: no online ticket sales / no courier |
 | MO | 18 | Unclaimed → remaining | — |
 | OH | 18 | Daily ~6:00 a.m. unclaimed | — |
 | IL | 18 | Fail closed if unpaid table missing | Auto-renewal notice |
@@ -72,4 +79,9 @@ See `src/lib/state-legal.ts` and the public page `/legal`. Highlights:
   “personal, non-commercial use” clause if a takedown ever arrives.
 - Confirm Stripe Customer Portal + upcoming-invoice email satisfies Illinois
   30–60 day annual renewal notice, or add a first-party reminder.
+- Confirm California ARL (Bus. & Prof. Code § 17600) and New York GBL § 527
+  if you sell Full Access to residents of those states (desks are 16 states;
+  customers can live anywhere).
 - Native IAP “no refunds” cannot override Apple / Google policy.
+- FTC Click-to-Cancel rule remains vacated (8th Cir. July 2025); ROSCA
+  enforcement continues. Watch the 2026 Negative Option ANPRM.

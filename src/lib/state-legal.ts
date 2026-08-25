@@ -36,7 +36,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     purchaseAge: 18,
     claimWindow: "Typically 90 days after the announced game end date.",
     statuteHint: "Tennessee Education Lottery Corporation; Tenn. Code Ann. Title 4, Chapter 51.",
-    remainingSource: "https://www.tnlottery.com/games/scratch-offs",
+    remainingSource: "https://www.tnlottery.com/remaining-prizes",
     issues: [
       "TELC is the exclusive lottery operator. This product is not TELC and must not look official.",
       "Play It Again typically holds one top prize per instant game. A posted “1 left” is treated as no retail jackpot — that is our reading of the public table, not a TELC ruling.",
@@ -145,7 +145,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
       "https://www.texaslottery.com/export/sites/lottery/Games/Scratch_Offs/all.html",
     issues: [
       "Not affiliated with the Texas Lottery Commission. Official marks and logos are not used.",
-      "This product is not a ticket courier or retailer. Texas has restricted third-party lottery couriers; we do not buy, print, or deliver tickets.",
+      "This product is not a ticket courier or retailer. Texas SB 3070 (2025) prohibits selling or buying lottery tickets online or through a mobile app, including facilitation (Class A misdemeanor). We do not buy, print, deliver, or take orders for tickets.",
       "Remaining is printed minus claimed on published prize rows. Cash-option amounts are used when that is the published prize.",
       "18+ to buy or redeem. No ticket sales on this site.",
     ],
@@ -188,7 +188,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     issues: [
       "Not affiliated with the Illinois Lottery.",
       "If the official unpaid-prizes table cannot be compiled, this desk fails closed — no placeholder counts.",
-      "Illinois automatic-renewal law requires a clear disclosure, online cancel for online signup, and a 30–60 day renewal notice on 12-month plans that auto-renew for more than one month. Annual subscribers can opt out in their profile; Stripe also emails upcoming invoices.",
+      "Illinois Automatic Contract Renewal Act, 815 ILCS 601: clear auto-renewal disclosure; online-only cancel for online signup (601(b-5)); and written notice 30–60 days before the cancel deadline on 12-month plans that auto-renew for more than one month. Annual subscribers opt out on /account; Stripe emails the upcoming invoice.",
       "18+ to buy or redeem. No ticket sales on this site.",
     ],
     helpline: NATIONAL_HELPLINE,

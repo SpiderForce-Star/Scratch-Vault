@@ -1,6 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { pageHead } from "@/lib/site";
 import {
+  ANNUAL_PRICE_LABEL,
+  MONTHLY_PRICE_LABEL,
+  NO_REFUNDS_LINE,
+  TRIAL_LABEL,
+} from "@/lib/billing-policy";
+import {
   COMMON_LEGAL_LIMITS,
   LEGAL_REVIEW_DATE,
   NATIONAL_HELPLINE,
@@ -43,6 +49,33 @@ function LegalPage() {
           {COMMON_LEGAL_LIMITS.map((line) => (
             <li key={line}>{line}</li>
           ))}
+        </ul>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-display text-2xl tracking-tight">
+          Billing, trial, and opt-out
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Full Access is a remaining-prize information subscription, not a
+          lottery ticket. You must complete a profile and add a credit or debit
+          card before a trial or paid year can start.
+        </p>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted">
+          <li>
+            Monthly: {TRIAL_LABEL}, then {MONTHLY_PRICE_LABEL} unless you opt
+            out in your profile before the trial ends.
+          </li>
+          <li>
+            Annual: {ANNUAL_PRICE_LABEL} billed now for twelve months. You keep
+            that year. It auto-renews unless you opt out before the renewal.
+          </li>
+          <li>{NO_REFUNDS_LINE}</li>
+          <li>
+            Opt out is one click on Account — same medium as signup (ROSCA).
+            Illinois annual plans also get Stripe’s 30–60 day upcoming-invoice
+            notice (815 ILCS 601).
+          </li>
         </ul>
       </section>
 
