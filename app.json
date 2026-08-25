@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Scratch Vault",
+    "slug": "scratch-vault",
+    "scheme": "vsv",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./store/android/icon-512.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0a0a0b",
+    "splash": {
+      "image": "./store/android/splash-1080x1920.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#0a0a0b"
+    },
+    "ios": {
+      "bundleIdentifier": "com.webbspinnervisions.volunteerscratchvault",
+      "supportsTablet": false,
+      "icon": "./store/ios/icon-1024.png",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "Not used. Scratch Vault does not track you across apps.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.webbspinnervisions.volunteerscratchvault",
+      "adaptiveIcon": {
+        "foregroundImage": "./store/android/adaptive-foreground.png",
+        "backgroundImage": "./store/android/adaptive-background.png"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_AFTER_EAS_INIT"
+      }
+    }
+  }
+}

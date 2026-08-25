@@ -1,0 +1,33 @@
+{
+  "name": "Scratch Vault",
+  "short_name": "Scratch Vault",
+  "description": "Independent scratch-off remaining-prize desk. Not affiliated with any state lottery.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0F0C",
+  "theme_color": "#0B0F0C",
+  "lang": "en-US",
+  "categories": ["reference", "utilities"],
+  "icons": [
+    {
+      "src": "pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

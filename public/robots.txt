@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /account
+Disallow: /billing
+Disallow: /login
+
+Sitemap: https://volunteer-scratch-vault.vercel.app/sitemap.xml
