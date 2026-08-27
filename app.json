@@ -2,7 +2,7 @@
   "expo": {
     "name": "Scratch Vault",
     "slug": "scratch-vault",
-    "scheme": "vsv",
+    "scheme": "sv",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./store/android/icon-512.png",
@@ -14,7 +14,7 @@
       "backgroundColor": "#0a0a0b"
     },
     "ios": {
-      "bundleIdentifier": "com.webbspinnervisions.volunteerscratchvault",
+      "bundleIdentifier": "com.webbspinnervisions.scratchvault",
       "supportsTablet": false,
       "icon": "./store/ios/icon-1024.png",
       "infoPlist": {
@@ -23,7 +23,7 @@
       }
     },
     "android": {
-      "package": "com.webbspinnervisions.volunteerscratchvault",
+      "package": "com.webbspinnervisions.scratchvault",
       "adaptiveIcon": {
         "foregroundImage": "./store/android/adaptive-foreground.png",
         "backgroundImage": "./store/android/adaptive-background.png"

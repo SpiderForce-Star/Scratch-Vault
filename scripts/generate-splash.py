@@ -48,9 +48,9 @@ def compose(size: tuple[int, int]) -> Image.Image:
     )
     mark = font(max(28, r // 2))
     box = draw.textbbox((0, 0), "SV", font=mark)
-    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "SV", font=mark, fill=PAPER)
+    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "SV", font=mark, fill=GOLD)
     word = font(max(14, w // 48), mono=True)
-    draw_centered(draw, "VOLUNTEER SCRATCH VAULT", cy + r + int(h * 0.04), word, GOLD, w)
+    draw_centered(draw, "SCRATCH VAULT", cy + r + int(h * 0.04), word, GOLD, w)
     return img
 
 
@@ -63,6 +63,11 @@ def main() -> None:
     full.save(out / "splash-2732.png", "PNG")
     phone = compose((1284, 2778))
     phone.save(out / "splash-phone.png", "PNG")
+    android_phone = compose((1080, 1920))
+    android_phone.save(ROOT / "store" / "android" / "splash-1080x1920.png", "PNG")
+    android_phone.save(out / "splash-1080x1920.png", "PNG")
+    compose((1290, 2796)).save(ROOT / "store" / "ios" / "splash-1290x2796.png", "PNG")
+    compose((1179, 2556)).save(ROOT / "store" / "ios" / "splash-1179x2556.png", "PNG")
 
     ios = ROOT / "ios" / "App" / "App" / "Assets.xcassets" / "Splash.imageset"
     if ios.exists():

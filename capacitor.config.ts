@@ -10,7 +10,7 @@ const liveReload = process.env.CAP_LIVE_RELOAD === "1";
 const liveUrl = process.env.CAP_DEV_URL?.trim() || "http://localhost:8080";
 
 const config: CapacitorConfig = {
-  appId: "com.webbspinnervisions.volunteerscratchvault",
+  appId: "com.webbspinnervisions.scratchvault",
   appName: "Scratch Vault",
   webDir: "dist",
   backgroundColor: "#0B0F0C",

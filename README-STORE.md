@@ -5,7 +5,7 @@ after the native foundation is in the repo.
 
 Web stays on Vercel: https://volunteer-scratch-vault.vercel.app  
 Native shells: Capacitor 6 + EAS Build  
-Bundle id / application id: `com.webbspinnervisions.volunteerscratchvault`
+Bundle id / application id: `com.webbspinnervisions.scratchvault`
 
 This product is an **independent remaining-prize information tool**.
 It is not a lottery, not a ticket seller, and not affiliated with any
@@ -45,7 +45,7 @@ You click these. The agent does not.
 
 1. Enroll at [developer.apple.com](https://developer.apple.com) (paid Apple Developer Program).
 2. In **Certificates, Identifiers & Profiles → Identifiers**, create an App ID:
-   - Bundle ID: `com.webbspinnervisions.volunteerscratchvault`
+   - Bundle ID: `com.webbspinnervisions.scratchvault`
    - Capabilities: In-App Purchase (needed for the next IAP prompt).
 3. In [App Store Connect](https://appstoreconnect.apple.com):
    - **Apps → + → New App**
@@ -53,7 +53,7 @@ You click these. The agent does not.
    - Name: Scratch Vault
    - Primary language: English (US)
    - Bundle ID: the App ID from step 2
-   - SKU: `vsv-ios-001` (any unique SKU)
+   - SKU: `sv-ios-001` (any unique SKU)
    - User access: Full Access
 4. Fill **App Privacy**:
    - Privacy Policy URL: `https://volunteer-scratch-vault.vercel.app/privacy`
@@ -80,7 +80,7 @@ You click these.
    - App or game: App
    - Free or paid: Free (IAP unlocks Full Access)
    - Declarations: accept the policies you actually meet.
-3. Package name (must match): `com.webbspinnervisions.volunteerscratchvault`
+3. Package name (must match): `com.webbspinnervisions.scratchvault`
 4. Store listing:
    - Short description: Independent scratch-off remaining-prize desk. 18+.
    - Full description: say “highest remaining-prize heat,” never “best chance to win.”
@@ -112,7 +112,7 @@ EAS compiles on Expo’s Macs, so you do not need Xcode locally.
    eas credentials
    ```
    Let EAS generate a distribution cert + provisioning profile for
-   `com.webbspinnervisions.volunteerscratchvault`.
+   `com.webbspinnervisions.scratchvault`.
 5. After `npx cap add ios` and `npx cap add android` have been run once
    (they create the `ios/` and `android/` folders):
    ```bash
@@ -180,7 +180,7 @@ python scripts/generate-store-assets.py
 ## 6. RevenueCat (you click)
 
 1. Create a project at [app.revenuecat.com](https://app.revenuecat.com).
-2. Add iOS app (bundle `com.webbspinnervisions.volunteerscratchvault`) and
+2. Add iOS app (bundle `com.webbspinnervisions.scratchvault`) and
    Android app (same application id). Paste the App Store Connect / Play
    shared secrets there — never into this git repo.
 3. Products:

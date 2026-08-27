@@ -75,13 +75,20 @@ def draw_centered(draw: ImageDraw.ImageDraw, text: str, y: int, fnt, fill, width
 
 
 def make_icon(size: int, padded: bool = False) -> Image.Image:
-    bg_path = LOCAL_ICON if LOCAL_ICON.exists() else BG_ICON
-    canvas = load_bg(bg_path, (size, size))
+    canvas = Image.new("RGB", (size, size), BG)
     draw = ImageDraw.Draw(canvas)
+    cx = cy = size // 2
+    r = int(size * (0.28 if padded else 0.34))
+    width = max(2, size // 42)
+    draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=width)
     mark = font(int(size * (0.22 if padded else 0.28)))
-    sub = font(max(10, int(size * 0.045)), mono=True)
-    draw_centered(draw, "SV", int(size * (0.38 if padded else 0.34)), mark, INK, size)
-    draw_centered(draw, "SCRATCH VAULT", int(size * 0.66), sub, GOLD, size)
+    box = draw.textbbox((0, 0), "SV", font=mark)
+    draw.text(
+        (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - size * 0.02),
+        "SV",
+        font=mark,
+        fill=GOLD,
+    )
     return flatten_rgb(canvas)
 
 
@@ -97,16 +104,19 @@ def make_adaptive_fg(size: int = 1024) -> Image.Image:
 
 
 def make_splash(size: tuple[int, int]) -> Image.Image:
-    bg_path = LOCAL_SPLASH if LOCAL_SPLASH.exists() else BG_SPLASH
-    canvas = load_bg(bg_path, size)
-    draw = ImageDraw.Draw(canvas)
     w, h = size
-    mark = font(int(w * 0.14))
+    canvas = Image.new("RGB", size, BG)
+    draw = ImageDraw.Draw(canvas)
+    cx, cy = w // 2, int(h * 0.42)
+    r = int(min(w, h) * 0.14)
+    draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=max(2, w // 400))
+    mark = font(max(28, r // 2))
+    box = draw.textbbox((0, 0), "SV", font=mark)
+    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "SV", font=mark, fill=GOLD)
     title = font(int(w * 0.055))
     sub = font(int(w * 0.028), mono=True)
-    draw_centered(draw, "SV", int(h * 0.38), mark, INK, w)
-    draw_centered(draw, "Scratch Vault", int(h * 0.50), title, INK, w)
-    draw_centered(draw, "INDEPENDENT REMAINING-PRIZE DESK", int(h * 0.56), sub, GOLD, w)
+    draw_centered(draw, "Scratch Vault", int(h * 0.56), title, INK, w)
+    draw_centered(draw, "INDEPENDENT REMAINING-PRIZE DESK", int(h * 0.62), sub, GOLD, w)
     draw_centered(draw, "18+", int(h * 0.86), sub, FAINT, w)
     return flatten_rgb(canvas)
 
@@ -130,7 +140,7 @@ def make_screenshot(size: tuple[int, int], kind: str, label: str) -> Image.Image
     draw.text((pad, int(h * 0.012)), "9:41", font=small, fill=MUTED)
 
     y = int(h * 0.06)
-    draw.text((pad, y), "SV", font=display, fill=INK)
+    draw.text((pad, y), "SV", font=display, fill=GOLD)
     draw.text((pad, y + int(h * 0.055)), "Scratch Vault", font=body, fill=INK)
     draw.text((pad, y + int(h * 0.095)), "INDEPENDENT REMAINING-PRIZE DESK", font=mono, fill=GOLD)
 

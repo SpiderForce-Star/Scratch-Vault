@@ -40,7 +40,7 @@ def paint(size: int, *, padded: bool = False) -> Image.Image:
         (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - size * 0.02),
         "SV",
         font=mark,
-        fill=CREAM,
+        fill=GOLD,
     )
     return img
 
@@ -66,6 +66,36 @@ def main() -> None:
     save(paint(512), ROOT / "store" / "android" / "icon-512.png")
     save(Image.new("RGB", (1024, 1024), BG), ROOT / "store" / "android" / "adaptive-background.png")
     save(paint(1024, padded=True), ROOT / "store" / "android" / "adaptive-foreground.png")
+
+    # Favicon: gold SV on dark vault
+    (ROOT / "public" / "favicon.svg").write_text(
+        """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="6" fill="#0B0F0C"/>
+  <circle cx="16" cy="16.5" r="11" stroke="#c4a574" stroke-width="1.5"/>
+  <text x="16" y="21" text-anchor="middle" fill="#c4a574" font-family="Georgia, 'Times New Roman', serif" font-size="11" font-weight="600">SV</text>
+</svg>
+""",
+        encoding="utf-8",
+    )
+    print("wrote public/favicon.svg")
+
+    og = Image.new("RGB", (1200, 630), BG)
+    d = ImageDraw.Draw(og)
+    cx, cy = 600, 250
+    r = 120
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=4)
+    mark = font(72)
+    box = d.textbbox((0, 0), "SV", font=mark)
+    d.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 8), "SV", font=mark, fill=GOLD)
+    title = font(48)
+    tbox = d.textbbox((0, 0), "Scratch Vault", font=title)
+    d.text((600 - (tbox[2] - tbox[0]) / 2, 420), "Scratch Vault", font=title, fill=CREAM)
+    sub = font(20)
+    sbox = d.textbbox((0, 0), "Independent remaining-prize desk", font=sub)
+    d.text((600 - (sbox[2] - sbox[0]) / 2, 490), "Independent remaining-prize desk", font=sub, fill=GOLD)
+    og_path = ROOT / "public" / "og.jpg"
+    og.save(og_path, "JPEG", quality=88, optimize=True)
+    print("wrote", og_path.relative_to(ROOT))
 
 
 if __name__ == "__main__":

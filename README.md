@@ -7,11 +7,7 @@ Independent remaining-prize desk for scratch-off games.
 Advancement repo: [SpiderForce-Star/Scratch-Vault](https://github.com/SpiderForce-Star/Scratch-Vault).
 State lottery notices: [`LEGAL.md`](LEGAL.md) and `/legal`.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/SpiderForce-Star/Volunteer-Scratch-Vault)
-
-**One-click live site:** [Import this repo on Vercel](https://vercel.com/new/import?s=https://github.com/SpiderForce-Star/Volunteer-Scratch-Vault)
-
-That opens Vercel signed in with GitHub, creates the project, and gives you a `*.vercel.app` URL. The existing production URL (`https://volunteer-scratch-vault.vercel.app`) stays live; the Vercel project can be renamed later.
+Production is the existing Vercel project at [https://volunteer-scratch-vault.vercel.app](https://volunteer-scratch-vault.vercel.app), built from [SpiderForce-Star/Scratch-Vault](https://github.com/SpiderForce-Star/Scratch-Vault). Do not create a new Vercel project.
 
 ## What it does
 
