@@ -10,6 +10,7 @@
   --color-faint: #6d7668;
   --color-line: #2a332c;
   --color-gold: #c4a574;
+  --color-plum: #4c2a78;
   --color-sage: #7c9a72;
   --color-danger: #c45c4a;
   --color-accent: #c4a574;
@@ -139,6 +140,27 @@
   }
 }
 
+@keyframes sv-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.sv-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: sv-marquee 36s linear infinite;
+}
+
+.sv-marquee:hover .sv-marquee-track,
+.sv-marquee:focus-within .sv-marquee-track {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -146,5 +168,13 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .sv-marquee {
+    display: none !important;
+  }
+
+  .sv-marquee-static {
+    display: flex !important;
   }
 }
