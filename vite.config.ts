@@ -155,16 +155,6 @@ export default defineConfig(({ command }) => ({
             // that 500s every SSR request while `vite build` still exits 0.
             // https://github.com/TanStack/router/issues/8031
             inlineDynamicImports: true,
-            vercel: {
-              config: {
-                crons: [
-                  {
-                    path: "/api/cron/daily-fetch",
-                    schedule: "15 11 * * *",
-                  },
-                ],
-              },
-            },
           }),
         ]
       : []),
