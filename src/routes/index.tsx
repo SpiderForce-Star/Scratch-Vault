@@ -196,39 +196,59 @@ function VaultHome() {
         stale={snap?.stale}
         weekLabel={snap?.weekLabel}
       />
-      <p className="border-b border-line px-4 py-2 text-center font-mono text-[10px] tracking-[0.16em] text-faint uppercase sm:px-6">
-        {snap?.weekLabel ?? config.weekLabel} ·{" "}
-        {t("home.tracked", {
-          count: snap?.gameCount ?? catalog.length,
-          short: config.shortName,
-        })}
-      </p>
+      <RadarCashHero
+        priceFilter={filter}
+        blips={snap?.blips ?? []}
+        gameCount={snap?.gameCount ?? catalog.length}
+        skipHref="#skip"
+        stateName={config.name}
+        shortName={config.shortName}
+        weekLabel={snap?.weekLabel ?? config.weekLabel}
+        minAge={config.minAge}
+      />
       <TonightHeatStrip
+        id="heat"
         stateId={stateId}
         cards={snap?.tonight ?? []}
         depleted={snap?.tonightDepleted ?? false}
       />
+
+      <section id="skip" className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
+            {t("home.skipKicker")}
+          </p>
+          <h2 className="mt-2 font-display text-2xl tracking-tight">
+            {t("home.skipTitle")}
+          </h2>
+          <ul className="mt-4 divide-y divide-line border border-line">
+            {desk.avoid.slice(0, 3).map((p) => (
+              <li key={p.game.number}>
+                <Link
+                  to="/game/$number"
+                  params={{ number: String(p.game.number) }}
+                  search={{ state: stateId }}
+                  className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
+                >
+                  <span className="truncate text-sm">
+                    ${p.game.price} · {p.game.name}
+                  </span>
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
+                    {t("home.skip")}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {lateNight ? (
         <p className="border-b border-line bg-raised/50 px-4 py-3 text-center text-sm text-muted sm:px-6">
           {t("home.lateNight")}
         </p>
       ) : null}
       <DeskAlertBanner />
-      <ProductStory />
-      <HowTheDataWorks />
-      <HowThisHelps />
-      <WhatThisAppIs />
-      <StateRulesNote state={config} />
-      <RadarCashHero
-        priceFilter={filter}
-        blips={snap?.blips ?? []}
-        gameCount={snap?.gameCount ?? catalog.length}
-        skipHref="#tonight"
-        stateName={config.name}
-        shortName={config.shortName}
-        weekLabel={snap?.weekLabel ?? config.weekLabel}
-        minAge={config.minAge}
-      />
 
       <section id="tonight" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -303,36 +323,6 @@ function VaultHome() {
               ),
             )}
           </div>
-        </div>
-      </section>
-
-      <section id="skip" className="border-b border-line">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
-            {t("home.skipKicker")}
-          </p>
-          <h2 className="mt-2 font-display text-2xl tracking-tight">
-            {t("home.skipTitle")}
-          </h2>
-          <ul className="mt-4 divide-y divide-line border border-line">
-            {desk.avoid.slice(0, 3).map((p) => (
-              <li key={p.game.number}>
-                <Link
-                  to="/game/$number"
-                  params={{ number: String(p.game.number) }}
-                  search={{ state: stateId }}
-                  className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
-                >
-                  <span className="truncate text-sm">
-                    ${p.game.price} · {p.game.name}
-                  </span>
-                  <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
-                    {t("home.skip")}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 
@@ -441,8 +431,16 @@ function VaultHome() {
             {t("home.done")}
           </p>
         )}
+      </main>
 
-        <div className="mt-10 max-w-3xl">
+      <ProductStory />
+      <HowTheDataWorks />
+      <HowThisHelps />
+      <WhatThisAppIs />
+      <StateRulesNote state={config} />
+
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <div className="max-w-3xl">
           <p className="mb-3 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
             {t("home.fullDisclaimer")}
           </p>
@@ -451,7 +449,7 @@ function VaultHome() {
             <DisclaimerPanel />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

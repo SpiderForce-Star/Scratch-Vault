@@ -9,17 +9,19 @@ export function TonightHeatStrip({
   stateId,
   cards,
   depleted,
+  id,
 }: {
   stateId: StateId;
   cards: TonightCard[];
   depleted: boolean;
+  id?: string;
 }) {
   const { t } = useI18n();
   if (!cards.length) return null;
 
   return (
-    <section className="overflow-x-hidden border-b border-line">
-      <div className="mx-auto max-w-6xl px-3 py-4 sm:px-6">
+    <section id={id} className="overflow-x-hidden border-b border-line">
+      <div className="mx-auto max-w-6xl px-3 py-3 sm:px-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
           {t("heatTonight.kicker")}
         </p>

@@ -47,7 +47,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 overflow-hidden px-3 sm:gap-2 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-3 sm:gap-2 sm:px-6">
         <Link
           to="/"
           className="flex min-h-11 min-w-0 flex-1 items-center gap-2 overflow-hidden"
@@ -186,7 +186,7 @@ function HeaderTrial() {
   return (
     <TrialCta
       compact
-      className="shrink-0 whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
+      className="min-w-max shrink-0 whitespace-nowrap px-2.5 text-xs sm:px-3 sm:text-sm"
     />
   );
 }

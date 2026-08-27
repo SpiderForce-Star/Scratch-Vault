@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { STATE_LIST, type StateId } from "@/config/states";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/locale";
@@ -10,52 +12,79 @@ export function StateSelector({
   onChange: (id: StateId) => void;
 }) {
   const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const selected =
+    STATE_LIST.find((state) => state.id === value) ?? STATE_LIST[0];
+  const others = STATE_LIST.length - 1;
+
+  const pick = (id: StateId) => {
+    onChange(id);
+    setOpen(false);
+  };
+
   return (
     <section id="states" className="border-b border-line">
       <div className="mx-auto max-w-6xl px-3 py-3 sm:px-6">
-        <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-          {t("states.kicker")}
-        </p>
-
-        <div
-          role="group"
-          aria-label={t("states.kicker")}
-          className="mt-3 flex w-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 sm:hidden"
-        >
-          {STATE_LIST.map((state) => (
-            <StatePill
-              key={state.id}
-              state={state}
-              selected={state.id === value}
-              onChange={onChange}
-              compact
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls="state-desk-list"
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-gold bg-gold px-3 text-sm font-medium text-accent-fg"
+          >
+            {selected.name}
+            <ChevronDown
+              className={cn("size-4 shrink-0", open && "rotate-180")}
+              aria-hidden
             />
-          ))}
+          </button>
+          <p className="font-mono text-[10px] tracking-[0.14em] text-faint uppercase">
+            {t("states.otherDesks", { count: others })}
+          </p>
         </div>
 
-        <div
-          role="group"
-          aria-label={t("states.kicker")}
-          className="mt-3 hidden grid-cols-6 gap-2 sm:grid"
-        >
-          {STATE_LIST.map((state) => (
-            <StatePill
-              key={state.id}
-              state={state}
-              selected={state.id === value}
-              onChange={onChange}
-            />
-          ))}
-        </div>
+        <div id="state-desk-list" hidden={!open} className={open ? "mt-3" : undefined}>
+          <div
+            role="group"
+            aria-label={t("states.kicker")}
+            className="flex w-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 sm:hidden"
+          >
+            {STATE_LIST.map((state) => (
+              <StatePill
+                key={state.id}
+                state={state}
+                selected={state.id === value}
+                onChange={pick}
+                compact
+              />
+            ))}
+          </div>
 
-        <p className="mt-3 max-w-3xl text-xs leading-relaxed text-faint">
-          {t("states.body")}{" "}
-          {t("age.help")}{" "}
-          <a className="underline underline-offset-2" href="tel:18005224700">
-            1-800-GAMBLER
-          </a>
-          .
-        </p>
+          <div
+            role="group"
+            aria-label={t("states.kicker")}
+            className="hidden grid-cols-6 gap-2 sm:grid"
+          >
+            {STATE_LIST.map((state) => (
+              <StatePill
+                key={state.id}
+                state={state}
+                selected={state.id === value}
+                onChange={pick}
+              />
+            ))}
+          </div>
+
+          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-faint">
+            {t("states.body")}{" "}
+            {t("age.help")}{" "}
+            <a className="underline underline-offset-2" href="tel:18005224700">
+              1-800-GAMBLER
+            </a>
+            .
+          </p>
+        </div>
       </div>
     </section>
   );

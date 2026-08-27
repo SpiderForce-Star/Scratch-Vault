@@ -13,11 +13,15 @@ const SIZE = 360;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 
+function r2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
 export function RadarCashHero({
   priceFilter = "all",
   blips = [],
   gameCount = 0,
-  skipHref = "#tonight",
+  skipHref = "#skip",
   stateName = "Tennessee",
   shortName = "TN",
   weekLabel = DESK_META.weekLabel,
@@ -37,6 +41,11 @@ export function RadarCashHero({
   const { t } = useI18n();
   const priceLabel = pricePrefLabel(priceFilter);
   const [reduce, setReduce] = useState(false);
+  const [scopeReady, setScopeReady] = useState(false);
+
+  useEffect(() => {
+    setScopeReady(true);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -69,15 +78,25 @@ export function RadarCashHero({
 
   return (
     <section className="border-b border-line">
-      <div className="mx-auto grid max-w-[1120px] items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,400px)_1fr] lg:py-14">
-        <div className="mx-auto w-full max-w-[320px] min-w-0 sm:max-w-[360px] lg:max-w-none">
-          <RadarScope
-            blips={blips}
-            reduce={reduce}
-            alert={unseen}
-            stateName={stateName}
-          />
-          <p className="mt-3 overflow-hidden text-center font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
+      <div className="mx-auto grid max-w-[1120px] items-center gap-8 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:py-14">
+        <div className="min-w-0">
+          <p className="font-mono text-xs tracking-[0.16em] text-gold uppercase">
+            {t("hero.independent", { name: stateName })}
+          </p>
+          <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
+            {priceLabel
+              ? t("hero.titlePrice", { price: priceLabel })
+              : t("hero.titleAll")}
+          </h1>
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
+            {t("hero.body")}
+          </p>
+          {paid ? null : (
+            <p className="mt-4 text-sm font-medium text-gold">
+              {t("hero.priceLine")}
+            </p>
+          )}
+          <p className="mt-3 overflow-hidden font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
             {unseen
               ? t("hero.newDrop", { week: weekLabel })
               : t("hero.scanning", {
@@ -86,12 +105,15 @@ export function RadarCashHero({
                   week: weekLabel,
                 })}
           </p>
+          <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
+            {t("hero.meta", { age: `${minAge}+` })}
+          </p>
           {unseen ? (
-            <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3 text-center">
+            <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3">
               <p className="text-sm leading-relaxed text-paper">
                 {t("hero.newCounts")}
               </p>
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => reviewDesk()}
@@ -109,23 +131,6 @@ export function RadarCashHero({
               </div>
             </div>
           ) : null}
-        </div>
-
-        <div className="min-w-0">
-          <p className="font-mono text-xs tracking-[0.16em] text-gold uppercase">
-            {t("hero.independent", { name: stateName })}
-          </p>
-          <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
-            {priceLabel
-              ? t("hero.titlePrice", { price: priceLabel })
-              : t("hero.titleAll")}
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            {t("hero.body")}
-          </p>
-          <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
-            {t("hero.meta", { age: `${minAge}+` })}
-          </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             {paid ? null : <TrialCta />}
             <a
@@ -135,6 +140,17 @@ export function RadarCashHero({
               {t("hero.tonight")}
             </a>
           </div>
+        </div>
+
+        <div className="mx-auto hidden w-full max-w-[360px] min-w-0 lg:block">
+          {scopeReady ? (
+            <RadarScope
+              blips={blips}
+              reduce={reduce}
+              alert={unseen}
+              stateName={stateName}
+            />
+          ) : null}
         </div>
       </div>
     </section>
@@ -216,10 +232,10 @@ function RadarScope({
         return (
           <line
             key={i}
-            x1={CX + Math.cos(a) * inner}
-            y1={CY + Math.sin(a) * inner}
-            x2={CX + Math.cos(a) * 174}
-            y2={CY + Math.sin(a) * 174}
+            x1={r2(CX + Math.cos(a) * inner)}
+            y1={r2(CY + Math.sin(a) * inner)}
+            x2={r2(CX + Math.cos(a) * 174)}
+            y2={r2(CY + Math.sin(a) * 174)}
             stroke="#c4a574"
             strokeOpacity={i % 3 === 0 ? 0.35 : 0.16}
             strokeWidth="0.8"
@@ -253,8 +269,8 @@ function RadarScope({
       {blips.map((blip) => {
         const rad = ((blip.angle - 90) * Math.PI) / 180;
         const r = blip.radius * 168;
-        const x = CX + Math.cos(rad) * r;
-        const y = CY + Math.sin(rad) * r;
+        const x = r2(CX + Math.cos(rad) * r);
+        const y = r2(CY + Math.sin(rad) * r);
         const period = alert ? 4 : 5.5;
         const delay = reduce ? "0s" : `${(blip.angle / 360) * period}s`;
         return (
