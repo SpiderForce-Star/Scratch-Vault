@@ -1,5 +1,11 @@
-/** Canonical public origin. Existing Vercel URL stays live; rename the project later if needed. */
-export const SITE_ORIGIN = "https://volunteer-scratch-vault.vercel.app";
+/** Canonical public origin after the Vercel project rename. */
+export const SITE_ORIGIN = "https://scratch-vault.vercel.app";
+
+/** Checkout / auth hosts. Keep the previous Vercel alias working. */
+export const SITE_HOSTS = [
+  "scratch-vault.vercel.app",
+  "volunteer-scratch-vault.vercel.app",
+] as const;
 export const SITE_NAME = "Scratch Vault";
 export const SITE_MARK = "SV";
 

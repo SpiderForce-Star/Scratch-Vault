@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { SITE_HOSTS, SITE_ORIGIN } from "./site";
 import {
   resolveStripePrices,
   stripeSecretModeFromKey,
@@ -63,7 +64,7 @@ export function appOrigin(): string {
   return (
     process.env.BETTER_AUTH_URL?.trim() ||
     process.env.VITE_APP_URL?.trim() ||
-    "https://volunteer-scratch-vault.vercel.app"
+    SITE_ORIGIN
   );
 }
 
@@ -77,7 +78,7 @@ function hostOf(value: string): string | null {
 }
 
 function allowedHosts(): Set<string> {
-  const hosts = new Set<string>(["volunteer-scratch-vault.vercel.app"]);
+  const hosts = new Set<string>(SITE_HOSTS);
   for (const raw of [
     process.env.BETTER_AUTH_URL,
     process.env.VITE_APP_URL,
