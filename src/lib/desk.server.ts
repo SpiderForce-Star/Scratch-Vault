@@ -27,9 +27,10 @@ function reportRecord(reports: Map<number, HeatReport>): Record<string, HeatRepo
   return Object.fromEntries([...reports.entries()].map(([k, v]) => [String(k), v]));
 }
 
-function honestDataMode(state: StateConfig, loaded: LoadedDesk): DataMode {
+function honestDataMode(_state: StateConfig, loaded: LoadedDesk): DataMode {
   if (!loaded.games.length) return "compiled";
-  return state.dataMode;
+  if (loaded.stale || !loaded.ok) return "compiled";
+  return "live";
 }
 
 function emptyTonight(): { cards: TonightCard[]; depleted: boolean } {

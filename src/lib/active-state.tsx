@@ -10,6 +10,7 @@ import {
 import {
   DEFAULT_STATE_ID,
   STATES,
+  type DataMode,
   type StateConfig,
   type StateId,
   parseStateId,
@@ -22,10 +23,14 @@ const ActiveStateContext = createContext<{
   stateId: StateId;
   setStateId: (id: StateId) => void;
   config: StateConfig;
+  deskMode: DataMode | null;
+  setDeskMode: (mode: DataMode | null) => void;
 }>({
   stateId: DEFAULT_STATE_ID,
   setStateId: () => undefined,
   config: STATES[DEFAULT_STATE_ID],
+  deskMode: null,
+  setDeskMode: () => undefined,
 });
 
 export function readStatePref(): StateId {
@@ -52,6 +57,7 @@ export function writeStatePref(id: StateId): void {
 
 export function ActiveStateProvider({ children }: { children: ReactNode }) {
   const [stateId, setStateIdState] = useState<StateId>(DEFAULT_STATE_ID);
+  const [deskMode, setDeskMode] = useState<DataMode | null>(null);
 
   useEffect(() => {
     setStateIdState(readStatePref());
@@ -60,6 +66,7 @@ export function ActiveStateProvider({ children }: { children: ReactNode }) {
   const setStateId = useCallback((id: StateId) => {
     const next = parseStateId(id);
     setStateIdState(next);
+    setDeskMode(null);
     writeStatePref(next);
   }, []);
 
@@ -68,8 +75,10 @@ export function ActiveStateProvider({ children }: { children: ReactNode }) {
       stateId,
       setStateId,
       config: STATES[stateId],
+      deskMode,
+      setDeskMode,
     }),
-    [stateId, setStateId],
+    [stateId, setStateId, deskMode],
   );
 
   return (

@@ -1,8 +1,52 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Game } from "@/data/games";
 import type { StateId } from "@/config/states";
 
 function hasPostgres(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+const LAST_GOOD_DIR = join(dirname(fileURLToPath(import.meta.url)), "last-good");
+
+const bundledLastGood = import.meta.glob("./last-good/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, DeskSnapshotRow>;
+
+function readBundledLastGood(stateId: StateId): DeskSnapshotRow | null {
+  for (const [path, row] of Object.entries(bundledLastGood || {})) {
+    if (!path.endsWith(`${stateId}.json`) || !row?.catalog?.length) continue;
+    return { ...row, stateId };
+  }
+  return null;
+}
+
+function lastGoodPath(stateId: StateId): string {
+  return join(LAST_GOOD_DIR, `${stateId}.json`);
+}
+
+function readLastGoodFile(stateId: StateId): DeskSnapshotRow | null {
+  try {
+    const path = lastGoodPath(stateId);
+    if (!existsSync(path)) return null;
+    const row = JSON.parse(readFileSync(path, "utf8")) as DeskSnapshotRow;
+    if (!row?.catalog?.length) return null;
+    return { ...row, stateId };
+  } catch {
+    return null;
+  }
+}
+
+function writeLastGoodFile(row: DeskSnapshotRow): void {
+  if (!row.catalog?.length) return;
+  try {
+    mkdirSync(LAST_GOOD_DIR, { recursive: true });
+    writeFileSync(lastGoodPath(row.stateId), `${JSON.stringify(row, null, 0)}\n`, "utf8");
+  } catch {
+    /* Vercel bundle is read-only; committed last-good JSON is the persist. */
+  }
 }
 
 async function getSqlOrThrow() {
@@ -72,16 +116,16 @@ function fromRow(row: SqlRow): DeskSnapshotRow {
   };
 }
 
-export function formatWeekLabel(iso: string): string {
+export function formatWeekLabel(iso: string, live = false): string {
   const date = new Date(iso);
-  if (!Number.isFinite(date.getTime())) return "Compiled snapshot";
+  if (!Number.isFinite(date.getTime())) return live ? "Official table" : "Compiled snapshot";
   const label = new Intl.DateTimeFormat("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
     timeZone: "America/Chicago",
   }).format(date);
-  return `Compiled · ${label}`;
+  return live ? label : `Compiled · ${label}`;
 }
 
 export async function countSnapshots(): Promise<number> {
@@ -92,16 +136,29 @@ export async function countSnapshots(): Promise<number> {
 }
 
 export async function readSnapshot(stateId: StateId): Promise<DeskSnapshotRow | null> {
-  if (!hasPostgres()) return memory.get(stateId) ?? null;
-  const sql = await getSqlOrThrow();
-  const rows = await sql.query<SqlRow>(
-    `SELECT state_id, ok, stale, fetched_at, week_label, source_url, reason, game_count, catalog
-     FROM desk_snapshots
-     WHERE state_id = $1
-     LIMIT 1`,
-    [stateId],
-  );
-  return rows[0] ? fromRow(rows[0]) : null;
+  const cached = memory.get(stateId);
+  if (cached?.catalog?.length) return cached;
+  if (hasPostgres()) {
+    const sql = await getSqlOrThrow();
+    const rows = await sql.query<SqlRow>(
+      `SELECT state_id, ok, stale, fetched_at, week_label, source_url, reason, game_count, catalog
+       FROM desk_snapshots
+       WHERE state_id = $1
+       LIMIT 1`,
+      [stateId],
+    );
+    if (rows[0]) {
+      const row = fromRow(rows[0]);
+      memory.set(stateId, row);
+      return row;
+    }
+  }
+  const file = readLastGoodFile(stateId) ?? readBundledLastGood(stateId);
+  if (file) {
+    memory.set(stateId, file);
+    return file;
+  }
+  return cached ?? null;
 }
 
 export async function upsertSnapshot(input: {
@@ -127,6 +184,7 @@ export async function upsertSnapshot(input: {
     catalog: input.catalog,
   };
   memory.set(input.stateId, row);
+  writeLastGoodFile(row);
   if (!hasPostgres()) return;
   const sql = await getSqlOrThrow();
   await sql.query(
@@ -167,14 +225,16 @@ export async function markSnapshotFailed(
     // Keep bundled last-good. Never persist an empty catalog.
     return null;
   }
-  memory.set(stateId, {
+  const next: DeskSnapshotRow = {
     ...current,
     ok: false,
     stale: true,
     sourceUrl: sourceUrl ?? current.sourceUrl,
     reason,
-  });
-  if (!hasPostgres()) return memory.get(stateId) ?? null;
+  };
+  memory.set(stateId, next);
+  writeLastGoodFile(next);
+  if (!hasPostgres()) return next;
   const sql = await getSqlOrThrow();
   await sql.query(
     `UPDATE desk_snapshots

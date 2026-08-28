@@ -92,6 +92,9 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
   try {
     const primaryUrl = sourceUrl || "https://www.tnlottery.com/games/scratch-offs";
     const primary = await fetchText(primaryUrl);
+    if (primary.status === 403) {
+      return failState(stateId, `HTTP 403`, primaryUrl);
+    }
     if (primary.status >= 400) {
       const extra = FALLBACK_URLS[stateId];
       if (!extra || extra === primaryUrl) {
@@ -103,24 +106,27 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
     let type = primary.status < 400 ? primary.type : "";
     let usedUrl = primaryUrl;
 
-    if (!body.trim()) {
+    let parsed = body.trim() ? parseOfficialRemaining(stateId, body, type) : [];
+    if (!parsed.length) {
       const extra = FALLBACK_URLS[stateId];
       if (extra && extra !== primaryUrl) {
         const second = await fetchText(extra);
+        if (second.status === 403) {
+          return failState(stateId, "HTTP 403", extra);
+        }
         if (second.status >= 400) {
           return failState(stateId, `HTTP ${second.status}`, extra);
         }
         body = second.body;
         type = second.type;
         usedUrl = extra;
+        parsed = parseOfficialRemaining(stateId, body, type);
       }
     }
 
     if (!body.trim()) {
       return failState(stateId, "empty body", usedUrl);
     }
-
-    const parsed = parseOfficialRemaining(stateId, body, type);
     if (!parsed.length) {
       return failState(stateId, "0 parseable games", usedUrl);
     }
@@ -141,22 +147,12 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
       return failState(stateId, "0 parseable games", usedUrl);
     }
 
-    const minTrusted = known.length ? Math.max(3, Math.ceil(known.length * 0.25)) : 1;
-    const matched = parsed.filter((row) =>
-      known.some(
-        (game) =>
-          game.number === row.number ||
-          game.name.replace(/[^a-z0-9]+/gi, "").toLowerCase() ===
-            row.name.replace(/[^a-z0-9]+/gi, "").toLowerCase(),
-      ),
-    ).length;
-    const trustedCount = known.length ? matched : games.length;
-    if (trustedCount < minTrusted) {
+    if (games.length < 3) {
       return failState(stateId, "untrusted parse", usedUrl, games.length);
     }
 
     const asOf = extractAsOf(body) || fetchedAt;
-    const weekLabel = formatWeekLabel(asOf);
+    const weekLabel = formatWeekLabel(asOf, true);
     await upsertSnapshot({
       stateId,
       ok: true,

@@ -45,6 +45,7 @@ export type LoadedDesk = {
   games: Game[];
   error: string | null;
   stale: boolean;
+  ok: boolean;
   fetchedAt: string | null;
   weekLabel: string;
 };
@@ -64,7 +65,8 @@ export function loadBundledDesk(
       return {
         games: [],
         error: "Tennessee remaining overlay is empty. No placeholder counts are shown.",
-        stale: false,
+        stale: true,
+        ok: false,
         fetchedAt: null,
         weekLabel: state.weekLabel,
       };
@@ -72,8 +74,9 @@ export function loadBundledDesk(
     return {
       games,
       error: null,
-      stale: false,
-      fetchedAt: null,
+      stale: true,
+      ok: false,
+      fetchedAt: state.publishedAt,
       weekLabel: state.weekLabel,
     };
   }
@@ -85,6 +88,7 @@ export function loadBundledDesk(
       games: [],
       error: `No official remaining-prize snapshot is available for ${id.toUpperCase()}. No placeholder counts are shown.`,
       stale: false,
+      ok: false,
       fetchedAt: null,
       weekLabel: state.weekLabel,
     };
@@ -92,8 +96,9 @@ export function loadBundledDesk(
   return {
     games: applyRemaining(base, remaining),
     error: null,
-    stale: false,
-    fetchedAt: null,
+    stale: true,
+    ok: false,
+    fetchedAt: state.publishedAt,
     weekLabel: state.weekLabel,
   };
 }
@@ -107,23 +112,19 @@ export function loadCompiledDesk(
 
 export async function seedSnapshotsIfEmpty(): Promise<void> {
   try {
-    const now = new Date().toISOString();
     for (const id of STATE_IDS) {
       const existing = await readSnapshot(id);
       if (existing?.catalog?.length) continue;
       const bundled = loadBundledDesk(id);
       if (!bundled.games.length) continue;
-      const noPostgres = !process.env.DATABASE_URL?.trim();
       await upsertSnapshot({
         stateId: id,
-        ok: true,
-        stale: noPostgres,
-        fetchedAt: now,
+        ok: false,
+        stale: true,
+        fetchedAt: bundled.fetchedAt || STATES[id].publishedAt,
         weekLabel: bundled.weekLabel,
         sourceUrl: STATES[id].remainingPrizesUrl,
-        reason: noPostgres
-          ? "compiled last-good in repo"
-          : "seeded compiled catalog",
+        reason: "compiled last-good in repo",
         gameCount: bundled.games.length,
         catalog: bundled.games,
       });
@@ -150,12 +151,13 @@ export async function loadDeskCatalog(
         games: row.catalog.map((game) => ({ ...game, stateId: id })),
         error: null,
         stale: row.stale || !row.ok,
+        ok: Boolean(row.ok) && !row.stale,
         fetchedAt: row.fetchedAt,
         weekLabel: row.weekLabel,
       };
     }
     if (bundled.games.length) {
-      return { ...bundled, stale: Boolean(row && !row.ok) };
+      return { ...bundled, stale: true, ok: false };
     }
   } catch (err) {
     console.error(
@@ -166,7 +168,7 @@ export async function loadDeskCatalog(
   }
 
   if (bundled.games.length) {
-    return bundled;
+    return { ...bundled, stale: true, ok: false };
   }
 
   return {
@@ -175,6 +177,7 @@ export async function loadDeskCatalog(
       bundled.error ??
       `No official remaining-prize snapshot is available for ${id.toUpperCase()}. No placeholder counts are shown.`,
     stale: false,
+    ok: false,
     fetchedAt: null,
     weekLabel: bundled.weekLabel,
   };

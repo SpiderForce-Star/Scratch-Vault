@@ -25,14 +25,15 @@ const NAV: {
 
 export function SiteHeader() {
   const { unseen, markSeen } = useDeskAlert();
-  const { config } = useActiveState();
+  const { config, deskMode } = useActiveState();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const menuId = useId();
+  const mode = deskMode ?? config.dataMode;
   const status =
-    config.dataMode === "sample"
+    mode === "sample"
       ? t("header.demoData")
-      : config.dataMode === "compiled"
+      : mode === "compiled"
         ? t("header.compiled")
         : t("header.independent");
 

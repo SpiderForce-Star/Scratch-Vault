@@ -79,7 +79,7 @@ const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
 function VaultHome() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
-  const { stateId, setStateId, config } = useActiveState();
+  const { stateId, setStateId, config, setDeskMode } = useActiveState();
   const { t } = useI18n();
   const [filter, setFilter] = useState<PriceFilter>("all");
   const [sort, setSort] = useState<SortKey>("safest");
@@ -100,7 +100,9 @@ function VaultHome() {
     setSnap(null);
     void getDeskSnapshot({ data: { stateId } })
       .then((next) => {
-        if (!cancelled) setSnap(next);
+        if (cancelled) return;
+        setSnap(next);
+        setDeskMode(next.dataMode);
       })
       .catch(() => {
         if (!cancelled) setSnap(null);
@@ -108,7 +110,7 @@ function VaultHome() {
     return () => {
       cancelled = true;
     };
-  }, [paid, stateId]);
+  }, [paid, stateId, setDeskMode]);
 
   const selectState = (id: StateId) => {
     setFilter("all");
