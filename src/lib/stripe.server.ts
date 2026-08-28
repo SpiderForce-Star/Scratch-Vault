@@ -62,8 +62,9 @@ export function automaticTaxEnabled(): boolean {
 
 export function appOrigin(): string {
   return (
-    process.env.BETTER_AUTH_URL?.trim() ||
+    process.env.VITE_PUBLIC_URL?.trim() ||
     process.env.VITE_APP_URL?.trim() ||
+    process.env.BETTER_AUTH_URL?.trim() ||
     SITE_ORIGIN
   );
 }
@@ -80,8 +81,9 @@ function hostOf(value: string): string | null {
 function allowedHosts(): Set<string> {
   const hosts = new Set<string>(SITE_HOSTS);
   for (const raw of [
-    process.env.BETTER_AUTH_URL,
+    process.env.VITE_PUBLIC_URL,
     process.env.VITE_APP_URL,
+    process.env.BETTER_AUTH_URL,
     process.env.ALLOWED_CHECKOUT_HOSTS,
   ]) {
     if (!raw) continue;
