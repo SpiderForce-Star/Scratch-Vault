@@ -748,47 +748,6 @@ export const GAMES: Game[] = [
   },
 ];
 
-const NAMED_FACES = new Set([
-  1265, 1310, 1355, 1358, 1359, 1360, 1361, 1364, 1368, 1369, 1370, 1372, 1373,
-  1376, 1386, 1856, 1990, 1996,
-]);
-
-export function ticketArt(game: Game): string {
-  const namedOk = !game.stateId || game.stateId === "tn";
-  if (namedOk && NAMED_FACES.has(game.number)) return `/tickets/${game.number}.jpg`;
-  if (namedOk && game.number === 1315) return "/tickets/1370.jpg";
-  if (game.theme === "crossword") return "/tickets/1856.jpg";
-  if (game.theme === "frenzy") {
-    if (game.price >= 20) return "/tickets/1360.jpg";
-    if (game.price >= 10) return "/tickets/1359.jpg";
-    return "/tickets/1358.jpg";
-  }
-  if (game.theme === "jumbo") {
-    if (game.price >= 30) return "/tickets/1364.jpg";
-    if (game.price >= 20) return "/tickets/1355.jpg";
-    return "/tickets/1372.jpg";
-  }
-  if (game.theme === "multiplier") {
-    if (game.price >= 20) return "/tickets/1370.jpg";
-    if (game.price >= 10) return "/tickets/1369.jpg";
-    return "/tickets/1368.jpg";
-  }
-  if (game.theme === "high") {
-    if (game.price >= 30) return "/tickets/1310.jpg";
-    if (game.price >= 10) return "/tickets/1386.jpg";
-    return "/tickets/1996.jpg";
-  }
-  if (game.price >= 30) return "/tickets/1364.jpg";
-  if (game.price >= 20) return "/tickets/1370.jpg";
-  if (game.price >= 10) return "/tickets/1369.jpg";
-  return "/tickets/1376.jpg";
-}
-
-export function hasNamedFace(game: Game): boolean {
-  const namedOk = !game.stateId || game.stateId === "tn";
-  return namedOk && NAMED_FACES.has(game.number);
-}
-
 export function money(n: number): string {
   if (n >= 1_000_000) {
     const m = n / 1_000_000;

@@ -134,7 +134,7 @@ function GameDetail() {
         </Link>
 
         <div className="mt-6 overflow-hidden rounded-xl border border-line bg-surface">
-          <TicketFace game={game} full />
+          <TicketFace game={game} full officialUrl={state.remainingPrizesUrl} />
           <div className="flex items-start justify-between gap-3 p-6">
             <div>
               <p className="font-mono text-xs text-faint">

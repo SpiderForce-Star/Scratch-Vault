@@ -62,8 +62,9 @@ function TermsPage() {
           Remaining counts do not improve the odds of winning any prize.
         </p>
         <p className="mt-3">
-          Ticket faces shown in the product are independent reconstructions for
-          identification. They are not official Lottery artwork.
+          Cards shown in the product are original Scratch Vault chrome with the
+          public game name, number, and price. They are not official Lottery
+          artwork or tickets.
         </p>
       </Section>
 
