@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const origin = "https://volunteer-scratch-vault.vercel.app";
+const origin = "https://scratch-vault.com";
 const gamesSrc = readFileSync(join(root, "src/data/games.ts"), "utf8");
 const metaSrc = readFileSync(join(root, "src/data/desk-meta.ts"), "utf8");
 

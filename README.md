@@ -7,7 +7,7 @@ Independent remaining-prize desk for scratch-off games.
 Advancement repo: [SpiderForce-Star/Scratch-Vault](https://github.com/SpiderForce-Star/Scratch-Vault).
 State lottery notices: [`LEGAL.md`](LEGAL.md) and `/legal`.
 
-Production is the existing Vercel project at [https://volunteer-scratch-vault.vercel.app](https://volunteer-scratch-vault.vercel.app), built from [SpiderForce-Star/Scratch-Vault](https://github.com/SpiderForce-Star/Scratch-Vault). Do not create a new Vercel project.
+Production is the existing Vercel project (`scratch-vault`) at [https://scratch-vault.com](https://scratch-vault.com), also aliased at [https://volunteer-scratch-vault.vercel.app](https://volunteer-scratch-vault.vercel.app). Do not create a new Vercel project.
 
 ## What it does
 
@@ -74,7 +74,7 @@ Checkout uses the existing live Price IDs. In the Stripe Dashboard:
 - Customer Portal: allow cancel-at-period-end (the in-app Account opt-out uses the API directly)
 - Upcoming invoice emails should stay on for Illinois 30–60 day annual renewal notice
 
-Webhook URL (until the new site is cut over): `https://volunteer-scratch-vault.vercel.app/api/stripe/webhook`.
+Webhook URL (unchanged): `https://volunteer-scratch-vault.vercel.app/api/stripe/webhook`.
 
 Public billing rules: [`src/lib/billing-policy.ts`](src/lib/billing-policy.ts). State lottery notices: [`src/lib/state-legal.ts`](src/lib/state-legal.ts), [`LEGAL.md`](LEGAL.md), `/legal`.
 

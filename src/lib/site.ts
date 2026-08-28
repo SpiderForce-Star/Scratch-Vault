@@ -1,8 +1,10 @@
-/** Canonical public origin. Vercel project rename is a later Stripe cutover. */
-export const SITE_ORIGIN = "https://volunteer-scratch-vault.vercel.app";
+/** Canonical public origin. Stripe webhook stays on the volunteer host. */
+export const SITE_ORIGIN = "https://scratch-vault.com";
 
-/** Checkout / auth hosts. Keep the previous Vercel alias working. */
+/** Checkout / auth hosts. Keep both Vercel aliases working. */
 export const SITE_HOSTS = [
+  "scratch-vault.com",
+  "www.scratch-vault.com",
   "scratch-vault.vercel.app",
   "volunteer-scratch-vault.vercel.app",
 ] as const;

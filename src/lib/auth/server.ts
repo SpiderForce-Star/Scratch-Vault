@@ -106,6 +106,8 @@ const baseURL = explicitBaseURL ?? {
   // (not only the preview wildcard).
   allowedHosts: [
     ...previewAllowedHosts,
+    "scratch-vault.com",
+    "www.scratch-vault.com",
     "scratch-vault.vercel.app",
     "volunteer-scratch-vault.vercel.app",
     "localhost",
@@ -121,6 +123,8 @@ const baseURL = explicitBaseURL ?? {
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
 const PRODUCTION_ORIGINS = [
+  "https://scratch-vault.com",
+  "https://www.scratch-vault.com",
   "https://scratch-vault.vercel.app",
   "https://volunteer-scratch-vault.vercel.app",
 ];
