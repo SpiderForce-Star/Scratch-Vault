@@ -7,6 +7,7 @@ import { deskNotifyEnabled } from "@/lib/desk-alert";
 import { TrialCta } from "@/components/trial-cta";
 import { useAccess } from "@/lib/use-access";
 import { pricePrefLabel } from "@/lib/price-pref";
+import type { DataMode } from "@/config/states";
 import { useI18n } from "@/lib/locale";
 
 const SIZE = 360;
@@ -26,6 +27,7 @@ export function RadarCashHero({
   shortName = "TN",
   weekLabel = DESK_META.weekLabel,
   minAge = 18,
+  dataMode = "compiled",
 }: {
   priceFilter?: PriceFilter;
   blips?: CashBlip[];
@@ -35,6 +37,7 @@ export function RadarCashHero({
   shortName?: string;
   weekLabel?: string;
   minAge?: 18 | 21;
+  dataMode?: DataMode;
 }) {
   const { unseen, markSeen, reviewDesk } = useDeskAlert();
   const { paid } = useAccess();
@@ -81,7 +84,9 @@ export function RadarCashHero({
       <div className="mx-auto grid max-w-[1120px] items-center gap-8 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:py-14">
         <div className="min-w-0">
           <p className="font-mono text-xs tracking-[0.16em] text-gold uppercase">
-            {t("hero.independent", { name: stateName })}
+            {dataMode === "live"
+              ? t("hero.independent", { name: stateName })
+              : t("hero.compiled", { name: stateName })}
           </p>
           <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
             {priceLabel
@@ -106,7 +111,9 @@ export function RadarCashHero({
                 })}
           </p>
           <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
-            {t("hero.meta", { age: `${minAge}+` })}
+            {dataMode === "live"
+              ? t("hero.meta", { age: `${minAge}+` })
+              : t("hero.metaCompiled")}
           </p>
           {unseen ? (
             <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3">

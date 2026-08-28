@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { StateId } from "@/config/states";
+import type { DataMode, StateId } from "@/config/states";
 import type { TonightCard } from "@/lib/heat";
 import { BandChip } from "@/components/ticket-card";
 import { useI18n } from "@/lib/locale";
@@ -10,11 +10,13 @@ export function TonightHeatStrip({
   cards,
   depleted,
   id,
+  dataMode = "compiled",
 }: {
   stateId: StateId;
   cards: TonightCard[];
   depleted: boolean;
   id?: string;
+  dataMode?: DataMode;
 }) {
   const { t } = useI18n();
   if (!cards.length) return null;
@@ -26,7 +28,9 @@ export function TonightHeatStrip({
           {t("heatTonight.kicker")}
         </p>
         <h2 className="mt-1 font-display text-xl tracking-tight sm:text-2xl">
-          {t("heatTonight.title")}
+          {dataMode === "live"
+            ? t("heatTonight.title")
+            : t("heatTonight.titleCompiled")}
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
           {t("heatTonight.sub")}

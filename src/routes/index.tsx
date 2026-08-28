@@ -206,12 +206,14 @@ function VaultHome() {
         shortName={config.shortName}
         weekLabel={snap?.weekLabel ?? config.weekLabel}
         minAge={config.minAge}
+        dataMode={snap?.dataMode ?? config.dataMode}
       />
       <TonightHeatStrip
         id="heat"
         stateId={stateId}
         cards={snap?.tonight ?? []}
         depleted={snap?.tonightDepleted ?? false}
+        dataMode={snap?.dataMode ?? config.dataMode}
       />
 
       <section id="skip" className="border-b border-line">
