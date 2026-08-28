@@ -137,15 +137,15 @@ export function BandChip({
 }) {
   const { t } = useI18n();
   const map = {
-    hot: "border border-hot/50 bg-hot-ink text-hot",
-    warm: "border border-warm/50 bg-warm-ink text-warm",
-    cool: "border border-cool/40 bg-cool-ink text-cool",
-    bust: "border border-bust/50 bg-bust-ink text-bust",
+    hot: "border-hot bg-hot-ink text-hot",
+    warm: "border-warm bg-warm-ink text-warm",
+    cool: "border-cool bg-cool-ink text-cool",
+    bust: "border-bust bg-bust-ink text-bust",
   };
   return (
     <span
       className={cn(
-        "rounded-sm px-2 py-1 text-xs font-semibold tracking-[0.12em] uppercase",
+        "inline-flex min-h-8 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
         map[band],
         className,
       )}
