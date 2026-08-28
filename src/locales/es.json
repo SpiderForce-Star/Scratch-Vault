@@ -51,7 +51,7 @@
   "holdback.piaExtra": "Esa cifra es nuestra estimación de lo que sigue en tiendas. No es un fallo de la Lotería.",
   "holdback.none": "Esta mesa no resta la reserva de Play It Again de Tennessee. Las clasificaciones usan los conteos publicados.",
   "holdback.posted": "Premios mayores publicados restantes: {{posted}}. Premio mayor efectivo en tienda: {{effective}}.",
-  "banner.compiledBadge": "Instantánea compilada",
+  "banner.compiledBadge": "Compilado",
   "banner.compiled": "Compilado de la página oficial de premios restantes al {{week}}. No es inventario en tienda en vivo. Confirme en la {{official}} antes de gastar.",
   "banner.lastGoodBadge": "Última instantánea válida",
   "banner.lastGood": "Última instantánea válida · {{date}} — no se pudo leer la tabla oficial de hoy.",

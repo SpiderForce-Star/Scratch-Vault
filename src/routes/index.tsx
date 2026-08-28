@@ -192,6 +192,7 @@ function VaultHome() {
       <StateSelector value={stateId} onChange={selectState} />
       <DataModeBanner
         state={snap ? getState(snap.stateId) : config}
+        dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
         weekLabel={snap?.weekLabel}
@@ -250,6 +251,7 @@ function VaultHome() {
       ) : null}
       <DeskAlertBanner />
 
+      {snap && (!snap.gameCount || !openingFive.length) ? null : (
       <section id="tonight" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
@@ -260,7 +262,7 @@ function VaultHome() {
           </h2>
           {!snap ? (
             <p className="mt-4 text-muted">{t("home.loading")}</p>
-          ) : (
+          ) : openingFive.length ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {openingFive.map((game) => {
                 const heat = reports.get(game.number);
@@ -275,9 +277,10 @@ function VaultHome() {
                 );
               })}
             </div>
-          )}
+          ) : null}
         </div>
       </section>
+      )}
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">

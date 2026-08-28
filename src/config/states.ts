@@ -97,7 +97,7 @@ export const STATES: Record<StateId, StateConfig> = {
     fieldMapping:
       "game number, name, price, prize amount, remaining count (top / mid / low when published)",
     hasFullMultiTier: true,
-    dataMode: "live",
+    dataMode: "compiled",
     holdback: TENNESSEE_HOLDBACK,
     pricePoints: [5, 10, 20, 25, 30, 50],
     helplineExtra: {
@@ -131,7 +131,7 @@ export const STATES: Record<StateId, StateConfig> = {
     fieldMapping:
       "game number + name, prize amount, prizes remaining (top / mid / cash from the published table)",
     hasFullMultiTier: true,
-    dataMode: "compiled",
+    dataMode: "live",
     holdback: null,
     pricePoints: [5, 10, 20, 25, 30, 50],
     helplineExtra: null,
@@ -300,7 +300,7 @@ export const STATES: Record<StateId, StateConfig> = {
     fieldMapping:
       "game number + name, prize Value, Total, Remaining (top / mid / cash from published tiers)",
     hasFullMultiTier: true,
-    dataMode: "compiled",
+    dataMode: "live",
     holdback: null,
     pricePoints: [5, 10, 20, 25, 30, 50],
     helplineExtra: {
@@ -335,7 +335,7 @@ export const STATES: Record<StateId, StateConfig> = {
     fieldMapping:
       "game number + name, Top Six Prizes, Wins Remaining (top / mid / cash from the six published amounts)",
     hasFullMultiTier: true,
-    dataMode: "compiled",
+    dataMode: "live",
     holdback: null,
     pricePoints: [5, 10, 20, 25, 30, 50],
     helplineExtra: null,
@@ -369,7 +369,7 @@ export const STATES: Record<StateId, StateConfig> = {
     fieldMapping:
       "game number + name, prize amount, prizes printed, prizes claimed (remaining = printed − claimed)",
     hasFullMultiTier: true,
-    dataMode: "compiled",
+    dataMode: "live",
     holdback: null,
     pricePoints: [5, 10, 20, 25, 30, 50],
     helplineExtra: null,
@@ -535,7 +535,7 @@ export const STATES: Record<StateId, StateConfig> = {
     fieldMapping:
       "game name (number), game type=Scratch, cost, prize, claimed, unclaimed remaining",
     hasFullMultiTier: true,
-    dataMode: "compiled",
+    dataMode: "live",
     holdback: null,
     pricePoints: [5, 10, 20, 25, 30, 50],
     helplineExtra: {

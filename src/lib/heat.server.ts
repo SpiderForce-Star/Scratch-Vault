@@ -186,7 +186,7 @@ export function scoreGame(
   };
 }
 
-/** Strip mid/low remaining so only public fields remain. */
+/** Strip mid/low remaining so only public heat scoring remains. */
 export function publicGame(game: Game): Game {
   return {
     ...game,
@@ -194,6 +194,37 @@ export function publicGame(game: Game): Game {
       ...tier,
       remaining: i === 0 ? tier.remaining : null,
     })),
+  };
+}
+
+/** Guest payload: no remaining counts at all. */
+export function guestFacingGame(game: Game): Game {
+  return {
+    ...game,
+    tiers: game.tiers.map((tier) => ({
+      ...tier,
+      remaining: null,
+    })),
+  };
+}
+
+/** Keep heat bands; drop remaining counts from a guest payload. */
+export function redactHeatReport(heat: HeatReport): HeatReport {
+  return {
+    ...heat,
+    topRemaining: null,
+    effectiveTop: null,
+    midRemaining: null,
+    lowRemaining: null,
+    mediumKnown: false,
+  };
+}
+
+export function redactTonightCard(card: TonightCard): TonightCard {
+  return {
+    ...card,
+    effectiveTop: null,
+    secondaryRemaining: null,
   };
 }
 

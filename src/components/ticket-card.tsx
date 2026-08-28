@@ -68,13 +68,13 @@ export function TicketCard({
           <div>
             <dt className="text-faint">{t("card.topListed")}</dt>
             <dd className="font-mono text-sm text-fg">
-              {book.topPool == null ? "—" : money(book.topPool)}
+              {locked || book.topPool == null ? "—" : money(book.topPool)}
             </dd>
           </div>
           <div>
             <dt className="text-faint">{t("card.retailTops")}</dt>
             <dd className="font-mono text-sm text-fg">
-              {topLeft == null ? "—" : topLeft.toLocaleString()}
+              {locked || topLeft == null ? "—" : topLeft.toLocaleString()}
             </dd>
           </div>
           <div>

@@ -54,6 +54,7 @@ export function TonightHeatStrip({
               <p className="mt-2 truncate font-display text-lg leading-snug">
                 {card.name}
               </p>
+              {card.effectiveTop != null || card.secondaryRemaining != null ? (
               <p className="mt-1 font-mono text-[10px] tracking-wide text-faint uppercase">
                 {t("heatTonight.retailTop", {
                   count:
@@ -67,6 +68,7 @@ export function TonightHeatStrip({
                     })}`
                   : ""}
               </p>
+              ) : null}
             </Link>
           ))}
         </div>

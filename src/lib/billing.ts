@@ -59,6 +59,16 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const { loadUserBilling } = await import("./subscription.server");
       const { loadBillingProfile } = await import("./profile.server");
       const { getRequest } = await import("@tanstack/react-start/server");
+      const { rateLimitAllowed, requestIp } = await import("./rate-limit");
+
+      const request = getRequest();
+      const ip = requestIp(request);
+      if (
+        !rateLimitAllowed(`stripe:checkout:user:${context.userId}`, 6, 15 * 60_000) ||
+        !rateLimitAllowed(`stripe:checkout:ip:${ip}`, 12, 15 * 60_000)
+      ) {
+        throw new Error("Too many checkout attempts. Please wait a few minutes.");
+      }
 
       const stripe = getStripe();
       const priceId = STRIPE_PRICES[data.plan];
@@ -84,7 +94,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         return { url: "/account", alreadySubscribed: true as const };
       }
 
-      const origin = requestOrigin(getRequest());
+      const origin = requestOrigin(request);
       const taxOn = automaticTaxEnabled();
 
       const session = await stripe.checkout.sessions.create({

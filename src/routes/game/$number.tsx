@@ -6,6 +6,7 @@ import {
   DEFAULT_STATE_ID,
   getState,
   isStateId,
+  type DataMode,
   type StateId,
 } from "@/config/states";
 import { getDeskSnapshot } from "@/lib/desk";
@@ -88,6 +89,7 @@ function GameDetail() {
   const [heat, setHeat] = useState<HeatReport>(EMPTY_HEAT);
   const [locked, setLocked] = useState(true);
   const [ready, setReady] = useState(false);
+  const [dataMode, setDataMode] = useState<DataMode>(state.dataMode);
 
   useEffect(() => {
     if (listed.stateId !== activeStateId) setStateId(listed.stateId);
@@ -104,6 +106,7 @@ function GameDetail() {
         setGame(next);
         setHeat(snap.reports[String(next.number)] ?? EMPTY_HEAT);
         setLocked(!snap.paid);
+        setDataMode(snap.dataMode);
         setReady(true);
       })
       .catch(() => {
@@ -119,7 +122,7 @@ function GameDetail() {
   return (
     <div>
       <DeskAlertBanner />
-      <DataModeBanner state={state} />
+      <DataModeBanner state={state} dataMode={dataMode} />
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/"

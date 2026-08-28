@@ -12,20 +12,21 @@ function json(body: unknown, status = 200) {
 
 function cronAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET?.trim();
+  if (!secret) return false;
   const auth = request.headers.get("authorization") || "";
-  if (secret && auth === `Bearer ${secret}`) return true;
-  if (request.headers.get("x-vercel-cron") === "1") return true;
-  return false;
+  return auth === `Bearer ${secret}`;
 }
 
 async function run(request: Request) {
   const production =
     process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
-  if (!cronAuthorized(request) && production) {
-    return new Response("Unauthorized", {
-      status: 401,
-      headers: { "Cache-Control": "no-store" },
-    });
+  if (!cronAuthorized(request)) {
+    if (production || process.env.CRON_SECRET?.trim()) {
+      return new Response("Unauthorized", {
+        status: 401,
+        headers: { "Cache-Control": "no-store" },
+      });
+    }
   }
   const { fetchAllStates } = await import("@/data/states/fetch.server");
   const report = await fetchAllStates();

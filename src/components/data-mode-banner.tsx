@@ -1,4 +1,4 @@
-import type { StateConfig } from "@/config/states";
+import type { DataMode, StateConfig } from "@/config/states";
 import { useI18n } from "@/lib/locale";
 
 export function DataModeBanner({
@@ -6,13 +6,16 @@ export function DataModeBanner({
   loadError = null,
   stale = false,
   weekLabel,
+  dataMode,
 }: {
   state: StateConfig;
   loadError?: string | null;
   stale?: boolean;
   weekLabel?: string;
+  dataMode?: DataMode;
 }) {
   const { t } = useI18n();
+  const mode = dataMode ?? state.dataMode;
   const week = (weekLabel ?? state.weekLabel).replace(/^Compiled · /i, "");
 
   if (loadError) {
@@ -71,7 +74,7 @@ export function DataModeBanner({
     );
   }
 
-  if (state.dataMode === "sample") {
+  if (mode === "sample") {
     return (
       <div
         role="status"
@@ -87,7 +90,7 @@ export function DataModeBanner({
     );
   }
 
-  if (state.dataMode === "live") {
+  if (mode === "live") {
     return (
       <div role="status" className="border-b border-line bg-raised/40 px-4 py-2 sm:px-6">
         <p className="mx-auto max-w-6xl text-center text-xs leading-relaxed text-faint">

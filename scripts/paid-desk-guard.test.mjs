@@ -5,11 +5,15 @@ import {
   STRIPE_PRICES,
   resolveStripePrices,
 } from "../src/lib/stripe.prices.ts";
+import { readFileSync } from "node:fs";
 import {
   buildDesk,
   cashBlips,
   catalogHeat,
+  guestFacingGame,
   publicGame,
+  redactHeatReport,
+  redactTonightCard,
   scoreGame,
   scoreGamePublic,
   secondaryBandForPrice,
@@ -87,6 +91,67 @@ test("live checkout accepts explicit live env IDs", () => {
     annual: STRIPE_PRICES.annual,
   });
   assert.deepEqual(resolved, { ...STRIPE_PRICES });
+});
+
+test("honest data modes: 403 desks compiled, working desks live", () => {
+  const src = readFileSync(new URL("../src/config/states.ts", import.meta.url), "utf8");
+  const modeOf = (id) => {
+    const start = src.indexOf(`  ${id}: {`);
+    assert.ok(start >= 0, `missing ${id} config`);
+    const match = src.slice(start, start + 4000).match(/dataMode: "(live|compiled|sample)"/);
+    return match?.[1];
+  };
+  for (const id of ["tn", "az", "il"]) {
+    assert.equal(modeOf(id), "compiled", `${id} should be compiled`);
+  }
+  for (const id of ["ky", "nc", "pa", "tx", "ia"]) {
+    assert.equal(modeOf(id), "live", `${id} should be live`);
+  }
+});
+
+function remainingLeaks(value, path = "$") {
+  if (value == null || typeof value !== "object") return [];
+  const keys = [
+    "remaining",
+    "topRemaining",
+    "midRemaining",
+    "lowRemaining",
+    "effectiveTop",
+    "secondaryRemaining",
+  ];
+  const found = [];
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => found.push(...remainingLeaks(item, `${path}[${i}]`)));
+    return found;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    if (keys.includes(key) && child != null) found.push(`${path}.${key}=${child}`);
+    else found.push(...remainingLeaks(child, `${path}.${key}`));
+  }
+  return found;
+}
+
+test("guestFacingGame and guest payload redact remaining counts", () => {
+  const game = fixture();
+  const scored = scoreGamePublic(game);
+  const payload = {
+    games: [guestFacingGame(game)],
+    reports: { [game.number]: redactHeatReport(scored) },
+    tonight: pickTonightHeat([publicGame(game)], new Map([[game.number, scored]])).cards.map(
+      redactTonightCard,
+    ),
+  };
+  assert.ok(guestFacingGame(game).tiers.every((tier) => tier.remaining == null));
+  assert.equal(redactHeatReport(scored).topRemaining, null);
+  assert.equal(redactHeatReport(scored).effectiveTop, null);
+  const leaks = remainingLeaks(payload);
+  assert.deepEqual(leaks, [], `guest remaining leak: ${leaks.join(", ")}`);
+});
+
+test("empty catalog is never tonight", () => {
+  const empty = pickTonightHeat([], new Map());
+  assert.deepEqual(empty.cards, []);
+  assert.equal(empty.depleted, true);
 });
 
 test("scoreGamePublic never returns mid or low remaining", () => {
@@ -546,5 +611,13 @@ test("Tonight remaining heat shows Pass list when the desk has no retail top", (
   assert.equal(cards.length, 1);
   assert.equal(cards[0].number, 301);
   assert.equal(cards[0].band, "bust");
+});
+
+test("checkout and webhook rate limit trips after the window fills", async () => {
+  const { rateLimitAllowed } = await import("../src/lib/rate-limit.ts");
+  const key = `test:${Date.now()}:${Math.random()}`;
+  assert.equal(rateLimitAllowed(key, 2, 60_000), true);
+  assert.equal(rateLimitAllowed(key, 2, 60_000), true);
+  assert.equal(rateLimitAllowed(key, 2, 60_000), false);
 });
 

@@ -51,7 +51,7 @@
   "holdback.piaExtra": "That figure is our estimate of what is still in stores. It is not a Lottery ruling.",
   "holdback.none": "This desk does not subtract a Tennessee Play It Again holdback. Rankings use posted remaining counts as published.",
   "holdback.posted": "Posted top remaining is {{posted}}. Effective retail top is {{effective}}.",
-  "banner.compiledBadge": "Compiled snapshot",
+  "banner.compiledBadge": "Compiled",
   "banner.compiled": "Compiled from the official remaining-prizes page as of {{week}}. Not live store inventory. Confirm on the {{official}} before you spend.",
   "banner.lastGoodBadge": "Last good snapshot",
   "banner.lastGood": "Last good snapshot · {{date}} — today’s official table could not be read.",

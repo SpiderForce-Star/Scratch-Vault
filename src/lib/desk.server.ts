@@ -1,16 +1,25 @@
-import { money, type Game } from "@/data/games";
-import { DEFAULT_STATE_ID, getState, heatContextFor, type StateId } from "@/config/states";
-import { loadDeskCatalog } from "@/data/states/load.server";
+import {
+  DEFAULT_STATE_ID,
+  getState,
+  heatContextFor,
+  type DataMode,
+  type StateConfig,
+  type StateId,
+} from "@/config/states";
+import { loadDeskCatalog, type LoadedDesk } from "@/data/states/load.server";
 import {
   buildDesk,
   cashBlips,
   catalogHeat,
+  guestFacingGame,
   pickTonightHeat,
   publicGame,
+  redactHeatReport,
+  redactTonightCard,
   scoreGame,
   scoreGamePublic,
 } from "./heat.server";
-import type { DeskReview, HeatReport } from "./heat";
+import type { DeskPick, DeskReview, HeatReport, TonightCard } from "./heat";
 import type { DeskSnapshot } from "./desk";
 import { accessFromRow, loadUserBilling } from "./subscription.server";
 
@@ -18,18 +27,52 @@ function reportRecord(reports: Map<number, HeatReport>): Record<string, HeatRepo
   return Object.fromEntries([...reports.entries()].map(([k, v]) => [String(k), v]));
 }
 
-function guestWhy(game: Game, heat: HeatReport): string {
-  if (heat.bust || (heat.role === "jackpot" && heat.effectiveTop === 0)) {
-    return "No useful retail top on the posted counts";
+function honestDataMode(state: StateConfig, loaded: LoadedDesk): DataMode {
+  if (!loaded.games.length) return "compiled";
+  return state.dataMode;
+}
+
+function emptyTonight(): { cards: TonightCard[]; depleted: boolean } {
+  return { cards: [], depleted: true };
+}
+
+function guestWhy(heat: HeatReport): string {
+  if (heat.bust || heat.band === "bust") {
+    return "Public heat flags this ticket as a skip";
   }
-  if (heat.role === "cash-out" && heat.topRemaining != null) {
-    return `${heat.topRemaining.toLocaleString()} cash prizes still posted`;
-  }
-  if (heat.effectiveTop != null && heat.topRemaining != null) {
-    const pool = heat.topRemaining * game.topPrize;
-    return `${heat.effectiveTop} retail top · ${money(pool)} still listed up top`;
-  }
-  return "Published remaining count is thin";
+  if (heat.band === "hot") return "Public heat is hot on this price";
+  if (heat.band === "warm") return "Public heat is warm on this price";
+  return "Public heat only — remaining counts require Full Access";
+}
+
+function redactPick(pick: DeskPick): DeskPick {
+  return {
+    ...pick,
+    game: guestFacingGame(pick.game),
+    heat: redactHeatReport(pick.heat),
+    why: guestWhy(pick.heat),
+  };
+}
+
+function guestDesk(desk: DeskReview): DeskReview {
+  return {
+    ...desk,
+    byPrice: desk.byPrice.map((row) =>
+      row.pick ? { ...row, pick: redactPick(row.pick) } : row,
+    ),
+    mediumLeaders: [],
+    official: [],
+    avoid: desk.avoid.slice(0, 3).map((row) => ({
+      ...row,
+      game: guestFacingGame(row.game),
+      heat: redactHeatReport(row.heat),
+      why: "Skip reasons that use remaining counts require Full Access",
+    })),
+  };
+}
+
+function guestReports(reports: Map<number, HeatReport>): Map<number, HeatReport> {
+  return new Map([...reports.entries()].map(([k, v]) => [k, redactHeatReport(v)]));
 }
 
 async function subscriberIsPaid(userId: string | null): Promise<boolean> {
@@ -81,17 +124,16 @@ export async function buildDeskSnapshot(
   const loaded = await loadDeskCatalog(state.id);
   const games = loaded.games;
   const weekLabel = loaded.weekLabel || state.weekLabel;
+  const dataMode = honestDataMode(state, loaded);
 
   if (paid) {
     const reports = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
-    const tonight = games.length
-      ? pickTonightHeat(games, reports)
-      : { cards: [], depleted: true };
+    const tonight = games.length ? pickTonightHeat(games, reports) : emptyTonight();
     return {
       paid: true,
       stateId: state.id,
       weekLabel,
-      dataMode: state.dataMode,
+      dataMode,
       holdback: ctx,
       gameCount: games.length,
       games,
@@ -107,51 +149,31 @@ export async function buildDeskSnapshot(
     };
   }
 
-  const guestGames = games.map(publicGame);
-  const reports = new Map(
-    guestGames.map((game) => [game.number, scoreGamePublic(game, ctx)]),
+  const scoredGames = games.map(publicGame);
+  const scoredReports = new Map(
+    scoredGames.map((game) => [game.number, scoreGamePublic(game, ctx)]),
   );
-  const desk = buildDesk(guestGames, reports, ctx);
-
-  const guestDesk: DeskReview = {
-    ...desk,
-    byPrice: desk.byPrice.map((row) =>
-      row.pick
-        ? {
-            ...row,
-            pick: {
-              ...row.pick,
-              why: guestWhy(row.pick.game, row.pick.heat),
-            },
-          }
-        : row,
-    ),
-    mediumLeaders: [],
-    official: [],
-    avoid: desk.avoid.slice(0, 3).map((row) => ({
-      ...row,
-      why: "No useful retail top on the posted counts",
-    })),
-  };
-
-  const tonight = pickTonightHeat(guestGames, reports);
+  const desk = buildDesk(scoredGames, scoredReports, ctx);
+  const tonight = games.length
+    ? pickTonightHeat(scoredGames, scoredReports)
+    : emptyTonight();
 
   return {
     paid: false,
     stateId: state.id,
     weekLabel,
-    dataMode: state.dataMode,
+    dataMode,
     holdback: ctx,
     gameCount: games.length,
-    games: guestGames,
-    reports: reportRecord(reports),
-    desk: guestDesk,
-    blips: cashBlips(guestGames, 12).map((blip) => ({ ...blip, remaining: null })),
-    stats: catalogHeat(guestGames, (game) => scoreGamePublic(game, ctx)),
+    games: games.map(guestFacingGame),
+    reports: reportRecord(guestReports(scoredReports)),
+    desk: guestDesk(desk),
+    blips: cashBlips(scoredGames, 12).map((blip) => ({ ...blip, remaining: null })),
+    stats: catalogHeat(scoredGames, (game) => scoreGamePublic(game, ctx)),
     loadError: loaded.error,
     stale: loaded.stale,
     fetchedAt: loaded.fetchedAt,
-    tonight: tonight.cards,
+    tonight: tonight.cards.map(redactTonightCard),
     tonightDepleted: tonight.depleted,
   };
 }

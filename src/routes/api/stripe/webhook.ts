@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { handleStripeEvent } from "@/lib/billing";
 import { getStripe } from "@/lib/stripe.server";
 import { logStripe } from "@/lib/stripe-errors";
+import { rateLimitAllowed, requestIp, tooManyRequests } from "@/lib/rate-limit";
 
 const METHOD_NOT_ALLOWED = () =>
   new Response("Method Not Allowed", {
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/api/stripe/webhook")({
       HEAD: METHOD_NOT_ALLOWED,
       POST: async ({ request }) => {
         try {
+          const ip = requestIp(request);
           const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
           if (!secret) {
             console.error("[stripe] STRIPE_WEBHOOK_SECRET is not set");
@@ -28,6 +30,9 @@ export const Route = createFileRoute("/api/stripe/webhook")({
 
           const signature = request.headers.get("stripe-signature");
           if (!signature) {
+            if (!rateLimitAllowed(`stripe:webhook:nosig:${ip}`, 10, 60_000)) {
+              return tooManyRequests();
+            }
             return new Response("Missing stripe-signature", { status: 400 });
           }
 
@@ -36,6 +41,9 @@ export const Route = createFileRoute("/api/stripe/webhook")({
           try {
             event = getStripe().webhooks.constructEvent(rawBody, signature, secret);
           } catch (err) {
+            if (!rateLimitAllowed(`stripe:webhook:badsig:${ip}`, 20, 60_000)) {
+              return tooManyRequests();
+            }
             logStripe("webhook.signature", err);
             return new Response("Invalid signature", { status: 400 });
           }
