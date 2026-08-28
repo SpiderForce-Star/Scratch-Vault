@@ -33,6 +33,7 @@ import {
   WhatThisAppIs,
 } from "@/components/product-story";
 import { DataModeBanner } from "@/components/data-mode-banner";
+import { HeatExplainer } from "@/components/heat-explainer";
 import { TonightHeatStrip } from "@/components/tonight-heat-strip";
 import { StateRulesNote } from "@/components/state-rules";
 import { useAccess } from "@/lib/use-access";
@@ -210,6 +211,7 @@ function VaultHome() {
         minAge={config.minAge}
         dataMode={snap?.dataMode ?? config.dataMode}
       />
+      <HeatExplainer />
       <TonightHeatStrip
         id="heat"
         stateId={stateId}

@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteHeader } from "@/components/site-header";
 import { PromoMarquee } from "@/components/promo-marquee";
+import { TicketCopyright } from "@/components/ticket-copyright";
 import { SiteFooter } from "@/components/site-footer";
 import { AgeGate } from "@/components/age-gate";
 import { InstallCoach } from "@/components/install-coach";
@@ -100,6 +101,7 @@ function NativeRoot() {
     <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">
       <SiteHeader />
       <PromoMarquee />
+      <TicketCopyright />
       <InstallCoach />
       <Outlet />
       <SiteFooter />

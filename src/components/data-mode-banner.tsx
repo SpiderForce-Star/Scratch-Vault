@@ -1,6 +1,13 @@
 import type { DataMode, StateConfig } from "@/config/states";
 import { useI18n } from "@/lib/locale";
 
+function quietDate(weekLabel: string): string {
+  return weekLabel
+    .replace(/^Compiled · /i, "")
+    .replace(/^Week of /i, "")
+    .trim();
+}
+
 export function DataModeBanner({
   state,
   loadError = null,
@@ -16,7 +23,7 @@ export function DataModeBanner({
 }) {
   const { t } = useI18n();
   const mode = dataMode ?? state.dataMode;
-  const week = (weekLabel ?? state.weekLabel).replace(/^Compiled · /i, "");
+  const asOf = quietDate(weekLabel ?? state.weekLabel);
 
   if (loadError) {
     return (
@@ -25,7 +32,7 @@ export function DataModeBanner({
         className="border-b border-danger/40 bg-danger/10 px-4 py-3 sm:px-6"
       >
         <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
-          {t("banner.loadFail")} {t("banner.inventory")}
+          {t("banner.loadFail")}
           {state.remainingPrizesUrl ? (
             <>
               {" "}
@@ -39,36 +46,6 @@ export function DataModeBanner({
               </a>
             </>
           ) : null}
-        </p>
-      </div>
-    );
-  }
-
-  if (stale) {
-    return (
-      <div
-        role="status"
-        className="border-b border-gold/40 bg-gold/10 px-4 py-3 sm:px-6"
-      >
-        <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
-          <span className="mr-2 inline-block rounded-sm border border-gold/60 px-1.5 py-0.5 font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {t("banner.lastGoodBadge")}
-          </span>
-          {t("banner.lastGood", { date: week })}
-          {state.remainingPrizesUrl ? (
-            <>
-              {" "}
-              <a
-                className="underline underline-offset-2 hover:text-gold"
-                href={state.remainingPrizesUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t("banner.officialPage", { lottery: state.lotteryShort })}
-              </a>
-            </>
-          ) : null}
-          {state.id === "ia" ? ` ${t("banner.iaFifty")}` : ""}
         </p>
       </div>
     );
@@ -81,56 +58,37 @@ export function DataModeBanner({
         className="border-b border-danger/40 bg-danger/10 px-4 py-3 sm:px-6"
       >
         <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
-          <span className="mr-2 inline-block rounded-sm border border-danger/70 px-1.5 py-0.5 font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
-            {t("banner.demoBadge")}
-          </span>
           {t("banner.demo", { name: state.name, lottery: state.lotteryShort })}
         </p>
       </div>
     );
   }
 
-  if (mode === "live") {
-    return (
-      <div role="status" className="border-b border-line bg-raised/40 px-4 py-2 sm:px-6">
-        <p className="mx-auto max-w-6xl text-center text-xs leading-relaxed text-faint">
-          {t("banner.inventory")}
-        </p>
-      </div>
-    );
-  }
-
-  const officialLabel = t("banner.officialPage", { lottery: state.lotteryShort });
-  const [before, after] = t("banner.compiled", {
-    week,
-    official: "|||",
-  }).split("|||");
+  const showAsOf = Boolean(asOf) && (stale || mode === "compiled");
 
   return (
-    <div
-      role="status"
-      className="border-b border-gold/40 bg-gold/10 px-4 py-3 sm:px-6"
-    >
+    <div role="status" className="border-b border-line bg-raised/40 px-4 py-2 sm:px-6">
       <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
-        <span className="mr-2 inline-block rounded-sm border border-gold/60 px-1.5 py-0.5 font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-          {t("banner.compiledBadge")}
-        </span>
-        {before}
-        {state.remainingPrizesUrl ? (
-          <a
-            className="underline underline-offset-2 hover:text-gold"
-            href={state.remainingPrizesUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {officialLabel}
-          </a>
-        ) : (
-          officialLabel
-        )}
-        {after}
-        {state.id === "ia" ? ` ${t("banner.iaFifty")}` : ""}
+        {t("banner.scanHeadline")}
       </p>
+      {showAsOf ? (
+        <p className="mx-auto mt-1 max-w-6xl text-center text-[11px] leading-relaxed text-faint">
+          {t("banner.tableAsOf", { date: asOf })}
+          {state.remainingPrizesUrl ? (
+            <>
+              {" "}
+              <a
+                className="underline underline-offset-2 hover:text-muted"
+                href={state.remainingPrizesUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t("banner.officialPage", { lottery: state.lotteryShort })}
+              </a>
+            </>
+          ) : null}
+        </p>
+      ) : null}
     </div>
   );
 }
