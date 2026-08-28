@@ -223,6 +223,7 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
  */
 export function ensureDbReady(): Promise<void> {
   if (dbSource !== "pglite") return Promise.resolve();
+  if (process.env.VERCEL) return Promise.resolve();
   return getSql().then(() => undefined);
 }
 
@@ -231,7 +232,7 @@ export function ensureDbReady(): Promise<void> {
 const globalBoot = globalThis as typeof globalThis & {
   __pgBootstrapPromise__?: Promise<void>;
 };
-if (typeof window === "undefined" && dbSource === "pglite") {
+if (typeof window === "undefined" && dbSource === "pglite" && !process.env.VERCEL) {
   globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
     globalBoot.__pgBootstrapPromise__ = undefined;
     console.error("[db] PGLite bootstrap failed:", err);

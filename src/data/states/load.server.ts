@@ -113,14 +113,17 @@ export async function seedSnapshotsIfEmpty(): Promise<void> {
       if (existing?.catalog?.length) continue;
       const bundled = loadBundledDesk(id);
       if (!bundled.games.length) continue;
+      const noPostgres = !process.env.DATABASE_URL?.trim();
       await upsertSnapshot({
         stateId: id,
         ok: true,
-        stale: false,
+        stale: noPostgres,
         fetchedAt: now,
         weekLabel: bundled.weekLabel,
         sourceUrl: STATES[id].remainingPrizesUrl,
-        reason: "seeded compiled catalog",
+        reason: noPostgres
+          ? "compiled last-good in repo"
+          : "seeded compiled catalog",
         gameCount: bundled.games.length,
         catalog: bundled.games,
       });

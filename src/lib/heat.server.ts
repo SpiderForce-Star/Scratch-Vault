@@ -220,6 +220,7 @@ export function pickTonightHeat(
   reports: Map<number, HeatReport>,
   limit = 3,
 ): { cards: TonightCard[]; depleted: boolean } {
+  if (!games.length) return { cards: [], depleted: true };
   const rows = games.flatMap((game) => {
     const heat = reports.get(game.number);
     if (!heat) return [];

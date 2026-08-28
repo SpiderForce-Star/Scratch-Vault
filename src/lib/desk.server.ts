@@ -84,7 +84,9 @@ export async function buildDeskSnapshot(
 
   if (paid) {
     const reports = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
-    const tonight = pickTonightHeat(games, reports);
+    const tonight = games.length
+      ? pickTonightHeat(games, reports)
+      : { cards: [], depleted: true };
     return {
       paid: true,
       stateId: state.id,

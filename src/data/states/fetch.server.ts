@@ -18,10 +18,10 @@ import {
   upsertSnapshot,
 } from "./snapshots.server";
 
-const FETCH_MS = 12_000;
-const STATE_DELAY_MS = 400;
+const FETCH_MS = 8_000;
+const CONCURRENCY = 4;
 const USER_AGENT =
-  "ScratchVault/1.0 (independent remaining-prize desk; +https://volunteer-scratch-vault.vercel.app)";
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
 const FALLBACK_URLS: Partial<Record<StateId, string>> = {
   ok: "https://www.lottery.ok.gov/scratchers/get",
@@ -45,8 +45,10 @@ async function fetchText(url: string): Promise<{ status: number; type: string; b
     signal: AbortSignal.timeout(FETCH_MS),
     headers: {
       "User-Agent": USER_AGENT,
-      Accept: "text/html,application/json;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.8",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cache-Control": "no-cache",
     },
   });
   const type = res.headers.get("content-type") || "";
@@ -180,19 +182,18 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
   }
 }
 
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export async function fetchAllStates(): Promise<DailyFetchReport> {
   await seedSnapshotsIfEmpty();
   const ranAt = new Date().toISOString();
-  const results: StateFetchResult[] = [];
-  for (let i = 0; i < STATE_IDS.length; i++) {
-    const id = STATE_IDS[i];
-    results.push(await fetchStateRemaining(id));
-    if (i < STATE_IDS.length - 1) await wait(STATE_DELAY_MS);
+  const results: StateFetchResult[] = new Array(STATE_IDS.length);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < STATE_IDS.length) {
+      const i = cursor++;
+      results[i] = await fetchStateRemaining(STATE_IDS[i]);
+    }
   }
+  await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
   return { ranAt, results };
 }
 

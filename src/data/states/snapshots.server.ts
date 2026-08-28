@@ -1,6 +1,16 @@
 import type { Game } from "@/data/games";
 import type { StateId } from "@/config/states";
-import { getSql } from "@/lib/db";
+
+function hasPostgres(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+async function getSqlOrThrow() {
+  const { getSql } = await import("@/lib/db");
+  return getSql();
+}
+
+const memory = new Map<StateId, DeskSnapshotRow>();
 
 export type DeskSnapshotRow = {
   stateId: StateId;
@@ -75,13 +85,15 @@ export function formatWeekLabel(iso: string): string {
 }
 
 export async function countSnapshots(): Promise<number> {
-  const sql = await getSql();
+  if (!hasPostgres()) return memory.size;
+  const sql = await getSqlOrThrow();
   const rows = await sql.query<{ n: number }>("SELECT count(*)::int AS n FROM desk_snapshots");
   return Number(rows[0]?.n) || 0;
 }
 
 export async function readSnapshot(stateId: StateId): Promise<DeskSnapshotRow | null> {
-  const sql = await getSql();
+  if (!hasPostgres()) return memory.get(stateId) ?? null;
+  const sql = await getSqlOrThrow();
   const rows = await sql.query<SqlRow>(
     `SELECT state_id, ok, stale, fetched_at, week_label, source_url, reason, game_count, catalog
      FROM desk_snapshots
@@ -103,7 +115,20 @@ export async function upsertSnapshot(input: {
   gameCount: number;
   catalog: Game[] | null;
 }): Promise<void> {
-  const sql = await getSql();
+  const row: DeskSnapshotRow = {
+    stateId: input.stateId,
+    ok: input.ok,
+    stale: input.stale,
+    fetchedAt: input.fetchedAt,
+    weekLabel: input.weekLabel,
+    sourceUrl: input.sourceUrl,
+    reason: input.reason,
+    gameCount: input.gameCount,
+    catalog: input.catalog,
+  };
+  memory.set(input.stateId, row);
+  if (!hasPostgres()) return;
+  const sql = await getSqlOrThrow();
   await sql.query(
     `INSERT INTO desk_snapshots
       (state_id, ok, stale, fetched_at, week_label, source_url, reason, game_count, catalog)
@@ -139,20 +164,18 @@ export async function markSnapshotFailed(
 ): Promise<DeskSnapshotRow | null> {
   const current = await readSnapshot(stateId);
   if (!current?.catalog?.length) {
-    await upsertSnapshot({
-      stateId,
-      ok: false,
-      stale: false,
-      fetchedAt: new Date().toISOString(),
-      weekLabel: "Compiled · fetch failed",
-      sourceUrl,
-      reason,
-      gameCount: 0,
-      catalog: null,
-    });
-    return readSnapshot(stateId);
+    // Keep bundled last-good. Never persist an empty catalog.
+    return null;
   }
-  const sql = await getSql();
+  memory.set(stateId, {
+    ...current,
+    ok: false,
+    stale: true,
+    sourceUrl: sourceUrl ?? current.sourceUrl,
+    reason,
+  });
+  if (!hasPostgres()) return memory.get(stateId) ?? null;
+  const sql = await getSqlOrThrow();
   await sql.query(
     `UPDATE desk_snapshots
      SET ok = false, stale = true, source_url = COALESCE($2, source_url), reason = $3
