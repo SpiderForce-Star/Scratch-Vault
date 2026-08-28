@@ -167,7 +167,7 @@ Never put Stripe keys, RevenueCat keys, or store shared secrets in this repo.
 | `public/icons/` | PWA + apple-touch-icon |
 | `public/manifest.webmanifest` | Web install |
 
-Cards use original Scratch Vault chrome (name, price, number). There is no official lottery ticket art.
+Ticket faces in `public/tickets/` are independent reconstructions, never official Lottery art.
 
 Regenerate rasters (needs Python + Pillow):
 

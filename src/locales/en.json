@@ -261,7 +261,7 @@
   "posted.lockedTeaser": "See remaining counts and dollar totals for every published prize tier on this ticket.",
   "game.back": "Back to vault",
   "card.officialTable": "Official table",
-  "game.art": "Original Scratch Vault card. Game names identify publicly offered games. See the official remaining-prizes page for the real ticket.",
+  "game.art": "Ticket face is an independent reconstruction, not official {{lottery}} artwork, and may not match a ticket in your hand. Official remaining-prizes page has the real ticket.",
   "game.bust": "Skip this one. The posted counts no longer support a useful retail top. That is not a guarantee — remaining counts change as tickets sell.",
   "game.footer": "Independent analysis only. Not affiliated with {{lottery}} or any other lottery. Remaining prizes change as tickets sell.{{holdback}} This does not change lottery outcomes. {{age}}+ to buy {{short}} tickets. If gambling is a problem, call 1-800-GAMBLER.",
   "game.holdbackNote": " One top prize per game may be held for {{label}}.",

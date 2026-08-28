@@ -261,7 +261,7 @@
   "posted.lockedTeaser": "Vea conteos restantes y totales en dólares de cada nivel de premio publicado en este boleto.",
   "game.back": "Volver a la bóveda",
   "card.officialTable": "Tabla oficial",
-  "game.art": "Tarjeta original de Scratch Vault. Los nombres identifican juegos públicos. Vea la página oficial de premios restantes para el boleto real.",
+  "game.art": "La cara del boleto es una reconstrucción independiente, no arte oficial de {{lottery}}, y puede no coincidir con un boleto en su mano. La página oficial de premios restantes tiene el boleto real.",
   "game.bust": "Pase este. Los conteos publicados ya no respaldan un premio mayor útil en tienda. Eso no es una garantía: los conteos cambian a medida que se venden boletos.",
   "game.footer": "Solo análisis independiente. No afiliado a {{lottery}} ni a ninguna otra lotería. Los premios restantes cambian a medida que se venden boletos.{{holdback}} Esto no cambia los resultados de la lotería. {{age}}+ para comprar boletos de {{short}}. Si el juego es un problema, llame al 1-800-GAMBLER.",
   "game.holdbackNote": " Un premio mayor por juego puede estar reservado para {{label}}.",
