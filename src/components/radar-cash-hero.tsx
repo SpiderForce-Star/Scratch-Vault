@@ -110,11 +110,11 @@ export function RadarCashHero({
                   week: weekLabel,
                 })}
           </p>
-          <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
-            {dataMode === "live"
-              ? t("hero.meta", { age: `${minAge}+` })
-              : t("hero.metaCompiled")}
-          </p>
+          {dataMode === "live" ? (
+            <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
+              {t("hero.meta", { age: `${minAge}+` })}
+            </p>
+          ) : null}
           {unseen ? (
             <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3">
               <p className="text-sm leading-relaxed text-paper">

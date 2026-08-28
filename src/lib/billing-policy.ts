@@ -28,6 +28,8 @@ export const ANNUAL_PRICE_LABEL = "$49.99/year";
 export const NO_REFUNDS_LINE =
   "All fees are non-refundable. Opting out stops future charges only.";
 
+export const NO_REFUNDS_ACCOUNT = `${NO_REFUNDS_LINE} Annual: you keep the year already paid. No refunds.`;
+
 export const BILLING_RULES = {
   monthly: {
     plan: "monthly" as const,

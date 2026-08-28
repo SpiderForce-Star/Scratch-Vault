@@ -64,7 +64,7 @@ export function DataModeBanner({
     );
   }
 
-  const showAsOf = Boolean(asOf) && (stale || mode === "compiled");
+  const showAsOf = Boolean(asOf) && (stale || mode !== "live");
 
   return (
     <div role="status" className="border-b border-line bg-raised/40 px-4 py-2 sm:px-6">

@@ -28,7 +28,7 @@ import {
 import { TRIAL_CTA } from "@/components/trial-cta";
 import { ProfileForm } from "@/components/profile-form";
 import { pageHead } from "@/lib/site";
-import { NO_REFUNDS_LINE } from "@/lib/billing-policy";
+import { NO_REFUNDS_ACCOUNT, NO_REFUNDS_LINE } from "@/lib/billing-policy";
 
 export const Route = createFileRoute("/account")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -170,23 +170,24 @@ function AccountPage() {
     }
   };
 
+  const signedInAs =
+    user?.primaryEmail ?? user?.displayName ?? (native ? "Store account" : "Signed in");
+  const planStatus = cancelScheduled
+    ? `Opted out. Access through ${formatBillingDate(periodEnd)}.`
+    : status === "trialing"
+      ? `Trial. Trial ends ${formatBillingDate(trialEnd ?? periodEnd)}.`
+      : paid
+        ? `Active. Next charge ${formatBillingDate(periodEnd)}.`
+        : (subscriptionStatusCopy(status) ??
+          "No Full Access yet. Complete your profile and add a card on Pricing.");
+
   return (
     <div className="mx-auto max-w-lg px-4 py-12 sm:px-6">
       <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
         Account
       </p>
       <h1 className="mt-3 font-display text-4xl tracking-tight">Your desk</h1>
-      <p className="mt-2 text-sm text-muted">
-        {user
-          ? (user.primaryEmail ?? user.displayName ?? "Signed in")
-          : "Store account"}
-      </p>
-
-      {user && !native ? (
-        <div className="mt-8">
-          <ProfileForm highlight={complete} />
-        </div>
-      ) : null}
+      <p className="mt-2 text-sm text-muted">{signedInAs}</p>
 
       <div className="mt-8 rounded-xl border border-line bg-surface p-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
@@ -195,23 +196,7 @@ function AccountPage() {
         <p className="mt-2 font-display text-2xl">
           {paid ? planLabel(plan ?? null) : "Locked"}
         </p>
-        <p className="mt-1 text-sm text-muted">
-          {status === "trialing"
-            ? `Trial ends ${formatBillingDate(trialEnd ?? periodEnd)}. $4.99/month starts then unless you opt out.`
-            : paid
-              ? plan === "annual"
-                ? `Paid through ${formatBillingDate(periodEnd)}. Auto-renews at $49.99 unless you opt out.`
-                : `Next bill ${formatBillingDate(periodEnd)} at $4.99.`
-              : (subscriptionStatusCopy(status) ??
-                "Complete your profile and add a card to start the 7-day monthly trial, or pay $49.99 for a year.")}
-        </p>
-        {cancelScheduled ? (
-          <p className="mt-2 text-sm text-warm">
-            You opted out of the next charge. Access stays open through{" "}
-            {formatBillingDate(periodEnd)}. No refunds.
-          </p>
-        ) : null}
-        <p className="mt-3 text-xs leading-relaxed text-faint">{NO_REFUNDS_LINE}</p>
+        <p className="mt-1 text-sm text-muted">{planStatus}</p>
 
         <div className="mt-6 flex flex-col gap-3">
           {native ? (
@@ -248,15 +233,9 @@ function AccountPage() {
                   type="button"
                   disabled={busy !== null}
                   onClick={() => void toggleRenewal(true)}
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-base font-semibold text-accent-fg disabled:opacity-60"
                 >
-                  {busy === "optout"
-                    ? "Saving…"
-                    : status === "trialing"
-                      ? "Opt out before the trial ends"
-                      : plan === "annual"
-                        ? "Opt out of next year’s $49.99 charge"
-                        : "Opt out of monthly payments"}
+                  {busy === "optout" ? "Saving…" : "Opt out of the next charge"}
                 </button>
               ) : null}
               {paid && summary?.hasCustomer && cancelScheduled ? (
@@ -264,30 +243,58 @@ function AccountPage() {
                   type="button"
                   disabled={busy !== null}
                   onClick={() => void toggleRenewal(false)}
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-base font-semibold text-accent-fg disabled:opacity-60"
                 >
                   {busy === "resume" ? "Saving…" : "Resume auto-renewal"}
                 </button>
               ) : null}
-              {paid && summary?.hasCustomer ? (
-                <button
-                  type="button"
-                  disabled={busy !== null}
-                  onClick={() => void openPortal()}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg disabled:opacity-60"
-                >
-                  {busy === "portal" ? "Opening…" : "Update card"}
-                </button>
-              ) : (
+              {!paid ? (
                 <Link
                   to="/pricing"
                   className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
                 >
-                  {paid ? "View plans" : TRIAL_CTA}
+                  {TRIAL_CTA}
                 </Link>
-              )}
+              ) : null}
             </>
           )}
+        </div>
+
+        <p className="mt-6 text-sm leading-relaxed text-muted">{NO_REFUNDS_ACCOUNT}</p>
+        <p className="sr-only">{NO_REFUNDS_LINE}</p>
+
+        <div className="mt-6 flex flex-col">
+          <Link
+            to="/terms"
+            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+          >
+            Terms
+          </Link>
+          <Link
+            to="/privacy"
+            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+          >
+            Privacy
+          </Link>
+          <Link
+            to="/disclaimer"
+            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+          >
+            Disclaimer / Play responsibly
+          </Link>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3">
+          {!native && summary?.hasCustomer ? (
+            <button
+              type="button"
+              disabled={busy !== null}
+              onClick={() => void openPortal()}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg disabled:opacity-60"
+            >
+              {busy === "portal" ? "Opening…" : "Update card"}
+            </button>
+          ) : null}
           {user ? (
             <button
               type="button"
@@ -307,6 +314,12 @@ function AccountPage() {
           )}
         </div>
       </div>
+
+      {user && !native ? (
+        <div className="mt-8">
+          <ProfileForm highlight={complete} />
+        </div>
+      ) : null}
 
       <div className="mt-8 rounded-xl border border-line bg-surface p-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
@@ -343,18 +356,6 @@ function AccountPage() {
           >
             State lottery notices
           </Link>
-          <Link
-            to="/privacy"
-            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
-          >
-            Privacy
-          </Link>
-          <Link
-            to="/disclaimer"
-            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
-          >
-            Disclaimer & help
-          </Link>
         </div>
       </div>
 
@@ -362,8 +363,8 @@ function AccountPage() {
 
       <p className="mt-8 text-xs leading-relaxed text-faint">
         Remaining counts do not improve the odds of winning any prize. 18+ only.
-        Arizona and Iowa lottery tickets are 21+. Independent information tool,
-        not affiliated with any state lottery. {NO_REFUNDS_LINE}
+        Arizona and Iowa lottery tickets are 21+. Scratch Vault is not a lottery.{" "}
+        {NO_REFUNDS_LINE}
       </p>
     </div>
   );

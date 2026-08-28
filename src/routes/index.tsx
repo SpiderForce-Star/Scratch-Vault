@@ -261,10 +261,14 @@ function VaultHome() {
       <section id="tonight" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {t("tonight.kicker")}
+            {(snap?.dataMode ?? config.dataMode) === "live"
+              ? t("tonight.kicker")
+              : t("tonight.kickerCompiled")}
           </p>
           <h2 className="mt-2 font-display text-2xl tracking-tight">
-            {t("tonight.title")}
+            {(snap?.dataMode ?? config.dataMode) === "live"
+              ? t("tonight.title")
+              : t("tonight.titleCompiled")}
           </h2>
           {!snap ? (
             <p className="mt-4 text-muted">{t("home.loading")}</p>

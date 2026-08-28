@@ -4,6 +4,8 @@ import {
   ANNUAL_PRICE_USD,
   BILLING_RULES,
   MONTHLY_PRICE_USD,
+  NO_REFUNDS_ACCOUNT,
+  NO_REFUNDS_LINE,
   TRIAL_PERIOD_DAYS,
 } from "../src/lib/billing-policy.ts";
 
@@ -22,4 +24,15 @@ test("annual is $49.99 billed now, keeps the year, auto-renews, no refunds", () 
   assert.equal(BILLING_RULES.annual.refunds, false);
   assert.equal(BILLING_RULES.annual.autoRenew, true);
   assert.equal(BILLING_RULES.annual.keepAccessUntilPeriodEnd, true);
+});
+
+test("no-refunds copy matches the published account line", () => {
+  assert.equal(
+    NO_REFUNDS_LINE,
+    "All fees are non-refundable. Opting out stops future charges only.",
+  );
+  assert.equal(
+    NO_REFUNDS_ACCOUNT,
+    "All fees are non-refundable. Opting out stops future charges only. Annual: you keep the year already paid. No refunds.",
+  );
 });

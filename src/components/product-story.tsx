@@ -24,19 +24,20 @@ function benefitsFor(
 }
 
 export function ProductStory() {
-  const { config } = useActiveState();
+  const { config, deskMode } = useActiveState();
   const { t } = useI18n();
+  const compiled = (deskMode ?? config.dataMode) !== "live";
   return (
     <section id="about" className="border-b border-line">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-          {t("story.kicker")}
+          {compiled ? t("story.kickerCompiled") : t("story.kicker")}
         </p>
         <h2 className="mt-2 max-w-3xl font-display text-3xl tracking-tight sm:text-4xl">
           {t("story.title")}
         </h2>
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted">
-          {t("story.body", { name: config.name })}
+          {t(compiled ? "story.bodyCompiled" : "story.body", { name: config.name })}
         </p>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-faint">
           {t("story.notAffiliated", {

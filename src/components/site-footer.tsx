@@ -4,9 +4,10 @@ import { SITE_NAME } from "@/lib/site";
 import { useI18n } from "@/lib/locale";
 
 export function SiteFooter() {
-  const { config } = useActiveState();
+  const { config, deskMode } = useActiveState();
   const { t } = useI18n();
   const extra = config.helplineExtra;
+  const mode = deskMode ?? config.dataMode;
 
   return (
     <footer className="border-t border-line bg-surface">
@@ -15,7 +16,10 @@ export function SiteFooter() {
           <div>
             <p className="font-display text-lg">{SITE_NAME}</p>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-              {t("footer.blurb", { lottery: config.lotteryName })}
+              {t(
+                mode === "live" ? "footer.blurb" : "footer.blurbCompiled",
+                { lottery: config.lotteryName },
+              )}
             </p>
           </div>
           <div>
