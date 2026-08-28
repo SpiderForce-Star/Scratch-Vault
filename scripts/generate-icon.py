@@ -35,14 +35,20 @@ def paint(size: int, *, padded: bool = False) -> Image.Image:
     br = max(3, size // 36)
     draw.ellipse((bx - br, by - br, bx + br, by + br), fill=SAGE)
     mark = font(max(18, int(size * 0.22)))
-    box = draw.textbbox((0, 0), "SV", font=mark)
-    draw.text(
-        (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - size * 0.02),
-        "SV",
-        font=mark,
-        fill=GOLD,
-    )
+    draw_dv(draw, cx, cy - size * 0.02, mark)
     return img
+
+
+def draw_dv(draw: ImageDraw.ImageDraw, cx: float, cy: float, mark) -> None:
+    """Gold $ + sage V, centered."""
+    dbox = draw.textbbox((0, 0), "$", font=mark)
+    vbox = draw.textbbox((0, 0), "V", font=mark)
+    dw, dh = dbox[2] - dbox[0], dbox[3] - dbox[1]
+    vw = vbox[2] - vbox[0]
+    x0 = cx - (dw + vw) / 2
+    y = cy - dh / 2
+    draw.text((x0, y), "$", font=mark, fill=GOLD)
+    draw.text((x0 + dw, y), "V", font=mark, fill=SAGE)
 
 
 def save(img: Image.Image, path: Path) -> None:
@@ -67,12 +73,14 @@ def main() -> None:
     save(Image.new("RGB", (1024, 1024), BG), ROOT / "store" / "android" / "adaptive-background.png")
     save(paint(1024, padded=True), ROOT / "store" / "android" / "adaptive-foreground.png")
 
-    # Favicon: gold SV on dark vault
+    # Favicon: gold $ + sage V on dark vault
     (ROOT / "public" / "favicon.svg").write_text(
         """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <rect width="32" height="32" rx="6" fill="#0B0F0C"/>
   <circle cx="16" cy="16.5" r="11" stroke="#c4a574" stroke-width="1.5"/>
-  <text x="16" y="21" text-anchor="middle" fill="#c4a574" font-family="Georgia, 'Times New Roman', serif" font-size="11" font-weight="600">SV</text>
+  <text x="16" y="21.5" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="12" font-weight="700">
+    <tspan fill="#c4a574">$</tspan><tspan fill="#7c9a72">V</tspan>
+  </text>
 </svg>
 """,
         encoding="utf-8",
@@ -85,8 +93,7 @@ def main() -> None:
     r = 120
     d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=4)
     mark = font(72)
-    box = d.textbbox((0, 0), "SV", font=mark)
-    d.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 8), "SV", font=mark, fill=GOLD)
+    draw_dv(d, cx, cy - 8, mark)
     title = font(48)
     tbox = d.textbbox((0, 0), "Scratch Vault", font=title)
     d.text((600 - (tbox[2] - tbox[0]) / 2, 420), "Scratch Vault", font=title, fill=CREAM)

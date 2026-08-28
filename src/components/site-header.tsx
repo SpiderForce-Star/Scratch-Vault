@@ -53,8 +53,9 @@ export function SiteHeader() {
           className="flex min-h-11 min-w-0 flex-1 items-center gap-2 overflow-hidden"
           onClick={() => setOpen(false)}
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm text-fg">
-            SV
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm tracking-tight">
+            <span className="text-gold">$</span>
+            <span className="text-sage">V</span>
           </span>
           <span className="min-w-0 leading-tight">
             <span className="block truncate font-display text-sm tracking-tight sm:text-base">

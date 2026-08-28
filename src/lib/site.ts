@@ -7,7 +7,7 @@ export const SITE_HOSTS = [
   "volunteer-scratch-vault.vercel.app",
 ] as const;
 export const SITE_NAME = "Scratch Vault";
-export const SITE_MARK = "SV";
+export const SITE_MARK = "$V";
 
 export const SITE_TITLE =
   "Scratch-off remaining prizes · Scratch Vault";

@@ -109,8 +109,9 @@ async function createPgliteSql(): Promise<Sql> {
   // data survives source edits (it resets on dev-server restart).
   globalRef.__pgliteInstance__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
-    const pg = new PGlite({
-      dataDir: "memory://",
+    // String URI form is required on Vercel: `{ dataDir: "memory://" }` still
+    // opened `/var/task/pglite.data` and crashed the lambda.
+    const pg = new PGlite("memory://", {
       parsers: {
         [OID_INT8]: Number,
         [OID_DATE]: identity,
@@ -234,6 +235,5 @@ if (typeof window === "undefined" && dbSource === "pglite") {
   globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
     globalBoot.__pgBootstrapPromise__ = undefined;
     console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
   });
 }

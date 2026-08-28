@@ -47,8 +47,14 @@ def compose(size: tuple[int, int]) -> Image.Image:
         width=max(1, w // 700),
     )
     mark = font(max(28, r // 2))
-    box = draw.textbbox((0, 0), "SV", font=mark)
-    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "SV", font=mark, fill=GOLD)
+    dbox = draw.textbbox((0, 0), "$", font=mark)
+    vbox = draw.textbbox((0, 0), "V", font=mark)
+    dw, dh = dbox[2] - dbox[0], dbox[3] - dbox[1]
+    vw = vbox[2] - vbox[0]
+    x0 = cx - (dw + vw) / 2
+    y = cy - dh / 2 - 4
+    draw.text((x0, y), "$", font=mark, fill=GOLD)
+    draw.text((x0 + dw, y), "V", font=mark, fill=SAGE)
     word = font(max(14, w // 48), mono=True)
     draw_centered(draw, "SCRATCH VAULT", cy + r + int(h * 0.04), word, GOLD, w)
     return img

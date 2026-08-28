@@ -346,14 +346,24 @@ function RadarScope({
         strokeWidth="1.1"
       />
       <text
-        x={CX}
+        x={CX - 4}
         y={CY + 18}
         textAnchor="middle"
         fill="#c4a574"
         fontSize="6"
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
       >
-        SV
+        $
+      </text>
+      <text
+        x={CX + 4}
+        y={CY + 18}
+        textAnchor="middle"
+        fill="#7c9a72"
+        fontSize="6"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+      >
+        V
       </text>
     </svg>
   );

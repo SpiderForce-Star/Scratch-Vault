@@ -27,7 +27,8 @@ LINE = (42, 42, 48)
 BG = (10, 10, 11)
 SURFACE = (18, 18, 20)
 RAISED = (26, 26, 30)
-GOLD = (243, 193, 91)
+GOLD = (196, 165, 116)
+SAGE = (124, 154, 114)
 WARM = (224, 138, 44)
 ACCENT = (213, 216, 222)
 
@@ -82,13 +83,14 @@ def make_icon(size: int, padded: bool = False) -> Image.Image:
     width = max(2, size // 42)
     draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=width)
     mark = font(int(size * (0.22 if padded else 0.28)))
-    box = draw.textbbox((0, 0), "SV", font=mark)
-    draw.text(
-        (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - size * 0.02),
-        "SV",
-        font=mark,
-        fill=GOLD,
-    )
+    dbox = draw.textbbox((0, 0), "$", font=mark)
+    vbox = draw.textbbox((0, 0), "V", font=mark)
+    dw, dh = dbox[2] - dbox[0], dbox[3] - dbox[1]
+    vw = vbox[2] - vbox[0]
+    x0 = cx - (dw + vw) / 2
+    y = cy - dh / 2 - size * 0.02
+    draw.text((x0, y), "$", font=mark, fill=GOLD)
+    draw.text((x0 + dw, y), "V", font=mark, fill=SAGE)
     return flatten_rgb(canvas)
 
 
@@ -97,8 +99,14 @@ def make_adaptive_fg(size: int = 1024) -> Image.Image:
     draw = ImageDraw.Draw(img)
     mark = font(int(size * 0.2))
     sub = font(int(size * 0.04), mono=True)
-    # Stay inside the 66% safe zone
-    draw_centered(draw, "SV", int(size * 0.40), mark, (*INK, 255), size)
+    dbox = draw.textbbox((0, 0), "$", font=mark)
+    vbox = draw.textbbox((0, 0), "V", font=mark)
+    dw, dh = dbox[2] - dbox[0], dbox[3] - dbox[1]
+    vw = vbox[2] - vbox[0]
+    x0 = size / 2 - (dw + vw) / 2
+    y = int(size * 0.40)
+    draw.text((x0, y), "$", font=mark, fill=(*GOLD, 255))
+    draw.text((x0 + dw, y), "V", font=mark, fill=(*SAGE, 255))
     draw_centered(draw, "SCRATCH VAULT", int(size * 0.62), sub, (*GOLD, 255), size)
     return img
 
@@ -111,8 +119,14 @@ def make_splash(size: tuple[int, int]) -> Image.Image:
     r = int(min(w, h) * 0.14)
     draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=max(2, w // 400))
     mark = font(max(28, r // 2))
-    box = draw.textbbox((0, 0), "SV", font=mark)
-    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "SV", font=mark, fill=GOLD)
+    dbox = draw.textbbox((0, 0), "$", font=mark)
+    vbox = draw.textbbox((0, 0), "V", font=mark)
+    dw, dh = dbox[2] - dbox[0], dbox[3] - dbox[1]
+    vw = vbox[2] - vbox[0]
+    x0 = cx - (dw + vw) / 2
+    y = cy - dh / 2 - 4
+    draw.text((x0, y), "$", font=mark, fill=GOLD)
+    draw.text((x0 + dw, y), "V", font=mark, fill=SAGE)
     title = font(int(w * 0.055))
     sub = font(int(w * 0.028), mono=True)
     draw_centered(draw, "Scratch Vault", int(h * 0.56), title, INK, w)
@@ -140,7 +154,7 @@ def make_screenshot(size: tuple[int, int], kind: str, label: str) -> Image.Image
     draw.text((pad, int(h * 0.012)), "9:41", font=small, fill=MUTED)
 
     y = int(h * 0.06)
-    draw.text((pad, y), "SV", font=display, fill=GOLD)
+    draw.text((pad, y), "$V", font=display, fill=GOLD)
     draw.text((pad, y + int(h * 0.055)), "Scratch Vault", font=body, fill=INK)
     draw.text((pad, y + int(h * 0.095)), "INDEPENDENT REMAINING-PRIZE DESK", font=mono, fill=GOLD)
 
