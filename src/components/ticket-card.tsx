@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { DATA_AS_OF, money, moneyFull, postedBook, type Game } from "@/data/games";
+import { money, moneyFull, postedBook, type Game } from "@/data/games";
 import { type HeatReport } from "@/lib/heat";
 import { TicketFace } from "@/components/ticket-face";
 import { useActiveState } from "@/lib/active-state";
@@ -90,7 +90,7 @@ export function TicketCard({
         </dl>
 
         <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
-          {t("card.updated", { week: DATA_AS_OF })}
+          {t("card.updated")}
         </p>
         {heat.bust ? (
           <p className="text-xs text-bust">

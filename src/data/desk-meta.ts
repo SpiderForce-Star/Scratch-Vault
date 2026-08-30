@@ -1,5 +1,7 @@
 /**
  * Single source of truth for “new information is on the desk.”
+ * weekLabel / publishedAt match last-good TN (`src/data/states/last-good/tn.json`).
+ * That snapshot is stale (HTTP 403) — not a fresh scrape.
  * Bump `revision` EVERY time `src/data/games.ts` changes or the alert is a lie.
  */
 export const DESK_META = {

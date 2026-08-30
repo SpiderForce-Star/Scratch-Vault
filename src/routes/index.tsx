@@ -402,14 +402,11 @@ function VaultHome() {
       </div>
 
       <main id="games" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6">
           <p className="text-sm text-faint">
             {locked
               ? t("home.gamesLocked", { count: list.length })
               : t("home.games", { count: list.length })}
-          </p>
-          <p className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-xs tracking-wide text-muted uppercase">
-            {t("inventory.updatedNotLive", { week: config.weekLabel })}
           </p>
         </div>
         {!snap ? (

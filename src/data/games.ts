@@ -1,3 +1,5 @@
+import { DESK_META } from "./desk-meta";
+
 export type PrizeTier = {
   amount: number;
   remaining: number | null;
@@ -34,9 +36,10 @@ export function isOfficialSource(source: GameSource): boolean {
   return source === "tn-remaining" || source === "official-remaining";
 }
 
-/** Compiled from public TN remaining-prize tables + published odds (Aug 2026).
+/** Last-good TN snapshot week (`src/data/states/last-good/tn.json`, HTTP 403).
+ *  Not a fresh lottery scrape. Aliased from DESK_META.weekLabel.
  *  If this catalog changes, bump DESK_META.revision in desk-meta.ts. */
-export const DATA_AS_OF = "Week of August 11, 2026";
+export const DATA_AS_OF = DESK_META.weekLabel;
 
 export const GAMES: Game[] = [
   // $5
