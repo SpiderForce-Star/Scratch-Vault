@@ -20,7 +20,9 @@
     "cap:sync": "npm run build && node scripts/prepare-native.mjs && npx cap sync",
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android",
-    "sitemap": "node scripts/generate-sitemap.mjs"
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "eas-build-pre-install": "npm install -g npm@11.17.0",
+    "eas-build-post-install": "node scripts/prepare-native.mjs && npx cap sync android"
   },
   "dependencies": {
     "@capacitor/app": "^6.0.3",
@@ -106,5 +108,8 @@
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.2.0"
+  },
+  "optionalDependencies": {
+    "lru-cache": "^11.5.2"
   }
 }

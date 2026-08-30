@@ -19,7 +19,9 @@
     },
     "play-internal": {
       "distribution": "internal",
+      "node": "22.23.1",
       "android": {
+        "image": "latest",
         "buildType": "app-bundle"
       },
       "env": {
