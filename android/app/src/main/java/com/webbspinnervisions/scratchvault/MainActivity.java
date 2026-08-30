@@ -1,4 +1,4 @@
-package com.webbspinnervisions.volunteerscratchvault;
+package com.webbspinnervisions.scratchvault;
 
 import com.getcapacitor.BridgeActivity;
 
