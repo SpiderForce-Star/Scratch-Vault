@@ -3,7 +3,8 @@
 Do **not** submit the app from this document. This is the human click-path
 after the native foundation is in the repo.
 
-Web stays on Vercel: https://volunteer-scratch-vault.vercel.app  
+Web stays on Vercel: https://scratch-vault.com  
+Alias: https://volunteer-scratch-vault.vercel.app  
 Native shells: Capacitor 6 + EAS Build  
 Bundle id / application id: `com.webbspinnervisions.scratchvault`
 
@@ -26,7 +27,8 @@ npm run cap:sync
 
 `cap:sync` builds the web app, copies assets into `dist/`, then runs
 `npx cap sync`. `server.url` is **unset** unless you export
-`CAP_LIVE_RELOAD=1` (dev only).
+`CAP_LIVE_RELOAD=1` (dev only) or `CAP_PLAY_INTERNAL=1` (first Play
+internal AAB — loads https://scratch-vault.com).
 
 Open the native projects (macOS for iOS Simulator, any OS for Android Studio):
 
@@ -36,6 +38,57 @@ npm run cap:android
 ```
 
 On Windows, skip `cap:ios` and use EAS for the `.ipa`.
+
+---
+
+## 0.5 First Play internal AAB
+
+Do **not** send this build to Production review. Testers should see the
+live desk, not the native stub page.
+
+Package name (locked by the first uploaded AAB):
+`com.webbspinnervisions.scratchvault`
+
+Privacy / terms already on Play Console:
+
+- https://scratch-vault.com/privacy
+- https://scratch-vault.com/terms
+
+`targetSdkVersion` is **35** (Play rejects 34). Starting 31 Aug 2026 new
+apps need API 36 — bump `android/variables.gradle` if the upload errors.
+
+### Path A — Android Studio (Windows)
+
+```bat
+set CAP_PLAY_INTERNAL=1
+npm install
+npm run cap:sync
+npm run cap:android
+```
+
+Then **Build → Generate Signed App Bundle / APK → Android App Bundle**.
+Create `scratch-vault-upload.jks` the first time and store the passwords.
+Output: `android\app\release\app-release.aab`
+
+### Path B — EAS (no Android Studio)
+
+```bat
+npm install -g eas-cli
+eas login
+eas init
+```
+
+Paste the printed project id into `app.json` → `expo.extra.eas.projectId`
+(replace `REPLACE_AFTER_EAS_INIT`). Then:
+
+```bat
+set CAP_PLAY_INTERNAL=1
+npm run cap:sync
+eas build --platform android --profile play-internal
+```
+
+Download the `.aab`. Play Console → Internal testing → **Create new
+release** → upload → **Start rollout to Internal testing**.
 
 ---
 
@@ -56,8 +109,8 @@ You click these. The agent does not.
    - SKU: `sv-ios-001` (any unique SKU)
    - User access: Full Access
 4. Fill **App Privacy**:
-   - Privacy Policy URL: `https://volunteer-scratch-vault.vercel.app/privacy`
-   - Terms of Use URL: `https://volunteer-scratch-vault.vercel.app/terms`
+   - Privacy Policy URL: `https://scratch-vault.com/privacy`
+   - Terms of Use URL: `https://scratch-vault.com/terms`
    - Data: email + product interaction (subscription status). No precise location, no tracking.
 5. Age rating: 18+ / Gambling (simulated / informational — be honest; this discusses lottery prizes).
 6. Upload later: `store/ios/icon-1024.png` and the 6.7" / 6.1" placeholders in `store/ios/screenshots/`.
@@ -84,8 +137,8 @@ You click these.
 4. Store listing:
    - Short description: Independent scratch-off remaining-prize desk. 18+.
    - Full description: say “highest remaining-prize heat,” never “best chance to win.”
-   - Privacy policy: `https://volunteer-scratch-vault.vercel.app/privacy`
-   - Terms: `https://volunteer-scratch-vault.vercel.app/terms`
+   - Privacy policy: `https://scratch-vault.com/privacy`
+   - Terms: `https://scratch-vault.com/terms`
 5. Graphics: `store/android/icon-512.png` and `store/android/screenshots/`.
 6. Content rating questionnaire: 18+, references to gambling.
 7. Create two subscriptions in Play Console (same product ids):
@@ -118,7 +171,7 @@ EAS compiles on Expo’s Macs, so you do not need Xcode locally.
    ```bash
    npm run cap:sync
    eas build --platform ios --profile production
-   eas build --platform android --profile production
+   eas build --platform android --profile play-internal
    ```
 6. Download the `.ipa` / `.aab` from the Expo dashboard, or run
    `eas submit` **only when you are ready** (not now).
@@ -132,8 +185,9 @@ npm run dev
 npx cap run android
 ```
 
-`server.url` is injected only when `CAP_LIVE_RELOAD=1`. Store profiles in
-`eas.json` keep it off.
+`server.url` is injected when `CAP_LIVE_RELOAD=1` (LAN) or
+`CAP_PLAY_INTERNAL=1` (https://scratch-vault.com). Production store
+profiles in `eas.json` keep both off.
 
 ---
 
