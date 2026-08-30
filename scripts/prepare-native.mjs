@@ -70,9 +70,9 @@ writeFileSync(
       </p>
       <p>
         For the live desk use
-        <code>CAP_LIVE_RELOAD=1</code>
-        against <code>npm run dev</code>, or open
-        <a href="https://volunteer-scratch-vault.vercel.app">the website</a>.
+        <code>CAP_PLAY_INTERNAL=1</code>
+        (loads <a href="https://scratch-vault.com">scratch-vault.com</a>)
+        or <code>CAP_LIVE_RELOAD=1</code> against <code>npm run dev</code>.
         Native in-app purchase is the next store slice.
       </p>
     </main>

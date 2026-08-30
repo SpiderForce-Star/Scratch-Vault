@@ -17,12 +17,26 @@
         "buildType": "apk"
       }
     },
+    "play-internal": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "CAP_PLAY_INTERNAL": "1",
+        "CAP_LIVE_RELOAD": "0"
+      }
+    },
     "production": {
       "ios": {
         "credentialsSource": "remote"
       },
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "CAP_LIVE_RELOAD": "0",
+        "CAP_PLAY_INTERNAL": "0"
       }
     }
   },
