@@ -2,7 +2,7 @@
  * One official remaining-prize pull per state per day. Server-only.
  * Sequential. Does not run on page load. Does not store lottery HTML.
  */
-import { STATE_IDS, STATES, type StateId } from "@/config/states";
+import { HIDDEN_RETURN_MIN_GAMES, STATE_IDS, STATES, type StateId } from "@/config/states";
 import { fullCatalog as tennesseeFullCatalog } from "@/data/games.full.server";
 import { publicCatalog } from "./index";
 import { loadBundledDesk, seedSnapshotsIfEmpty } from "./load.server";
@@ -147,7 +147,7 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
       return failState(stateId, "0 parseable games", usedUrl);
     }
 
-    if (games.length < 3) {
+    if (games.length < HIDDEN_RETURN_MIN_GAMES) {
       return failState(stateId, "untrusted parse", usedUrl, games.length);
     }
 

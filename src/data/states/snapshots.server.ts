@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Game } from "@/data/games";
 import type { StateId } from "@/config/states";
+import { trustedCatalog } from "./parse.server";
 
 function hasPostgres(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
@@ -18,7 +19,9 @@ const bundledLastGood = import.meta.glob("./last-good/*.json", {
 function readBundledLastGood(stateId: StateId): DeskSnapshotRow | null {
   for (const [path, row] of Object.entries(bundledLastGood || {})) {
     if (!path.endsWith(`${stateId}.json`) || !row?.catalog?.length) continue;
-    return { ...row, stateId };
+    const catalog = trustedCatalog(row.catalog);
+    if (!catalog.length) continue;
+    return { ...row, stateId, catalog, gameCount: catalog.length };
   }
   return null;
 }
@@ -33,7 +36,9 @@ function readLastGoodFile(stateId: StateId): DeskSnapshotRow | null {
     if (!existsSync(path)) return null;
     const row = JSON.parse(readFileSync(path, "utf8")) as DeskSnapshotRow;
     if (!row?.catalog?.length) return null;
-    return { ...row, stateId };
+    const catalog = trustedCatalog(row.catalog);
+    if (!catalog.length) return null;
+    return { ...row, stateId, catalog, gameCount: catalog.length };
   } catch {
     return null;
   }
@@ -43,7 +48,13 @@ function writeLastGoodFile(row: DeskSnapshotRow): void {
   if (!row.catalog?.length) return;
   try {
     mkdirSync(LAST_GOOD_DIR, { recursive: true });
-    writeFileSync(lastGoodPath(row.stateId), `${JSON.stringify(row, null, 0)}\n`, "utf8");
+    const catalog = trustedCatalog(row.catalog);
+    if (!catalog.length) return;
+    writeFileSync(
+      lastGoodPath(row.stateId),
+      `${JSON.stringify({ ...row, catalog, gameCount: catalog.length }, null, 0)}\n`,
+      "utf8",
+    );
   } catch {
     /* Vercel bundle is read-only; committed last-good JSON is the persist. */
   }
@@ -99,7 +110,9 @@ function asGames(value: unknown): Game[] | null {
       return null;
     }
   }
-  return Array.isArray(value) ? (value as Game[]) : null;
+  if (!Array.isArray(value)) return null;
+  const clean = trustedCatalog(value as Game[]);
+  return clean.length ? clean : null;
 }
 
 function fromRow(row: SqlRow): DeskSnapshotRow {
@@ -172,6 +185,7 @@ export async function upsertSnapshot(input: {
   gameCount: number;
   catalog: Game[] | null;
 }): Promise<void> {
+  const catalog = input.catalog ? trustedCatalog(input.catalog) : null;
   const row: DeskSnapshotRow = {
     stateId: input.stateId,
     ok: input.ok,
@@ -180,8 +194,8 @@ export async function upsertSnapshot(input: {
     weekLabel: input.weekLabel,
     sourceUrl: input.sourceUrl,
     reason: input.reason,
-    gameCount: input.gameCount,
-    catalog: input.catalog,
+    gameCount: catalog?.length ?? input.gameCount,
+    catalog,
   };
   memory.set(input.stateId, row);
   writeLastGoodFile(row);

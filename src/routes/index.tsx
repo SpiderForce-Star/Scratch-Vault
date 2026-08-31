@@ -5,7 +5,7 @@ import {
   DEFAULT_STATE_ID,
   type StateId,
   getState,
-  isStateId,
+  isPublicStateId,
 } from "@/config/states";
 import {
   pickSkipGames,
@@ -32,7 +32,7 @@ import type { MessageKey } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   component: VaultHome,
   validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
-    if (isStateId(search.state)) return { state: search.state };
+    if (isPublicStateId(search.state)) return { state: search.state };
     return {};
   },
   loaderDeps: ({ search }) => ({
@@ -103,6 +103,14 @@ function VaultHome() {
       setStateId(search.state);
     }
   }, [search.state, setStateId, stateId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = new URLSearchParams(window.location.search).get("state");
+    if (raw && !isPublicStateId(raw)) {
+      void navigate({ to: "/", search: {}, replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (!loadedSnap) return;

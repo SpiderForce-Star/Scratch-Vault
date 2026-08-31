@@ -6,7 +6,7 @@ import {
   DEFAULT_STATE_ID,
   type DataMode,
   type StateId,
-  parseStateId,
+  parsePublicStateId,
 } from "@/config/states";
 
 export type DeskSnapshot = {
@@ -34,7 +34,7 @@ export const getDeskSnapshot = createServerFn({ method: "GET" })
     if (!data || typeof data !== "object") {
       return { stateId: DEFAULT_STATE_ID };
     }
-    return { stateId: parseStateId((data as { stateId?: unknown }).stateId) };
+    return { stateId: parsePublicStateId((data as { stateId?: unknown }).stateId) };
   })
   .handler(async ({ context, data }): Promise<DeskSnapshot> => {
     const { buildDeskSnapshot } = await import("./desk.server");

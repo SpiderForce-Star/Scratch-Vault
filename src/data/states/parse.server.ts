@@ -102,11 +102,36 @@ function cashPrizeAmount(label: string): number | null {
   return money(text.split("(")[0] ?? text);
 }
 
+/** Prize-amount rows and ended/garbled names are not games. Do not merge them. */
+export function isImportedJunkGame(game: { number: number; name: string }): boolean {
+  const name = String(game.name ?? "").trim();
+  if (!name) return true;
+  if (/no longer available/i.test(name)) return true;
+  if (/\(#\s*\d+\s*\)/.test(name)) return true;
+  if (PRICES.has(Number(name))) return true;
+  if (game.number > 9999) return true;
+  return false;
+}
+
+export function trustedCatalog<T extends { number: number; name: string }>(games: T[]): T[] {
+  const seen = new Set<number>();
+  const out: T[] = [];
+  for (const game of games) {
+    if (isImportedJunkGame(game)) continue;
+    if (!game.number || !game.name) continue;
+    if (seen.has(game.number)) continue;
+    seen.add(game.number);
+    out.push(game);
+  }
+  return out;
+}
+
 export function toCatalog(games: ParsedGame[], source: GameSource): Game[] {
   const seen = new Set<number>();
   const out: Game[] = [];
   for (const game of games) {
     if (!PRICES.has(game.price) || !game.number || !game.name) continue;
+    if (isImportedJunkGame(game)) continue;
     if (seen.has(game.number)) continue;
     const prizes = [...game.prizes]
       .filter((p) => p.amount > 0)
@@ -547,12 +572,13 @@ export function mergeKnownGames(
   parsed: ParsedGame[],
   stateId: StateId,
 ): Game[] {
+  const cleanKnown = trustedCatalog(known);
   const byNumber = new Map(parsed.map((g) => [g.number, g]));
   const byName = new Map(parsed.map((g) => [normName(g.name), g]));
   const used = new Set<number>();
   const out: Game[] = [];
 
-  for (const game of known) {
+  for (const game of cleanKnown) {
     const next = byNumber.get(game.number) ?? byName.get(normName(game.name));
     if (!next) {
       out.push({ ...game, stateId });
@@ -565,6 +591,7 @@ export function mergeKnownGames(
   const source: GameSource = stateId === "tn" ? "tn-remaining" : "official-remaining";
   for (const row of parsed) {
     if (used.has(row.number)) continue;
+    if (isImportedJunkGame(row)) continue;
     const added = toCatalog([row], source);
     if (added[0]) out.push({ ...added[0], stateId });
   }
@@ -572,8 +599,12 @@ export function mergeKnownGames(
 }
 
 export function gamesFromParse(stateId: StateId, parsed: ParsedGame[], bundled: Game[]): Game[] {
-  if (bundled.length) return mergeKnownGames(bundled, parsed, stateId);
-  return toCatalog(parsed, stateId === "tn" ? "tn-remaining" : "official-remaining").map(
-    (game) => ({ ...game, stateId }),
+  const known = trustedCatalog(bundled);
+  if (known.length) return mergeKnownGames(known, parsed, stateId);
+  return trustedCatalog(
+    toCatalog(parsed, stateId === "tn" ? "tn-remaining" : "official-remaining").map((game) => ({
+      ...game,
+      stateId,
+    })),
   );
 }

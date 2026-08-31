@@ -5,7 +5,7 @@ import { findPublicGame, publicGameMatches } from "@/data/states";
 import {
   DEFAULT_STATE_ID,
   getState,
-  isStateId,
+  isPublicStateId,
   type DataMode,
   type StateId,
 } from "@/config/states";
@@ -25,7 +25,7 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/game/$number")({
   component: GameDetail,
   validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
-    if (isStateId(search.state)) return { state: search.state };
+    if (isPublicStateId(search.state)) return { state: search.state };
     return {};
   },
   head: ({ params, match }) => {

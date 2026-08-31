@@ -4,8 +4,9 @@
 import { GAMES, type Game } from "@/data/games";
 import {
   DEFAULT_STATE_ID,
-  STATE_IDS,
+  PUBLIC_STATE_IDS,
   type StateId,
+  parsePublicStateId,
   parseStateId,
 } from "@/config/states";
 import { AZ_GAMES } from "./az";
@@ -54,7 +55,7 @@ export function publicGameMatches(
   const n = Number(number);
   if (!Number.isFinite(n)) return [];
   const matches: { game: Game; stateId: StateId }[] = [];
-  for (const id of STATE_IDS) {
+  for (const id of PUBLIC_STATE_IDS) {
     const game = PUBLIC[id].find((row) => row.number === n);
     if (game) matches.push({ game: { ...game, stateId: id }, stateId: id });
   }
@@ -68,7 +69,7 @@ export function findPublicGame(
   const matches = publicGameMatches(number);
   if (!matches.length) return null;
   if (preferred) {
-    const id = parseStateId(preferred);
+    const id = parsePublicStateId(preferred);
     return matches.find((row) => row.stateId === id) ?? matches[0];
   }
   return matches[0];

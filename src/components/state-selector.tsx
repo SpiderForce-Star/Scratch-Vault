@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { STATE_LIST, type StateId } from "@/config/states";
+import { PUBLIC_STATE_LIST, type StateId } from "@/config/states";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/locale";
 
@@ -14,8 +14,8 @@ export function StateSelector({
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const selected =
-    STATE_LIST.find((state) => state.id === value) ?? STATE_LIST[0];
-  const others = STATE_LIST.length - 1;
+    PUBLIC_STATE_LIST.find((state) => state.id === value) ?? PUBLIC_STATE_LIST[0];
+  const others = PUBLIC_STATE_LIST.length - 1;
 
   const pick = (id: StateId) => {
     onChange(id);
@@ -50,7 +50,7 @@ export function StateSelector({
             aria-label={t("states.kicker")}
             className="flex w-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 sm:hidden"
           >
-            {STATE_LIST.map((state) => (
+            {PUBLIC_STATE_LIST.map((state) => (
               <StatePill
                 key={state.id}
                 state={state}
@@ -64,9 +64,9 @@ export function StateSelector({
           <div
             role="group"
             aria-label={t("states.kicker")}
-            className="hidden grid-cols-6 gap-2 sm:grid"
+            className="hidden grid-cols-5 gap-2 sm:grid"
           >
-            {STATE_LIST.map((state) => (
+            {PUBLIC_STATE_LIST.map((state) => (
               <StatePill
                 key={state.id}
                 state={state}
@@ -96,7 +96,7 @@ function StatePill({
   onChange,
   compact = false,
 }: {
-  state: (typeof STATE_LIST)[number];
+  state: (typeof PUBLIC_STATE_LIST)[number];
   selected: boolean;
   onChange: (id: StateId) => void;
   compact?: boolean;

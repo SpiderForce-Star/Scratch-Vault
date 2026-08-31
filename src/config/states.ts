@@ -30,6 +30,36 @@ export type StateId = (typeof STATE_IDS)[number];
 
 export const DEFAULT_STATE_ID: StateId = "tn";
 
+/**
+ * Public selector: trusted remaining-prize snapshot we can refresh weekly.
+ * Hidden desks stay in STATE_IDS / STATES / *.ts fail-closed and rejoin this
+ * list after fetchStateRemaining returns ≥3 clean games.
+ */
+export const PUBLIC_STATE_IDS = [
+  "tn",
+  "ky",
+  "sc",
+  "ok",
+  "nc",
+  "pa",
+  "tx",
+  "mo",
+  "ia",
+  "id",
+] as const satisfies readonly StateId[];
+
+export const HIDDEN_STATE_IDS = [
+  "az",
+  "mi",
+  "oh",
+  "ct",
+  "il",
+  "ma",
+] as const satisfies readonly StateId[];
+
+/** Live fetch must return at least this many clean games before a hidden desk can return. */
+export const HIDDEN_RETURN_MIN_GAMES = 3;
+
 export type DataMode = "live" | "compiled" | "sample";
 
 export type HoldbackRule = {
@@ -625,14 +655,29 @@ export const STATES: Record<StateId, StateConfig> = {
 
 export const STATE_LIST: StateConfig[] = STATE_IDS.map((id) => STATES[id]);
 
+export const PUBLIC_STATE_LIST: StateConfig[] = PUBLIC_STATE_IDS.map((id) => STATES[id]);
+
 export const STATE_MAP: Record<StateId, StateConfig> = STATES;
 
 export function isStateId(value: unknown): value is StateId {
   return typeof value === "string" && (STATE_IDS as readonly string[]).includes(value);
 }
 
+export function isPublicStateId(value: unknown): value is StateId {
+  return typeof value === "string" && (PUBLIC_STATE_IDS as readonly string[]).includes(value);
+}
+
+export function isHiddenStateId(value: unknown): value is StateId {
+  return typeof value === "string" && (HIDDEN_STATE_IDS as readonly string[]).includes(value);
+}
+
 export function parseStateId(value: unknown): StateId {
   return isStateId(value) ? value : DEFAULT_STATE_ID;
+}
+
+/** User-facing desks. Hidden / unknown IDs fall back to Tennessee — no fake catalog. */
+export function parsePublicStateId(value: unknown): StateId {
+  return isPublicStateId(value) ? value : DEFAULT_STATE_ID;
 }
 
 export function getState(id: StateId | string | null | undefined): StateConfig {

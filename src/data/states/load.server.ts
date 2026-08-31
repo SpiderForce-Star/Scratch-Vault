@@ -17,6 +17,7 @@ import {
 import { publicCatalog } from "./index";
 import type { RemainingRow } from "./compile";
 import { COMPILED_REMAINING } from "./compiled.remaining.server";
+import { trustedCatalog } from "./parse.server";
 import { readSnapshot, upsertSnapshot } from "./snapshots.server";
 
 export type { RemainingRow };
@@ -57,10 +58,12 @@ export function loadBundledDesk(
   const state = getState(id);
 
   if (id === "tn") {
-    const games = tennesseeFullCatalog().map((game) => ({
-      ...game,
-      stateId: "tn" as const,
-    }));
+    const games = trustedCatalog(
+      tennesseeFullCatalog().map((game) => ({
+        ...game,
+        stateId: "tn" as const,
+      })),
+    );
     if (!games.length) {
       return {
         games: [],
@@ -94,7 +97,7 @@ export function loadBundledDesk(
     };
   }
   return {
-    games: applyRemaining(base, remaining),
+    games: trustedCatalog(applyRemaining(base, remaining)),
     error: null,
     stale: true,
     ok: false,
@@ -147,14 +150,17 @@ export async function loadDeskCatalog(
     await seedSnapshotsIfEmpty();
     const row = await readSnapshot(id);
     if (row?.catalog && row.catalog.length) {
-      return {
-        games: row.catalog.map((game) => ({ ...game, stateId: id })),
-        error: null,
-        stale: row.stale || !row.ok,
-        ok: Boolean(row.ok) && !row.stale,
-        fetchedAt: row.fetchedAt,
-        weekLabel: row.weekLabel,
-      };
+      const games = trustedCatalog(row.catalog.map((game) => ({ ...game, stateId: id })));
+      if (games.length) {
+        return {
+          games,
+          error: null,
+          stale: row.stale || !row.ok,
+          ok: Boolean(row.ok) && !row.stale,
+          fetchedAt: row.fetchedAt,
+          weekLabel: row.weekLabel,
+        };
+      }
     }
     if (bundled.games.length) {
       return { ...bundled, stale: true, ok: false };

@@ -13,7 +13,7 @@ import {
   type DataMode,
   type StateConfig,
   type StateId,
-  parseStateId,
+  parsePublicStateId,
 } from "@/config/states";
 
 const STORAGE_KEY = "sv.state";
@@ -39,7 +39,7 @@ export function readStatePref(): StateId {
     const stored =
       window.localStorage.getItem(STORAGE_KEY) ??
       window.localStorage.getItem(LEGACY_STORAGE_KEY);
-    return parseStateId(stored);
+    return parsePublicStateId(stored);
   } catch {
     return DEFAULT_STATE_ID;
   }
@@ -64,7 +64,7 @@ export function ActiveStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setStateId = useCallback((id: StateId) => {
-    const next = parseStateId(id);
+    const next = parsePublicStateId(id);
     setStateIdState(next);
     setDeskMode(null);
     writeStatePref(next);
