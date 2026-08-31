@@ -162,6 +162,12 @@ export function pickTripGames(
   return (live.length >= count ? live : ranked).slice(0, count);
 }
 
+function isSkipGame(heat: HeatReport | undefined): boolean {
+  if (!heat) return false;
+  if (heat.bust || heat.band === "bust") return true;
+  return heat.role === "jackpot" && heat.grand <= 0;
+}
+
 /** 3–5 busts to walk past. Prefer the selected price, then fill. */
 export function pickSkipGames(
   games: Game[],
@@ -169,7 +175,7 @@ export function pickSkipGames(
   filter: PriceFilter,
   max = 5,
 ): Game[] {
-  const busts = games.filter((g) => reports.get(g.number)?.bust);
+  const busts = games.filter((g) => isSkipGame(reports.get(g.number)));
   const atPrice = busts.filter((g) => inPriceFilter(g, filter));
   const rest = busts.filter((g) => !inPriceFilter(g, filter));
   return [...atPrice, ...rest].slice(0, max);
