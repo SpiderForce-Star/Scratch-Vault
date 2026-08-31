@@ -6,7 +6,6 @@ import {
   DEFAULT_STATE_ID,
   type StateId,
   getState,
-  heatContextFor,
   isStateId,
 } from "@/config/states";
 import {
@@ -14,10 +13,10 @@ import {
   pickOpeningFiveDollarGames,
   reportMap,
   sortGames,
+  type HeatReport,
   type PriceFilter,
   type SortKey,
 } from "@/lib/heat";
-import { scoreGame } from "@/lib/heat.server";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { BandChip, TicketCard } from "@/components/ticket-card";
 import { DeskReviewPanel } from "@/components/desk-review";
@@ -79,6 +78,20 @@ const FILTERS: { id: PriceFilter; label: string }[] = [
   { id: "30", label: "$30" },
   { id: "50", label: "$50" },
 ];
+
+const FALLBACK_HEAT: HeatReport = {
+  grand: 0,
+  medium: 0,
+  vault: 0,
+  band: "cool",
+  bust: false,
+  mediumKnown: false,
+  role: "jackpot",
+  topRemaining: null,
+  effectiveTop: null,
+  midRemaining: null,
+  lowRemaining: null,
+};
 
 const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
   { id: "heat", labelKey: "home.sortHeat" },
@@ -165,9 +178,8 @@ function VaultHome() {
   const catalog = snap?.games ?? publicCatalog(stateId);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
-    const ctx = heatContextFor(config);
-    return new Map(catalog.map((game) => [game.number, scoreGame(game, ctx)]));
-  }, [snap, catalog, config]);
+    return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
+  }, [snap, catalog]);
   const desk = snap?.desk ?? {
     byPrice: [],
     mediumLeaders: [],
