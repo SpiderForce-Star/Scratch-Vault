@@ -149,6 +149,32 @@ export function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   return game.price === Number(filter);
 }
 
+/** Three tickets to review at this price, then stop. Prefer non-busts. */
+export function pickTripGames(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+  filter: PriceFilter,
+  count = 3,
+): Game[] {
+  const pool = games.filter((g) => inPriceFilter(g, filter));
+  const ranked = sortGames(pool, "heat", reports);
+  const live = ranked.filter((g) => !reports.get(g.number)?.bust);
+  return (live.length >= count ? live : ranked).slice(0, count);
+}
+
+/** 3–5 busts to walk past. Prefer the selected price, then fill. */
+export function pickSkipGames(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+  filter: PriceFilter,
+  max = 5,
+): Game[] {
+  const busts = games.filter((g) => reports.get(g.number)?.bust);
+  const atPrice = busts.filter((g) => inPriceFilter(g, filter));
+  const rest = busts.filter((g) => !inPriceFilter(g, filter));
+  return [...atPrice, ...rest].slice(0, max);
+}
+
 export function sortGames(
   games: Game[],
   key: SortKey,

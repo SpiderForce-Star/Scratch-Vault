@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { money } from "@/data/games";
 import { publicCatalog } from "@/data/states";
 import {
   DEFAULT_STATE_ID,
@@ -9,8 +8,8 @@ import {
   isStateId,
 } from "@/config/states";
 import {
-  inPriceFilter,
-  pickOpeningFiveDollarGames,
+  pickSkipGames,
+  pickTripGames,
   reportMap,
   sortGames,
   type HeatReport,
@@ -19,27 +18,11 @@ import {
 } from "@/lib/heat";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { BandChip, TicketCard } from "@/components/ticket-card";
-import { DeskReviewPanel } from "@/components/desk-review";
-import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
-import { RadarCashHero } from "@/components/radar-cash-hero";
-import { UnlockStrip } from "@/components/unlock-strip";
-import { DeskAlertBanner } from "@/components/desk-alert-banner";
-import { TripCard } from "@/components/trip-card";
-import { TrialCta } from "@/components/trial-cta";
 import { StateSelector } from "@/components/state-selector";
-import {
-  HowTheDataWorks,
-  HowThisHelps,
-  ProductStory,
-  WhatThisAppIs,
-} from "@/components/product-story";
 import { DataModeBanner } from "@/components/data-mode-banner";
-import { HeatExplainer } from "@/components/heat-explainer";
-import { TonightHeatStrip } from "@/components/tonight-heat-strip";
-import { StateRulesNote } from "@/components/state-rules";
 import { useAccess } from "@/lib/use-access";
 import { useActiveState } from "@/lib/active-state";
-import { writePricePref, pricePrefLabel } from "@/lib/price-pref";
+import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
 import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/locale";
@@ -70,7 +53,6 @@ export const Route = createFileRoute("/")({
 });
 
 const FILTERS: { id: PriceFilter; label: string }[] = [
-  { id: "all", label: "All" },
   { id: "5", label: "$5" },
   { id: "10", label: "$10" },
   { id: "20", label: "$20" },
@@ -108,13 +90,12 @@ function VaultHome() {
   const loadedSnap = Route.useLoaderData();
   const { stateId, setStateId, config, setDeskMode } = useActiveState();
   const { t } = useI18n();
-  const [filter, setFilter] = useState<PriceFilter>("all");
+  const [filter, setFilter] = useState<PriceFilter>("10");
   const [sort, setSort] = useState<SortKey>("safest");
   const [query, setQuery] = useState("");
   const { paid } = useAccess();
   const [snap, setSnap] = useState<DeskSnapshot | null>(loadedSnap);
   const locked = !(snap?.paid ?? paid);
-  const [lateNight, setLateNight] = useState(false);
 
   useEffect(() => {
     if (search.state && search.state !== stateId) {
@@ -145,7 +126,6 @@ function VaultHome() {
   }, [paid, stateId, setDeskMode]);
 
   const selectState = (id: StateId) => {
-    setFilter("all");
     setStateId(id);
     void navigate({
       to: "/",
@@ -155,19 +135,8 @@ function VaultHome() {
   };
 
   useEffect(() => {
-    try {
-      const hour = Number(
-        new Intl.DateTimeFormat("en-US", {
-          hour: "numeric",
-          hour12: false,
-          timeZone: "America/Chicago",
-        }).format(new Date()),
-      );
-      setLateNight(hour >= 23 || hour < 6);
-    } catch {
-      const hour = new Date().getHours();
-      setLateNight(hour >= 23 || hour < 6);
-    }
+    const pref = readPricePref();
+    if (pref) setFilter(pref);
   }, []);
 
   const setPrice = (next: PriceFilter) => {
@@ -180,46 +149,28 @@ function VaultHome() {
     if (snap) return reportMap(snap.reports);
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
   }, [snap, catalog]);
-  const desk = snap?.desk ?? {
-    byPrice: [],
-    mediumLeaders: [],
-    avoid: [],
-    official: [],
-    stats: {
-      games: catalog.length,
-      retailJackpots: 0,
-      cashOuts: 0,
-      busts: 0,
-      officialTiers: 0,
-    },
-  };
 
-  const openingFive = useMemo(
-    () => pickOpeningFiveDollarGames(catalog, reports),
-    [catalog, reports],
+  const tripGames = useMemo(
+    () => pickTripGames(catalog, reports, filter, 3),
+    [catalog, reports, filter],
+  );
+  const skipGames = useMemo(
+    () => pickSkipGames(catalog, reports, filter, 5),
+    [catalog, reports, filter],
   );
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = catalog.filter((g) => {
-      if (!inPriceFilter(g, filter)) return false;
       if (!q) return true;
       return (
         g.name.toLowerCase().includes(q) || String(g.number).includes(q)
       );
     });
     return sortGames(filtered, sort, reports);
-  }, [catalog, filter, sort, query, reports]);
+  }, [catalog, sort, query, reports]);
 
-  const tripFilter: PriceFilter = filter === "all" ? "10" : filter;
-  const tripGames = useMemo(() => {
-    if (!snap) return [];
-    const pool = catalog.filter((g) => inPriceFilter(g, tripFilter));
-    return sortGames(pool, "medium", reports).slice(0, 3);
-  }, [snap, catalog, tripFilter, reports]);
-
-  const publicList = list;
-  const prefLabel = pricePrefLabel(filter);
+  const priceLabel = pricePrefLabel(filter) ?? "$10";
 
   return (
     <div>
@@ -231,157 +182,10 @@ function VaultHome() {
         stale={snap?.stale}
         weekLabel={snap?.weekLabel}
       />
-      <RadarCashHero
-        priceFilter={filter}
-        blips={snap?.blips ?? []}
-        gameCount={snap?.gameCount ?? catalog.length}
-        skipHref="#skip"
-        stateName={config.name}
-        shortName={config.shortName}
-        weekLabel={snap?.weekLabel ?? config.weekLabel}
-        minAge={config.minAge}
-        dataMode={snap?.dataMode ?? config.dataMode}
-      />
-      <HeatExplainer />
-      <TonightHeatStrip
-        id="heat"
-        stateId={stateId}
-        cards={snap?.tonight ?? []}
-        depleted={snap?.tonightDepleted ?? false}
-        dataMode={snap?.dataMode ?? config.dataMode}
-      />
 
-      <section id="skip" className="border-b border-line">
+      <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
-            {t("home.skipKicker")}
-          </p>
-          <h2 className="mt-2 font-display text-2xl tracking-tight">
-            {t("home.skipTitle")}
-          </h2>
-          <ul className="mt-4 divide-y divide-line border border-line">
-            {desk.avoid.slice(0, 3).map((p) => (
-              <li key={p.game.number}>
-                <Link
-                  to="/game/$number"
-                  params={{ number: String(p.game.number) }}
-                  search={{ state: stateId }}
-                  className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
-                >
-                  <span className="truncate text-sm">
-                    ${p.game.price} · {p.game.name}
-                  </span>
-                  <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
-                    {t("home.skip")}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {lateNight ? (
-        <p className="border-b border-line bg-raised/50 px-4 py-3 text-center text-sm text-muted sm:px-6">
-          {t("home.lateNight")}
-        </p>
-      ) : null}
-      <DeskAlertBanner />
-
-      {openingFive.length ? (
-      <section id="tonight" className="border-b border-line">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {(snap?.dataMode ?? config.dataMode) === "live"
-              ? t("tonight.kicker")
-              : t("tonight.kickerCompiled")}
-          </p>
-          <h2 className="mt-2 font-display text-2xl tracking-tight">
-            {(snap?.dataMode ?? config.dataMode) === "live"
-              ? t("tonight.title")
-              : t("tonight.titleCompiled")}
-          </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {openingFive.map((game) => {
-              const heat = reports.get(game.number);
-              if (!heat) return null;
-              return (
-                <TicketCard
-                  key={game.number}
-                  game={game}
-                  heat={heat}
-                  locked={locked}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </section>
-      ) : null}
-
-      <section className="border-b border-line">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {prefLabel
-              ? t("home.yourDesk", { price: prefLabel })
-              : t("home.bestByPrice")}
-          </p>
-          <h2 className="mt-2 font-display text-2xl tracking-tight">
-            {t("home.highest")}
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {desk.byPrice.map((row) =>
-              row.pick ? (
-                <Link
-                  key={row.price}
-                  to="/game/$number"
-                  params={{ number: String(row.pick.game.number) }}
-                  search={{ state: stateId }}
-                  className="min-h-11 rounded-lg border border-line bg-surface p-4 hover:border-gold/50"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs text-gold">{row.price}</span>
-                    <BandChip band={row.pick.heat.band} />
-                  </div>
-                  <p className="mt-2 font-display text-lg leading-snug">
-                    {row.pick.game.name}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted">
-                    {row.pick.why}
-                  </p>
-                  <p className="mt-1 font-mono text-[10px] text-faint">
-                    {t("home.top", { prize: money(row.pick.game.topPrize) })}
-                  </p>
-                </Link>
-              ) : (
-                <div
-                  key={row.price}
-                  className="rounded-lg border border-line p-4 text-sm text-faint"
-                >
-                  {t("home.nothingPosted", { price: row.price })}
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-      </section>
-
-      <TripCard
-        games={tripGames}
-        reports={reports}
-        filter={tripFilter}
-        locked={locked}
-      />
-
-      <div id="desk">
-        <DeskReviewPanel desk={desk} locked={locked} state={config} />
-      </div>
-
-      <UnlockStrip locked={locked} stats={snap?.stats} holdback={config.holdback} />
-
-      <div className="sticky top-[57px] z-10 border-b border-line bg-bg/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:px-6">
-          <div className="flex flex-wrap gap-1">
+          <div className="mb-4 flex flex-wrap gap-1">
             {FILTERS.map((f) => (
               <button
                 key={f.id}
@@ -394,11 +198,110 @@ function VaultHome() {
                     : "bg-surface text-muted hover:text-fg",
                 )}
               >
-                {f.id === "all" ? t("home.filterAll") : f.label}
+                {f.label}
               </button>
             ))}
           </div>
-          <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:justify-end">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+            {t("trip.kicker", { price: priceLabel })}
+          </p>
+          <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+            {t("trip.title")}
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+            {t("trip.body")}
+          </p>
+          {tripGames.length === 0 ? (
+            <p className="mt-4 text-muted">
+              {t("home.nothingPosted", { price: priceLabel })}
+            </p>
+          ) : (
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              {tripGames.map((game) => {
+                const heat = reports.get(game.number);
+                if (!heat) return null;
+                return (
+                  <TicketCard
+                    key={game.number}
+                    game={game}
+                    heat={heat}
+                    locked={locked}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section id="skip" className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
+            {t("home.skipKicker")}
+          </p>
+          <h2 className="mt-2 font-display text-2xl tracking-tight">
+            {t("home.skipTitle")}
+          </h2>
+          {skipGames.length === 0 ? (
+            <p className="mt-4 text-sm text-muted">{t("home.skipEmpty")}</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-line border border-line">
+              {skipGames.map((game) => {
+                const heat = reports.get(game.number);
+                return (
+                  <li key={game.number}>
+                    <Link
+                      to="/game/$number"
+                      params={{ number: String(game.number) }}
+                      search={{ state: stateId }}
+                      className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
+                    >
+                      <span className="truncate text-sm">
+                        ${game.price} · {game.name}
+                      </span>
+                      {heat ? <BandChip band={heat.band} /> : (
+                        <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
+                          {t("home.skip")}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <p className="font-display text-2xl tracking-tight sm:text-3xl">
+            {t("home.done")}
+          </p>
+          <p className="mt-3">
+            <Link
+              to="/disclaimer"
+              className="text-sm text-muted underline underline-offset-2 hover:text-fg"
+            >
+              {t("home.fullDisclaimer")}
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      <details id="games" className="border-b border-line">
+        <summary className="mx-auto flex max-w-6xl min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-left sm:px-6 [&::-webkit-details-marker]:hidden">
+          <span className="font-display text-xl tracking-tight">
+            {t("home.allGames")}
+          </span>
+          <span className="font-mono text-xs text-faint uppercase">
+            {locked
+              ? t("home.gamesLocked", { count: catalog.length })
+              : t("home.games", { count: catalog.length })}
+          </span>
+        </summary>
+        <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
             <label className="sr-only" htmlFor="q">
               {t("home.search")}
             </label>
@@ -425,66 +328,29 @@ function VaultHome() {
               ))}
             </select>
           </div>
+          {list.length === 0 ? (
+            <p className="text-muted">{t("home.none")}</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {list.map((game) => {
+                const heat = reports.get(game.number);
+                if (!heat) return null;
+                return (
+                  <TicketCard
+                    key={game.number}
+                    game={game}
+                    heat={heat}
+                    locked={locked}
+                  />
+                );
+              })}
+            </div>
+          )}
+          {locked ? (
+            <p className="mt-6 text-sm text-muted">{t("home.vaultTeaser")}</p>
+          ) : null}
         </div>
-      </div>
-
-      <main id="games" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="mb-6">
-          <p className="text-sm text-faint">
-            {locked
-              ? t("home.gamesLocked", { count: list.length })
-              : t("home.games", { count: list.length })}
-          </p>
-        </div>
-        {publicList.length === 0 ? (
-          <p className="text-muted">{t("home.none")}</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {publicList.map((game) => {
-              const heat = reports.get(game.number);
-              if (!heat) return null;
-              return (
-                <TicketCard
-                  key={game.number}
-                  game={game}
-                  heat={heat}
-                  locked={locked}
-                />
-              );
-            })}
-          </div>
-        )}
-        {locked ? (
-          <div className="mt-6 flex flex-col items-start gap-3 rounded-lg border border-line bg-surface p-5">
-            <p className="text-sm text-muted">
-              {t("home.vaultTeaser")}
-            </p>
-            <TrialCta />
-          </div>
-        ) : (
-          <p className="mt-8 text-sm text-muted">
-            {t("home.done")}
-          </p>
-        )}
-      </main>
-
-      <ProductStory />
-      <HowTheDataWorks />
-      <HowThisHelps />
-      <WhatThisAppIs />
-      <StateRulesNote state={config} />
-
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="max-w-3xl">
-          <p className="mb-3 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-            {t("home.fullDisclaimer")}
-          </p>
-          <DisclaimerLead />
-          <div className="mt-4">
-            <DisclaimerPanel />
-          </div>
-        </div>
-      </div>
+      </details>
     </div>
   );
 }

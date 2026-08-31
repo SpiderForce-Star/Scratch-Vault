@@ -27,10 +27,10 @@ export function TripCard({
     <section className="border-b border-line">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-          {t("trip.kicker")}
+          {t("trip.kicker", { price: label })}
         </p>
         <h2 className="mt-2 font-display text-2xl tracking-tight">
-          {t("trip.title", { label })}
+          {t("trip.title")}
         </h2>
         <p className="mt-1 text-sm text-muted">
           {t("trip.body")}
