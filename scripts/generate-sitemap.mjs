@@ -19,7 +19,7 @@ const published =
   metaSrc.match(/publishedAt:\s*"([^"]+)"/)?.[1]?.slice(0, 10) ??
   new Date().toISOString().slice(0, 10);
 
-const staticPaths = ["/", "/pricing", "/privacy", "/terms", "/disclaimer"];
+const staticPaths = ["/", "/pricing", "/privacy", "/terms", "/disclaimer", "/legal"];
 
 const urls = [
   ...staticPaths.map((path) => ({ path, lastmod: published, priority: path === "/" ? "1.0" : "0.6" })),

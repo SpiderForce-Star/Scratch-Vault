@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { pageHead } from "@/lib/site";
 
-export const Route = createFileRoute("/billing/")({
+export const Route = createFileRoute("/billing")({
   component: BillingGate,
   head: () =>
     pageHead({

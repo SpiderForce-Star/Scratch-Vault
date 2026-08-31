@@ -46,8 +46,10 @@ export function pageHead({
       { property: "og:title", content: fullTitle },
       { property: "og:description", content: description },
       { property: "og:url", content: url },
+      { property: "og:image", content: absoluteUrl("/og.jpg") },
       { name: "twitter:title" as const, content: fullTitle },
       { name: "twitter:description" as const, content: description },
+      { name: "twitter:image" as const, content: absoluteUrl("/og.jpg") },
     ],
     links: [{ rel: "canonical" as const, href: url }],
   };

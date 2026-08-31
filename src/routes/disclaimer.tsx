@@ -4,6 +4,7 @@ import {
   DisclaimerPanel,
 } from "@/components/disclaimer-panel";
 import { pageHead } from "@/lib/site";
+import { LEGAL_REVIEW_DATE } from "@/lib/state-legal";
 import { useI18n } from "@/lib/locale";
 
 export const Route = createFileRoute("/disclaimer")({
@@ -25,6 +26,7 @@ function DisclaimerPage() {
         {t("disc.pageKicker")}
       </p>
       <h1 className="mt-3 font-display text-4xl tracking-tight">{t("disc.pageTitle")}</h1>
+      <p className="mt-2 text-sm text-faint">Last updated {LEGAL_REVIEW_DATE}.</p>
       <div className="mt-4 mb-8">
         <DisclaimerLead />
       </div>

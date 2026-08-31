@@ -36,7 +36,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     purchaseAge: 18,
     claimWindow: "Typically 90 days after the announced game end date.",
     statuteHint: "Tennessee Education Lottery Corporation; Tenn. Code Ann. Title 4, Chapter 51.",
-    remainingSource: "https://www.tnlottery.com/remaining-prizes",
+    remainingSource: "https://www.tnlottery.com/games/scratch-offs",
     issues: [
       "TELC is the exclusive lottery operator. This product is not TELC and must not look official.",
       "Play It Again typically holds one top prize per instant game. A posted “1 left” is treated as no retail jackpot — that is our reading of the public table, not a TELC ruling.",
@@ -250,7 +250,8 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
 
 export const STATE_LEGAL_LIST: StateLegalNote[] = STATE_IDS.map((id) => STATE_LEGAL[id]);
 
-export const LEGAL_REVIEW_DATE = "August 25, 2026";
+/** Last product-legal pass. Not a TN Lottery scrape date. */
+export const LEGAL_REVIEW_DATE = "August 30, 2026";
 
 export const COMMON_LEGAL_LIMITS = [
   "Scratch Vault is an independent remaining-prize information product of Webb Spinner Visions. It is not a lottery, casino, sportsbook, sweepstakes, ticket seller, courier, or prize payer.",

@@ -6,6 +6,7 @@ import {
   DEFAULT_STATE_ID,
   type StateId,
   getState,
+  heatContextFor,
   isStateId,
 } from "@/config/states";
 import {
@@ -16,6 +17,7 @@ import {
   type PriceFilter,
   type SortKey,
 } from "@/lib/heat";
+import { scoreGame } from "@/lib/heat.server";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { BandChip, TicketCard } from "@/components/ticket-card";
 import { DeskReviewPanel } from "@/components/desk-review";
@@ -50,6 +52,16 @@ export const Route = createFileRoute("/")({
     if (isStateId(search.state)) return { state: search.state };
     return {};
   },
+  loaderDeps: ({ search }) => ({
+    stateId: search.state ?? DEFAULT_STATE_ID,
+  }),
+  loader: async ({ deps }): Promise<DeskSnapshot | null> => {
+    try {
+      return await getDeskSnapshot({ data: { stateId: deps.stateId } });
+    } catch {
+      return null;
+    }
+  },
   head: () =>
     pageHead({
       title: SITE_TITLE,
@@ -80,13 +92,14 @@ const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
 function VaultHome() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
+  const loadedSnap = Route.useLoaderData();
   const { stateId, setStateId, config, setDeskMode } = useActiveState();
   const { t } = useI18n();
   const [filter, setFilter] = useState<PriceFilter>("all");
   const [sort, setSort] = useState<SortKey>("safest");
   const [query, setQuery] = useState("");
   const { paid } = useAccess();
-  const [snap, setSnap] = useState<DeskSnapshot | null>(null);
+  const [snap, setSnap] = useState<DeskSnapshot | null>(loadedSnap);
   const locked = !(snap?.paid ?? paid);
   const [lateNight, setLateNight] = useState(false);
 
@@ -97,8 +110,13 @@ function VaultHome() {
   }, [search.state, setStateId, stateId]);
 
   useEffect(() => {
+    if (!loadedSnap) return;
+    setSnap(loadedSnap);
+    setDeskMode(loadedSnap.dataMode);
+  }, [loadedSnap, setDeskMode]);
+
+  useEffect(() => {
     let cancelled = false;
-    setSnap(null);
     void getDeskSnapshot({ data: { stateId } })
       .then((next) => {
         if (cancelled) return;
@@ -106,7 +124,7 @@ function VaultHome() {
         setDeskMode(next.dataMode);
       })
       .catch(() => {
-        if (!cancelled) setSnap(null);
+        /* keep loader snapshot — do not stick on “Loading the desk…” */
       });
     return () => {
       cancelled = true;
@@ -145,10 +163,11 @@ function VaultHome() {
   };
 
   const catalog = snap?.games ?? publicCatalog(stateId);
-  const reports = useMemo(
-    () => (snap ? reportMap(snap.reports) : new Map()),
-    [snap],
-  );
+  const reports = useMemo(() => {
+    if (snap) return reportMap(snap.reports);
+    const ctx = heatContextFor(config);
+    return new Map(catalog.map((game) => [game.number, scoreGame(game, ctx)]));
+  }, [snap, catalog, config]);
   const desk = snap?.desk ?? {
     byPrice: [],
     mediumLeaders: [],
@@ -257,7 +276,7 @@ function VaultHome() {
       ) : null}
       <DeskAlertBanner />
 
-      {snap && (!snap.gameCount || !openingFive.length) ? null : (
+      {openingFive.length ? (
       <section id="tonight" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
@@ -270,27 +289,23 @@ function VaultHome() {
               ? t("tonight.title")
               : t("tonight.titleCompiled")}
           </h2>
-          {!snap ? (
-            <p className="mt-4 text-muted">{t("home.loading")}</p>
-          ) : openingFive.length ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {openingFive.map((game) => {
-                const heat = reports.get(game.number);
-                if (!heat) return null;
-                return (
-                  <TicketCard
-                    key={game.number}
-                    game={game}
-                    heat={heat}
-                    locked={locked}
-                  />
-                );
-              })}
-            </div>
-          ) : null}
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {openingFive.map((game) => {
+              const heat = reports.get(game.number);
+              if (!heat) return null;
+              return (
+                <TicketCard
+                  key={game.number}
+                  game={game}
+                  heat={heat}
+                  locked={locked}
+                />
+              );
+            })}
+          </div>
         </div>
       </section>
-      )}
+      ) : null}
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -409,9 +424,7 @@ function VaultHome() {
               : t("home.games", { count: list.length })}
           </p>
         </div>
-        {!snap ? (
-          <p className="text-muted">{t("home.loading")}</p>
-        ) : publicList.length === 0 ? (
+        {publicList.length === 0 ? (
           <p className="text-muted">{t("home.none")}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

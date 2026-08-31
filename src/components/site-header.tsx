@@ -51,25 +51,25 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-3 sm:gap-2 sm:px-6">
         <Link
           to="/"
-          className="flex min-h-11 min-w-0 flex-1 items-center gap-2 overflow-hidden"
+          className="flex min-h-11 shrink-0 items-center gap-2"
           onClick={() => setOpen(false)}
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm tracking-tight">
             <span className="text-gold">$</span>
             <span className="text-sage">V</span>
           </span>
-          <span className="min-w-0 leading-tight">
-            <span className="block truncate font-display text-sm tracking-tight sm:text-base">
+          <span className="leading-tight">
+            <span className="block whitespace-nowrap font-display text-sm tracking-tight sm:text-base">
               Scratch Vault
             </span>
-            <span className="hidden truncate font-mono text-[10px] tracking-[0.12em] text-faint uppercase sm:block">
+            <span className="hidden whitespace-nowrap font-mono text-[10px] tracking-[0.12em] text-faint uppercase sm:block">
               {config.shortName} · {status}
             </span>
           </span>
         </Link>
 
-        <div className="flex shrink-0 flex-nowrap items-center gap-1">
-          <LanguageToggle className="hidden md:inline-flex" />
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-1">
+          <LanguageToggle />
           <HeaderTrial />
           <HeaderAuth />
           <button
@@ -98,7 +98,6 @@ export function SiteHeader() {
           className="border-t border-line bg-bg px-3 py-3 md:hidden"
         >
           <nav aria-label={t("nav.mobile")} className="flex flex-col">
-            <LanguageToggle className="justify-start px-2" />
             <NavLinks
               unseen={unseen}
               markSeen={markSeen}
@@ -201,9 +200,10 @@ function HeaderAuth() {
 
   if (isPending) {
     return (
-      <span className="inline-flex min-h-11 shrink-0 items-center px-2 text-sm text-faint">
-        …
-      </span>
+      <span
+        className="inline-flex min-h-11 w-14 shrink-0 items-center"
+        aria-hidden="true"
+      />
     );
   }
 

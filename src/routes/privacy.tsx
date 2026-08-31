@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { pageHead } from "@/lib/site";
+import { LEGAL_REVIEW_DATE } from "@/lib/state-legal";
 
 export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
@@ -22,7 +23,7 @@ function PrivacyPage() {
       <p className="mt-4 text-sm leading-relaxed text-muted">
         Scratch Vault is an independent remaining-prize information product of
         Webb Spinner Visions. It is not a lottery, not a ticket seller, and
-        not affiliated with any state lottery. Last updated August 25, 2026.
+        not affiliated with any state lottery. Last updated {LEGAL_REVIEW_DATE}.
       </p>
 
       <section className="mt-10">

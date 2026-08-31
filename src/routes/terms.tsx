@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { pageHead } from "@/lib/site";
+import { LEGAL_REVIEW_DATE } from "@/lib/state-legal";
 
 export const Route = createFileRoute("/terms")({
   component: TermsPage,
@@ -30,7 +31,7 @@ function TermsPage() {
         <Link to="/privacy" className="underline underline-offset-2 hover:text-fg">
           Privacy Policy
         </Link>
-        . Last updated August 25, 2026.
+        . Last updated {LEGAL_REVIEW_DATE}.
       </p>
 
       <Section title="1. Who we are">
