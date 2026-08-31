@@ -25,6 +25,7 @@ import { useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
 import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { skipNameLocked } from "@/lib/skip-teaser";
 import { useI18n } from "@/lib/locale";
 import type { MessageKey } from "@/lib/i18n";
 
@@ -246,25 +247,53 @@ function VaultHome() {
             <p className="mt-4 text-sm text-muted">{t("home.skipEmpty")}</p>
           ) : (
             <ul className="mt-4 divide-y divide-line border border-line">
-              {skipGames.map((game) => {
+              {skipGames.map((game, index) => {
                 const heat = reports.get(game.number);
-                return (
-                  <li key={game.number}>
-                    <Link
-                      to="/game/$number"
-                      params={{ number: String(game.number) }}
-                      search={{ state: stateId }}
-                      className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
-                    >
-                      <span className="truncate text-sm">
-                        ${game.price} · {game.name}
+                const hideName = skipNameLocked(index, !locked);
+                const chip = heat ? (
+                  <BandChip band={heat.band} />
+                ) : (
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
+                    {t("home.skip")}
+                  </span>
+                );
+                const label = (
+                  <span className="flex min-w-0 items-center gap-2 truncate text-sm">
+                    <span className="shrink-0">${game.price} ·</span>
+                    {hideName ? (
+                      <span
+                        className="inline-block max-w-[14rem] truncate blur-[8px] select-none"
+                        aria-hidden
+                      >
+                        {t("home.skipHidden")}
                       </span>
-                      {heat ? <BandChip band={heat.band} /> : (
-                        <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
-                          {t("home.skip")}
-                        </span>
-                      )}
-                    </Link>
+                    ) : (
+                      <span className="truncate">{game.name}</span>
+                    )}
+                  </span>
+                );
+                return (
+                  <li key={`${game.stateId ?? stateId}-${game.number}`}>
+                    {hideName ? (
+                      <Link
+                        to="/pricing"
+                        aria-label={t("home.skipLockedAria")}
+                        className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
+                      >
+                        {label}
+                        {chip}
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/game/$number"
+                        params={{ number: String(game.number) }}
+                        search={{ state: stateId }}
+                        className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
+                      >
+                        {label}
+                        {chip}
+                      </Link>
+                    )}
                   </li>
                 );
               })}

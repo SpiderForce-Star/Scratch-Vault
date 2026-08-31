@@ -216,6 +216,8 @@
   "home.done": "Ya terminó. Guarde el teléfono.",
   "home.allGames": "Todos los juegos",
   "home.skipEmpty": "No hay juegos agotados marcados en esta mesa.",
+  "home.skipHidden": "•••• ••••",
+  "home.skipLockedAria": "Nombre de omisión oculto. Abra precios de Full Access.",
   "home.fullDisclaimer": "Aviso legal completo",
   "home.top": "Mayor {{prize}}",
   "card.topListed": "Mayor aún listado",

@@ -1,9 +1,10 @@
-import { ticketArt, hasNamedFace, type Game } from "@/data/games";
+import { ticketArt, type Game } from "@/data/games";
+import { TicketChromeFace } from "@/components/ticket-chrome";
 import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
-/** Header-first ticket face: reconstruction photo plus a name plate. */
+/** Named TN reconstruction, or original chrome unique to this game. */
 export function TicketFace({
   game,
   className,
@@ -23,25 +24,28 @@ export function TicketFace({
   return (
     <div
       className={cn(
-        "relative overflow-hidden bg-raised",
+        "relative w-full overflow-hidden bg-raised",
         full ? "aspect-[3/2]" : "aspect-[16/7]",
         className,
       )}
     >
-      <img
-        src={art}
-        alt={`Reconstruction of ${game.name} #${game.number} ticket face`}
-        className={cn(
-          "h-full w-full object-cover",
-          full ? "object-center" : "object-[center_18%]",
-        )}
-      />
+      {art ? (
+        <img
+          src={art}
+          alt={`Independent reconstruction of ${game.name} #${game.number}`}
+          className={cn(
+            "h-full w-full object-cover",
+            full ? "object-center" : "object-[center_18%]",
+          )}
+        />
+      ) : (
+        <TicketChromeFace game={game} />
+      )}
       <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-bg via-bg/70 to-transparent px-3 pt-10 pb-2.5">
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
               #{game.number}
-              {!hasNamedFace(game) ? " · header match" : ""}
             </p>
             <p className="truncate font-display text-base leading-tight text-fg sm:text-lg">
               {game.name}

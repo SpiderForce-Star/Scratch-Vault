@@ -216,6 +216,8 @@
   "home.done": "You’re done. Put the phone away.",
   "home.allGames": "All games",
   "home.skipEmpty": "No drained games flagged on this desk.",
+  "home.skipHidden": "•••• ••••",
+  "home.skipLockedAria": "Skip name hidden. Open Full Access pricing.",
   "home.fullDisclaimer": "Full disclaimer",
   "home.top": "Top {{prize}}",
   "card.topListed": "Top still listed",
