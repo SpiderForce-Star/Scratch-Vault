@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
@@ -7,6 +7,7 @@ import { PromoMarquee } from "@/components/promo-marquee";
 import { TicketCopyright } from "@/components/ticket-copyright";
 import { SiteFooter } from "@/components/site-footer";
 import { AgeGate } from "@/components/age-gate";
+import { BootSplash, BOOT_FORCE_MS } from "@/components/boot-splash";
 import { InstallCoach } from "@/components/install-coach";
 import { ActiveStateProvider } from "@/lib/active-state";
 import { LocaleProvider } from "@/lib/locale";
@@ -22,6 +23,9 @@ import {
   absoluteUrl,
 } from "@/lib/site";
 import appCss from "../styles.css?url";
+
+/** First-paint #0B0F0C until BootSplash mounts. 4s cap if React never starts. */
+const BOOT_PAINT_SCRIPT = `(function(){var k="vsv.boot.shown";var r=document.documentElement;try{if(sessionStorage.getItem(k)){r.setAttribute("data-sv-boot","done");return;}}catch(e){}r.setAttribute("data-sv-boot","pending");function paint(){if(!document.body||document.getElementById("sv-boot-paint"))return;var el=document.createElement("div");el.id="sv-boot-paint";el.setAttribute("aria-hidden","true");el.style.cssText="position:fixed;inset:0;background:#0B0F0C;z-index:70;pointer-events:none";document.body.appendChild(el);}if(document.body)paint();else document.addEventListener("DOMContentLoaded",paint);setTimeout(function(){if(r.getAttribute("data-sv-boot")==="pending"){r.setAttribute("data-sv-boot","done");var n=document.getElementById("sv-boot-paint");if(n)n.remove();}},4000);})();`;
 
 export const Route = createRootRoute({
   head: () => ({
@@ -70,6 +74,7 @@ export const Route = createRootRoute({
         />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: BOOT_PAINT_SCRIPT }} />
         <PreviewHostBridge />
         <AuthProvider>
           <ActiveStateProvider>
@@ -86,6 +91,7 @@ export const Route = createRootRoute({
 
 function NativeRoot() {
   const user = useCurrentUser();
+  const [introDone, setIntroDone] = useState(false);
 
   useEffect(() => {
     void initNativeChrome();
@@ -97,6 +103,11 @@ function NativeRoot() {
     });
   }, [user?.id]);
 
+  useEffect(() => {
+    const force = window.setTimeout(() => setIntroDone(true), BOOT_FORCE_MS + 200);
+    return () => window.clearTimeout(force);
+  }, []);
+
   return (
     <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">
       <SiteHeader />
@@ -105,7 +116,8 @@ function NativeRoot() {
       <InstallCoach />
       <Outlet />
       <SiteFooter />
-      <AgeGate />
+      <BootSplash onFinished={() => setIntroDone(true)} />
+      {introDone ? <AgeGate /> : null}
     </div>
   );
 }

@@ -10,7 +10,9 @@ import { useI18n } from "@/lib/locale";
 /** First-visit 18+ confirmation on web and in the native shells. */
 export function AgeGate() {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(
+    () => typeof window !== "undefined" && !hasConfirmedAge(),
+  );
 
   useEffect(() => {
     if (!hasConfirmedAge()) setOpen(true);
