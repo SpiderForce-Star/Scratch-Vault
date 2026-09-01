@@ -54,10 +54,10 @@ export const Route = createRootRoute({
     links: [
       { rel: "canonical", href: SITE_ORIGIN },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-      { rel: "icon", type: "image/png", sizes: "192x192", href: "/pwa-192.png" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/pwa-192.png?v=c8" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=c8" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap",
