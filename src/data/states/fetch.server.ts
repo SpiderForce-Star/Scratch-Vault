@@ -12,6 +12,7 @@ import {
   parseOfficialRemaining,
 } from "./parse.server";
 import {
+  archivePriorSnapshot,
   formatWeekLabel,
   markSnapshotFailed,
   readSnapshot,
@@ -153,6 +154,9 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
 
     const asOf = extractAsOf(body) || fetchedAt;
     const weekLabel = formatWeekLabel(asOf, true);
+    if (lastGood?.catalog?.length) {
+      await archivePriorSnapshot(lastGood);
+    }
     await upsertSnapshot({
       stateId,
       ok: true,

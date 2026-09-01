@@ -258,3 +258,83 @@ export async function markSnapshotFailed(
   );
   return readSnapshot(stateId);
 }
+
+const priorMemory = new Map<StateId, DeskSnapshotRow>();
+
+/** Keep the trusted catalog we are about to overwrite so radar can diff tops. */
+export async function archivePriorSnapshot(row: DeskSnapshotRow): Promise<void> {
+  if (!row.catalog?.length) return;
+  const catalog = trustedCatalog(row.catalog);
+  if (!catalog.length) return;
+  const stored: DeskSnapshotRow = { ...row, catalog, gameCount: catalog.length };
+  const existing = priorMemory.get(row.stateId);
+  if (existing?.fetchedAt !== stored.fetchedAt) {
+    priorMemory.set(row.stateId, stored);
+  }
+  if (!hasPostgres()) return;
+  try {
+    const sql = await getSqlOrThrow();
+    const already = await sql.query<{ id: number }>(
+      `SELECT id FROM remaining_snapshot
+       WHERE state_id = $1 AND fetched_at = $2::timestamptz
+       LIMIT 1`,
+      [row.stateId, row.fetchedAt],
+    );
+    if (already[0]) return;
+    await sql.query(
+      `INSERT INTO remaining_snapshot
+        (state_id, fetched_at, source_url, week_label, game_count, status, error, games)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        row.stateId,
+        row.fetchedAt,
+        row.sourceUrl,
+        row.weekLabel,
+        catalog.length,
+        row.ok ? "ok" : "last-good",
+        row.reason,
+        JSON.stringify(catalog),
+      ],
+    );
+  } catch {
+    /* remaining_snapshot may be missing; radar falls back to bundled last-good. */
+  }
+}
+
+/**
+ * Prior trusted catalog for a capture cycle: archived snapshot, then bundled last-good.
+ * Same snapshot as current → null (do not invent a drop).
+ */
+export async function readPriorCatalog(
+  stateId: StateId,
+  currentFetchedAt: string | null,
+): Promise<Game[] | null> {
+  if (hasPostgres() && currentFetchedAt) {
+    try {
+      const sql = await getSqlOrThrow();
+      const rows = await sql.query<{ games: unknown; fetched_at: string | Date }>(
+        `SELECT games, fetched_at FROM remaining_snapshot
+         WHERE state_id = $1
+           AND games IS NOT NULL
+           AND fetched_at < $2::timestamptz
+         ORDER BY fetched_at DESC
+         LIMIT 1`,
+        [stateId, currentFetchedAt],
+      );
+      const catalog = rows[0] ? asGames(rows[0].games) : null;
+      if (catalog?.length) return catalog;
+    } catch {
+      /* table missing — fall through */
+    }
+  }
+
+  const mem = priorMemory.get(stateId);
+  if (mem?.catalog?.length && mem.fetchedAt !== currentFetchedAt) {
+    return mem.catalog;
+  }
+
+  const bundled = readBundledLastGood(stateId);
+  if (!bundled?.catalog?.length) return null;
+  if (currentFetchedAt && bundled.fetchedAt === currentFetchedAt) return null;
+  return bundled.catalog;
+}

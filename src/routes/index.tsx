@@ -16,8 +16,10 @@ import {
   type PriceFilter,
   type SortKey,
 } from "@/lib/heat";
-import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
+import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
+import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
 import { BandChip, TicketCard } from "@/components/ticket-card";
+import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { useAccess } from "@/lib/use-access";
@@ -38,12 +40,12 @@ export const Route = createFileRoute("/")({
   loaderDeps: ({ search }) => ({
     stateId: search.state ?? DEFAULT_STATE_ID,
   }),
-  loader: async ({ deps }): Promise<DeskSnapshot | null> => {
-    try {
-      return await getDeskSnapshot({ data: { stateId: deps.stateId } });
-    } catch {
-      return null;
-    }
+  loader: async ({ deps }): Promise<{ desk: DeskSnapshot | null; radar: RadarScopePayload }> => {
+    const [desk, radar] = await Promise.all([
+      getDeskSnapshot({ data: { stateId: deps.stateId } }).catch(() => null),
+      getRadarScope().catch(() => EMPTY_RADAR),
+    ]);
+    return { desk, radar: radar ?? EMPTY_RADAR };
   },
   head: () =>
     pageHead({
@@ -88,7 +90,9 @@ const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
 function VaultHome() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
-  const loadedSnap = Route.useLoaderData();
+  const loaded = Route.useLoaderData();
+  const loadedSnap = loaded?.desk ?? null;
+  const radar = loaded?.radar ?? EMPTY_RADAR;
   const { stateId, setStateId, config, setDeskMode } = useActiveState();
   const { t } = useI18n();
   const [filter, setFilter] = useState<PriceFilter>("10");
@@ -194,52 +198,62 @@ function VaultHome() {
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <div className="mb-4 flex flex-wrap gap-1">
-            {FILTERS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setPrice(f.id)}
-                className={cn(
-                  "min-h-11 min-w-11 rounded-md px-3 text-sm",
-                  filter === f.id
-                    ? "bg-gold text-accent-fg"
-                    : "bg-surface text-muted hover:text-fg",
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {t("trip.kicker", { price: priceLabel })}
-          </p>
-          <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
-            {t("trip.title")}
-          </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-            {t("trip.body")}
-          </p>
-          {tripGames.length === 0 ? (
-            <p className="mt-4 text-muted">
-              {t("home.nothingPosted", { price: priceLabel })}
-            </p>
-          ) : (
-            <div className="mt-5 grid gap-4 sm:grid-cols-3">
-              {tripGames.map((game) => {
-                const heat = reports.get(game.number);
-                if (!heat) return null;
-                return (
-                  <TicketCard
-                    key={game.number}
-                    game={game}
-                    heat={heat}
-                    locked={locked}
-                  />
-                );
-              })}
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+            <RadarCashHero
+              captures={radar.captures}
+              contacts={radar.contacts}
+              cycleId={radar.cycleId}
+              bleeps={radar.bleeps}
+            />
+            <div className="min-w-0">
+              <div className="mb-4 flex flex-wrap gap-1">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setPrice(f.id)}
+                    className={cn(
+                      "min-h-11 min-w-11 rounded-md px-3 text-sm",
+                      filter === f.id
+                        ? "bg-gold text-accent-fg"
+                        : "bg-surface text-muted hover:text-fg",
+                    )}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                {t("trip.kicker", { price: priceLabel })}
+              </p>
+              <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+                {t("trip.title")}
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+                {t("trip.body")}
+              </p>
+              {tripGames.length === 0 ? (
+                <p className="mt-4 text-muted">
+                  {t("home.nothingPosted", { price: priceLabel })}
+                </p>
+              ) : (
+                <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                  {tripGames.map((game) => {
+                    const heat = reports.get(game.number);
+                    if (!heat) return null;
+                    return (
+                      <TicketCard
+                        key={game.number}
+                        game={game}
+                        heat={heat}
+                        locked={locked}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </section>
 

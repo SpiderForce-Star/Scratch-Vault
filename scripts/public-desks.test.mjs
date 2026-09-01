@@ -95,3 +95,16 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   assert.equal(banner.includes('t("banner.deskSnapshot")'), true);
   assert.equal(banner.includes("banner.lastGood"), false);
 });
+
+test("public home mounts remaining-prize radar beside the trip desk for phone and desktop", () => {
+  const home = read("src/routes/index.tsx");
+  const radar = read("src/components/radar-cash-hero.tsx");
+  assert.equal(home.includes("RadarCashHero"), true);
+  assert.equal(home.includes('id="desk"'), true);
+  assert.equal(home.includes("lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]"), true);
+  assert.equal(radar.includes("hidden lg:block"), false);
+  assert.equal(radar.includes("playGoldBleeps"), true);
+  assert.equal(radar.includes("DollarBill"), true);
+  assert.equal(radar.includes("deskNotifyEnabled"), true);
+  assert.equal(radar.includes("prefers-reduced-motion"), true);
+});

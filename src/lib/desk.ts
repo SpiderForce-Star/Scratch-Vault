@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { optionalAuthMiddleware } from "./auth/optional";
 import type { Game } from "@/data/games";
 import type { CashBlip, DeskReview, HeatContext, HeatReport, TonightCard } from "./heat";
+import { EMPTY_RADAR, type RadarScopePayload } from "./radar";
 import {
   DEFAULT_STATE_ID,
   type DataMode,
@@ -40,3 +41,14 @@ export const getDeskSnapshot = createServerFn({ method: "GET" })
     const { buildDeskSnapshot } = await import("./desk.server");
     return buildDeskSnapshot(context.userId, context.email, data.stateId);
   });
+
+export const getRadarScope = createServerFn({ method: "GET" }).handler(
+  async (): Promise<RadarScopePayload> => {
+    try {
+      const { buildRadarScope } = await import("./radar.server");
+      return await buildRadarScope();
+    } catch {
+      return EMPTY_RADAR;
+    }
+  },
+);
