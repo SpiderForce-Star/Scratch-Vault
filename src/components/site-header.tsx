@@ -7,7 +7,6 @@ import { useDeskAlert } from "@/lib/use-desk-alert";
 import { TrialCta } from "@/components/trial-cta";
 import { SpiderMark } from "@/components/mechanical-spider";
 import { useAccess } from "@/lib/use-access";
-import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -25,17 +24,9 @@ const NAV: {
 
 export function SiteHeader() {
   const { unseen, markSeen } = useDeskAlert();
-  const { config, deskMode } = useActiveState();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const menuId = useId();
-  const mode = deskMode ?? config.dataMode;
-  const status =
-    mode === "sample"
-      ? t("header.demoData")
-      : mode === "compiled"
-        ? t("header.compiled")
-        : t("header.independent");
 
   useEffect(() => {
     if (!open) return;
@@ -48,27 +39,18 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-3 sm:gap-2 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-2 sm:gap-2 sm:px-6">
         <Link
           to="/"
-          className="flex min-h-11 shrink-0 items-center gap-2"
+          aria-label="Scratch Vault"
+          className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm tracking-tight"
           onClick={() => setOpen(false)}
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm tracking-tight">
-            <span className="text-gold">$</span>
-            <span className="text-sage">V</span>
-          </span>
-          <span className="leading-tight">
-            <span className="block whitespace-nowrap font-display text-sm tracking-tight sm:text-base">
-              Scratch Vault
-            </span>
-            <span className="hidden whitespace-nowrap font-mono text-[10px] tracking-[0.12em] text-faint uppercase sm:block">
-              {config.shortName} · {status}
-            </span>
-          </span>
+          <span className="text-gold">$</span>
+          <span className="text-sage">V</span>
         </Link>
 
-        <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-1">
+        <div className="flex shrink-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
           <LanguageToggle />
           <HeaderTrial />
           <HeaderAuth />
@@ -119,7 +101,7 @@ function LanguageToggle({ className }: { className?: string }) {
     <button
       type="button"
       className={cn(
-        "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-2 text-sm text-fg sm:px-3",
+        "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-3 sm:text-sm",
         className,
       )}
       aria-label={toEs ? t("lang.ariaToEs") : t("lang.ariaToEn")}
@@ -187,7 +169,7 @@ function HeaderTrial() {
   return (
     <TrialCta
       compact
-      className="min-w-max shrink-0 whitespace-nowrap px-2.5 text-xs sm:px-3 sm:text-sm"
+      className="min-w-max shrink-0 whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
     />
   );
 }
@@ -212,7 +194,7 @@ function HeaderAuth() {
       <Link
         to="/login"
         search={{ next: "/" }}
-        className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-2 text-sm text-fg"
+        className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-2 sm:text-sm"
       >
         {t("nav.signIn")}
       </Link>
@@ -222,7 +204,7 @@ function HeaderAuth() {
   return (
     <Link
       to="/account"
-      className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-2 text-sm text-fg"
+      className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-2 sm:text-sm"
     >
       {t("nav.account")}
     </Link>

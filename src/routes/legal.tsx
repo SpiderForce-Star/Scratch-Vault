@@ -8,7 +8,6 @@ import {
 } from "@/lib/billing-policy";
 import {
   COMMON_LEGAL_LIMITS,
-  LEGAL_REVIEW_DATE,
   NATIONAL_HELPLINE,
   STATE_LEGAL_LIST,
 } from "@/lib/state-legal";
@@ -20,7 +19,7 @@ export const Route = createFileRoute("/legal")({
     pageHead({
       title: "State lottery notices",
       description:
-        "Scratch Vault state-by-state lottery notices. Independent remaining-prize desk. Not affiliated with any lottery. 18+ to use; Arizona and Iowa lottery tickets are 21+.",
+        "Scratch Vault state-by-state lottery notices. Independent remaining-prize desk. Not affiliated with any lottery. 18+ to use; Iowa lottery tickets are 21+.",
       path: "/legal",
     }),
 });
@@ -35,10 +34,10 @@ function LegalPage() {
         State lottery notices
       </h1>
       <p className="mt-4 text-sm leading-relaxed text-muted">
-        Scratch Vault publishes remaining-prize information for sixteen public
-        lottery desks. The notes below are product compliance summaries reviewed{" "}
-        {LEGAL_REVIEW_DATE}. They are not legal advice and they do not replace
-        the issuing lottery’s own rules. Last updated {LEGAL_REVIEW_DATE}.
+        Scratch Vault publishes remaining-prize information for ten public
+        lottery desks. The notes below are product compliance summaries. They
+        are not legal advice and they do not replace the issuing lottery’s own
+        rules.
       </p>
 
       <section className="mt-10">

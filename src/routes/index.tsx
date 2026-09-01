@@ -193,7 +193,6 @@ function VaultHome() {
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
-        weekLabel={snap?.weekLabel}
       />
 
       <section id="desk" className="border-b border-line">

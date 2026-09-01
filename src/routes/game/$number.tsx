@@ -44,7 +44,7 @@ export const Route = createFileRoute("/game/$number")({
       return pageHead({
         title: `Game #${found.game.number} remaining prizes`,
         description:
-          "Independent remaining-prize desk. Game numbers can overlap across states. Remaining counts do not improve odds. 18+ (Arizona Lottery tickets are 21+).",
+          "Independent remaining-prize desk. Game numbers can overlap across states. Remaining counts do not improve odds. 18+ (Iowa Lottery tickets are 21+).",
         path: `/game/${found.game.number}`,
         noindex: true,
       });

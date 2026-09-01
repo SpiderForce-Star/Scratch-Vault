@@ -36,7 +36,7 @@ export const Route = createFileRoute("/pricing")({
     pageHead({
       title: "Pricing",
       description:
-        "Scratch Vault Full Access. $4.99/month after a 7-day card-required trial, or $49.99/year billed now. No refunds. Opt out in your profile. 18+ to use; Arizona and Iowa lottery tickets are 21+. Independent remaining-prize desk. Not affiliated with any lottery.",
+        "Scratch Vault Full Access. $4.99/month after a 7-day card-required trial, or $49.99/year billed now. No refunds. Opt out in your profile. 18+ to use; Iowa lottery tickets are 21+. Independent remaining-prize desk. Not affiliated with any lottery.",
       path: "/pricing",
     }),
 });

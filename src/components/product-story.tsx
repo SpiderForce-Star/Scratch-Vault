@@ -94,9 +94,7 @@ export function HowTheDataWorks() {
                   {config.lotteryShort}
                 </a>
               ) : null}
-              {config.dataMode === "compiled"
-                ? t("data.snapshot", { week: config.weekLabel })
-                : null}{" "}
+              {config.dataMode === "compiled" ? t("data.snapshot") : null}{" "}
               {t("data.publicChange")}
             </p>
           )}

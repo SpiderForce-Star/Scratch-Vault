@@ -13,7 +13,7 @@ export const Route = createFileRoute("/disclaimer")({
     pageHead({
       title: "Disclaimer & responsible play",
       description:
-        "Independent remaining-prize desk. Not affiliated with any state lottery. Remaining counts do not improve odds. 18+ to use; Arizona and Iowa lottery tickets are 21+. 1-800-GAMBLER.",
+        "Independent remaining-prize desk. Not affiliated with any state lottery. Remaining counts do not improve odds. 18+ to use; Iowa lottery tickets are 21+. 1-800-GAMBLER.",
       path: "/disclaimer",
     }),
 });

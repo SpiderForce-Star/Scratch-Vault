@@ -15,7 +15,7 @@ export const SITE_TITLE =
   "Scratch-off remaining prizes · Scratch Vault";
 
 export const SITE_DESCRIPTION =
-  "See which scratch-offs still have cash posted at $5, $10, $20, $25, $30, and $50. Skip drained games. Remaining-prize desk for Tennessee, Kentucky, South Carolina, Oklahoma, North Carolina, Pennsylvania, Texas, Missouri, Iowa, and Idaho. Counts do not improve odds. 18+ to use; Arizona and Iowa lottery tickets are 21+.";
+  "See which scratch-offs still have cash posted at $5, $10, $20, $25, $30, and $50. Skip drained games. Remaining-prize desk for Tennessee, Kentucky, South Carolina, Oklahoma, North Carolina, Pennsylvania, Texas, Missouri, Iowa, and Idaho. Counts do not improve odds. 18+ to use; Iowa lottery tickets are 21+.";
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;

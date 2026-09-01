@@ -9,7 +9,6 @@ export function DataModeBanner({
   state: StateConfig;
   loadError?: string | null;
   stale?: boolean;
-  weekLabel?: string;
   dataMode?: DataMode;
 }) {
   const { t } = useI18n();
@@ -57,7 +56,7 @@ export function DataModeBanner({
   return (
     <div role="status" className="border-b border-line bg-raised/40 px-4 py-2 sm:px-6">
       <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
-        {t("banner.deskSnapshot")}
+        {t("banner.deskSnapshot")} {t("banner.scanHeadline")}
       </p>
     </div>
   );

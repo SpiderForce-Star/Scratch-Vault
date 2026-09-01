@@ -157,7 +157,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.kylottery.com/apps/scratch_offs/prizes_remaining.html",
     playResponsiblyUrl: "https://www.kylottery.com/",
     dataSourceNotes:
-      "Compiled from the official Kentucky remaining-prizes page as of August 19, 2026. Not a live feed and not store inventory. $5–$50 games. No Tennessee Play It Again holdback.",
+      "Compiled from the official Kentucky remaining-prizes page. Not a live feed and not store inventory. $5–$50 games. No Tennessee Play It Again holdback.",
     fieldMapping:
       "game number + name, prize amount, prizes remaining (top / mid / cash from the published table)",
     hasFullMultiTier: true,
@@ -171,7 +171,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Kentucky scratch-off prizes must typically be claimed within 180 days of the game’s end date. Confirm on the ticket and kylottery.com.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes page as of August 19, 2026. Not live retailer inventory. Remaining counts change as tickets sell. High-tier remaining rows are often the cash-option amount, not the advertised annuity.",
+      "Compiled from the official remaining-prizes page. Not live retailer inventory. Remaining counts change as tickets sell. High-tier remaining rows are often the cash-option amount, not the advertised annuity.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Some Kentucky top prizes may be paid as an annuity or a smaller lump-sum cash option. Remaining-prize tables often list the cash amount.",
@@ -189,7 +189,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.sceducationlottery.com/Games/PrizesRemaining",
     playResponsiblyUrl: "https://www.sceducationlottery.com/FAQ/PlayerProtection",
     dataSourceNotes:
-      "Compiled from official SC Education Lottery per-game unclaimed-prize tables as of August 20, 2026. Not a live feed and not store inventory. $5–$20 games currently listed.",
+      "Compiled from official SC Education Lottery per-game unclaimed-prize tables. Not a live feed and not store inventory. $5–$20 games currently listed.",
     fieldMapping:
       "game number + name, prize amount, estimated number of unclaimed prizes (top / mid / cash)",
     hasFullMultiTier: true,
@@ -206,7 +206,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "South Carolina scratch-off prizes must typically be claimed within 90 days of the official end of the game. Confirm on the ticket and sceducationlottery.com.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes pages as of August 20, 2026. Unclaimed counts are estimates. Not live retailer inventory. Remaining counts change as tickets sell.",
+      "Compiled from the official remaining-prizes pages. Unclaimed counts are estimates. Not live retailer inventory. Remaining counts change as tickets sell.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "South Carolina remaining counts are estimated unclaimed prizes. A listed prize may already have been sold.",
@@ -224,7 +224,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.lottery.ok.gov/scratchers/remaining-prizes",
     playResponsiblyUrl: "https://www.lottery.ok.gov/",
     dataSourceNotes:
-      "Compiled from the official Oklahoma remaining-prizes listing as of August 20, 2026. Official page updates Monday–Friday at 8:00 a.m. Not a live feed. $5–$50 games.",
+      "Compiled from the official Oklahoma remaining-prizes listing. Not a live feed. $5–$50 games.",
     fieldMapping:
       "game number + name, prize amount, remaining prizes, total prizes (top / mid / cash)",
     hasFullMultiTier: true,
@@ -238,10 +238,10 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Oklahoma scratcher prizes on ended games must typically be claimed within 90 days of the announced game end date. Confirm on the ticket and lottery.ok.gov.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes page as of August 20, 2026. Not live retailer inventory. Remaining counts change as tickets sell and as prizes are claimed.",
+      "Compiled from the official remaining-prizes page. Not live retailer inventory. Remaining counts change as tickets sell and as prizes are claimed.",
     rulesNotes: [
       "No Tennessee Play It Again holdback is applied.",
-      "Official remaining prizes are typically updated Monday–Friday at 8:00 a.m. This desk is a compiled snapshot, not a live feed.",
+      "This desk is a compiled snapshot, not a live feed. We keep scanning for the next official update.",
       "Ended-game prizes are generally claimable for 90 days after the announced end date. The ticket and Oklahoma Lottery rules control.",
       "Not affiliated with the Oklahoma Lottery. Prize payment is solely the Lottery’s under its rules.",
     ],
@@ -256,7 +256,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.michiganlottery.com/resources/instant-games-prizes-remaining",
     playResponsiblyUrl: "https://www.michiganlottery.com/resources",
     dataSourceNotes:
-      "Compiled from official Michigan instant remaining-prize listings as of August 15, 2026. Michigan states remaining prizes are unclaimed and may include unsold tickets. Not a live feed.",
+      "Compiled from official Michigan instant remaining-prize listings. Michigan states remaining prizes are unclaimed and may include unsold tickets. Not a live feed.",
     fieldMapping:
       "game number + name, ticket price, prize amount, remaining vs starting (top / mid / cash)",
     hasFullMultiTier: true,
@@ -273,7 +273,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Michigan instant prizes must typically be claimed by the expiration date printed on the ticket (often about one year). Unclaimed prizes generally go to the School Aid Fund. Confirm on the ticket and michiganlottery.com.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes page as of August 15, 2026. Remaining prizes represent unclaimed prizes and include tickets that may or may not have already been sold. Not live retailer inventory.",
+      "Compiled from the official remaining-prizes page. Remaining prizes represent unclaimed prizes and include tickets that may or may not have already been sold. Not live retailer inventory.",
     rulesNotes: [
       "No Tennessee Play It Again holdback is applied.",
       "The Michigan Lottery’s remaining-prize tables count unclaimed prizes, including tickets that may not yet have been sold. “Left” is not the same as “in a store.”",
@@ -291,7 +291,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.arizonalottery.com/scratchers/top-prizes-remaining",
     playResponsiblyUrl: "https://www.arizonalottery.com/winners/player-security/",
     dataSourceNotes:
-      "Compiled from official Arizona top-prizes-remaining listings as of August 21, 2026. The public page is top-prize heavy; mid-tier remaining is included only when published. Not a live feed.",
+      "Compiled from official Arizona top-prizes-remaining listings. The public page is top-prize heavy; mid-tier remaining is included only when published. Not a live feed.",
     fieldMapping:
       "game number + name, top prize amount, top prizes remaining (additional tiers when published)",
     hasFullMultiTier: false,
@@ -308,7 +308,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Arizona Scratchers prizes must typically be claimed within 180 days of the announced game-end date (by 5:00 p.m. Phoenix time on the 180th day, unless the game profile says otherwise). Confirm on the ticket and arizonalottery.com.",
     remainingDefinition:
-      "Compiled from the official top-prizes-remaining page as of August 21, 2026. Not live retailer inventory. Mid-tier remaining is not invented when the Lottery only publishes the top prize.",
+      "Compiled from the official top-prizes-remaining page. Not live retailer inventory. Mid-tier remaining is not invented when the Lottery only publishes the top prize.",
     rulesNotes: [
       "Arizona Lottery tickets may only be purchased or redeemed by players 21 or older.",
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
@@ -326,7 +326,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://nclottery.com/scratch-off-prizes-remaining",
     playResponsiblyUrl: "https://nclottery.com/responsible-gaming",
     dataSourceNotes:
-      "Compiled from the official NC Education Lottery remaining-prizes page as of August 20, 2026. Value / Total / Remaining. Map Remaining → remaining. Not a live feed and not store inventory. $5–$50 games.",
+      "Compiled from the official NC Education Lottery remaining-prizes page. Value / Total / Remaining. Map Remaining → remaining. Not a live feed and not store inventory. $5–$50 games.",
     fieldMapping:
       "game number + name, prize Value, Total, Remaining (top / mid / cash from published tiers)",
     hasFullMultiTier: true,
@@ -343,10 +343,10 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "North Carolina scratch-off prizes must typically be claimed within 90 days of the announced game end date. Confirm on the ticket and nclottery.com.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes page as of August 20, 2026. Remaining is the published Remaining column. Not live retailer inventory. Remaining counts change as tickets sell.",
+      "Compiled from the official remaining-prizes page. Remaining is the published Remaining column. Not live retailer inventory. Remaining counts change as tickets sell.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
-      "North Carolina remaining counts are prizes not yet claimed as of the published date. A listed prize may already have been sold.",
+      "North Carolina remaining counts are prizes not yet claimed on the official table. A listed prize may already have been sold.",
       "Scratch-off prizes must typically be claimed within 90 days of the announced game end date. The ticket and NC Education Lottery rules control.",
       "Not affiliated with the North Carolina Education Lottery. Prize payment is solely the Lottery’s under its rules.",
     ],
@@ -361,7 +361,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.palottery.pa.gov/scratch-offs/prizes-remaining.aspx",
     playResponsiblyUrl: "https://www.palottery.pa.gov/About-PA-Lottery/Responsible-Gaming.aspx",
     dataSourceNotes:
-      "Compiled from the official Pennsylvania Top Six Prizes / Wins Remaining table as of August 18, 2026. Not a live feed and not store inventory. $5–$50 games.",
+      "Compiled from the official Pennsylvania Top Six Prizes / Wins Remaining table. Not a live feed and not store inventory. $5–$50 games.",
     fieldMapping:
       "game number + name, Top Six Prizes, Wins Remaining (top / mid / cash from the six published amounts)",
     hasFullMultiTier: true,
@@ -375,7 +375,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Pennsylvania scratch-off prizes must typically be claimed within one year of the announced game end date. Confirm on the ticket and palottery.pa.gov.",
     remainingDefinition:
-      "Compiled from the official prizes-remaining page as of August 18, 2026. Wins Remaining are updated when the Lottery processes claims. Not live retailer inventory.",
+      "Compiled from the official prizes-remaining page. Wins Remaining are updated when the Lottery processes claims. Not live retailer inventory.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Pennsylvania publishes the top six prize amounts and wins remaining. Lower unpublished tiers are not invented.",
@@ -395,7 +395,7 @@ export const STATES: Record<StateId, StateConfig> = {
     playResponsiblyUrl:
       "https://www.texaslottery.com/export/sites/lottery/Misc/responsible_gaming.html",
     dataSourceNotes:
-      "Compiled from the official Texas Scratch Ticket Prizes Claimed table as of August 20, 2026. Remaining = prizes printed minus prizes claimed on published rows. Not a live feed and not store inventory. $5–$50 games.",
+      "Compiled from the official Texas Scratch Ticket Prizes Claimed table. Remaining = prizes printed minus prizes claimed on published rows. Not a live feed and not store inventory. $5–$50 games.",
     fieldMapping:
       "game number + name, prize amount, prizes printed, prizes claimed (remaining = printed − claimed)",
     hasFullMultiTier: true,
@@ -409,7 +409,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Texas scratch-off prizes must typically be claimed within 180 days of the announced game close date. Confirm on the ticket and texaslottery.com.",
     remainingDefinition:
-      "Compiled from the official prizes-claimed table as of August 20, 2026. Remaining is printed minus claimed on published prize rows. Not live retailer inventory. Cash-option amounts are used when that is the published prize amount.",
+      "Compiled from the official prizes-claimed table. Remaining is printed minus claimed on published prize rows. Not live retailer inventory. Cash-option amounts are used when that is the published prize amount.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Some Texas top prizes may be paid as an annuity or a smaller lump-sum cash option. This desk uses the prize amount the Lottery published.",
@@ -427,7 +427,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.molottery.com/scratchers-list.do",
     playResponsiblyUrl: "https://www.molottery.com/play-responsibly",
     dataSourceNotes:
-      "Compiled from official Missouri Scratchers prize tables (Prize Level / Total Prizes / Unclaimed Prizes) as of August 21, 2026. Map Unclaimed → remaining. Not a live feed and not store inventory. $5–$50 games.",
+      "Compiled from official Missouri Scratchers prize tables (Prize Level / Total Prizes / Unclaimed Prizes). Map Unclaimed → remaining. Not a live feed and not store inventory. $5–$50 games.",
     fieldMapping:
       "game number + name, prize level, total prizes, unclaimed prizes (top / mid / cash from published rows)",
     hasFullMultiTier: true,
@@ -444,7 +444,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Missouri scratch-off prizes must typically be claimed within 180 days of the announced game end date. Confirm on the ticket and molottery.com.",
     remainingDefinition:
-      "Compiled from official Scratchers unclaimed-prize tables as of August 21, 2026. Unclaimed maps to remaining. Not live retailer inventory. Unpublished lower tiers are not invented.",
+      "Compiled from official Scratchers unclaimed-prize tables. Unclaimed maps to remaining. Not live retailer inventory. Unpublished lower tiers are not invented.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Missouri remaining counts are unclaimed prizes on published prize levels. A listed prize may already have been sold.",
@@ -462,7 +462,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.ohiolottery.com/games/scratch-offs/prizes-remaining",
     playResponsiblyUrl: "https://www.ohiolottery.com/about/responsible-gaming",
     dataSourceNotes:
-      "Compiled from the official Ohio daily remaining report as of August 21, 2026 (unclaimed as of approximately 6:00 a.m.). Not a live feed and not store inventory. $5–$50 games.",
+      "Compiled from the official Ohio daily remaining report. Not a live feed and not store inventory. $5–$50 games.",
     fieldMapping:
       "game number + name, published prize amount, unclaimed count (top / mid / cash from published tiers)",
     hasFullMultiTier: true,
@@ -479,10 +479,10 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Ohio scratch-off prizes must typically be claimed within 180 days of the announced game end date. Confirm on the ticket and ohiolottery.com.",
     remainingDefinition:
-      "Compiled from the official daily remaining report as of August 21, 2026. Remaining is the published unclaimed count. Not live retailer inventory. Claims may not yet be filed for prizes still listed.",
+      "Compiled from the official daily remaining report. Remaining is the published unclaimed count. Not live retailer inventory. Claims may not yet be filed for prizes still listed.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
-      "Ohio remaining counts are unclaimed prizes as of about 6:00 a.m. on the snapshot date. A listed prize may already have been sold.",
+      "Ohio remaining counts are unclaimed prizes from the official daily remaining report. A listed prize may already have been sold.",
       "Scratch-off prizes must typically be claimed within 180 days of the announced game end date. The ticket and Ohio Lottery rules control.",
       "Not affiliated with the Ohio Lottery. Prize payment is solely the Lottery’s under its rules.",
     ],
@@ -561,7 +561,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.ialottery.com/Pages/Games/RemainingPrizes.aspx",
     playResponsiblyUrl: "https://www.ialottery.com/Pages/AboutUs/ResponsibleGambling.aspx",
     dataSourceNotes:
-      "Compiled from the official Iowa remaining-prizes table as of August 20, 2026. Scratch games only. Unclaimed → remaining. Official table lists prizes of $50 and greater.",
+      "Compiled from the official Iowa remaining-prizes table. Scratch games only. Unclaimed → remaining. Official table lists prizes of $50 and greater.",
     fieldMapping:
       "game name (number), game type=Scratch, cost, prize, claimed, unclaimed remaining",
     hasFullMultiTier: true,
@@ -578,7 +578,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Iowa scratch-off prizes must typically be claimed within 90 days of the announced game end date. Confirm on the ticket and ialottery.com.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes page as of August 20, 2026. Unclaimed maps to remaining. The official table lists remaining prizes of $50 and greater. Sub-$50 remaining is not invented.",
+      "Compiled from the official remaining-prizes page. Unclaimed maps to remaining. The official table lists remaining prizes of $50 and greater. Sub-$50 remaining is not invented.",
     rulesNotes: [
       "Iowa Lottery tickets may only be purchased by players 21 or older (Iowa Code § 99G.30).",
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
@@ -597,7 +597,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://www.idaholottery.com/games/scratch?view=remaining_prizes",
     playResponsiblyUrl: "https://www.idaholottery.com/play-responsibly",
     dataSourceNotes:
-      "Compiled from the official Idaho remaining-prizes print table as of August 21, 2026. Prize | Remaining. Map Remaining → remaining.",
+      "Compiled from the official Idaho remaining-prizes print table. Prize | Remaining. Map Remaining → remaining.",
     fieldMapping: "game number + name, prize amount, remaining",
     hasFullMultiTier: true,
     dataMode: "compiled",
@@ -610,7 +610,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Idaho scratch-off prizes must typically be claimed within 180 days of the official end of the game. Confirm on the ticket and idaholottery.com.",
     remainingDefinition:
-      "Compiled from the official remaining-prizes table as of August 21, 2026. Remaining is the published Remaining column. Not live retailer inventory.",
+      "Compiled from the official remaining-prizes table. Remaining is the published Remaining column. Not live retailer inventory.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Scratch-off prizes must typically be claimed within 180 days of the official end of the game. The ticket and Idaho Lottery rules control.",
@@ -627,7 +627,7 @@ export const STATES: Record<StateId, StateConfig> = {
     remainingPrizesUrl: "https://ctlottery.org/ScratchGamesTable",
     playResponsiblyUrl: "https://ctlottery.org/ResponsibleGaming",
     dataSourceNotes:
-      "Compiled from official Connecticut per-game remaining tables (Prize Amount | Total Prizes | Unclaimed Prizes) as of August 20, 2026. Map Unclaimed Prizes → remaining. Not a live feed and not store inventory. $5–$50 games.",
+      "Compiled from official Connecticut per-game remaining tables (Prize Amount | Total Prizes | Unclaimed Prizes). Map Unclaimed Prizes → remaining. Not a live feed and not store inventory. $5–$50 games.",
     fieldMapping:
       "game number + name, prize amount, total prizes, unclaimed remaining; cash option when annuity is listed",
     hasFullMultiTier: true,
@@ -644,7 +644,7 @@ export const STATES: Record<StateId, StateConfig> = {
     claimWindow:
       "Connecticut scratch-off prizes must typically be claimed within 90 days of the announced game end date. Confirm on the ticket and ctlottery.org.",
     remainingDefinition:
-      "Compiled from official per-game Unclaimed Prizes tables as of August 20, 2026. Unclaimed Prizes maps to remaining. Cash-option amounts are used when that is the published prize. Not live retailer inventory.",
+      "Compiled from official per-game Unclaimed Prizes tables. Unclaimed Prizes maps to remaining. Cash-option amounts are used when that is the published prize. Not live retailer inventory.",
     rulesNotes: [
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Scratch-off prizes must typically be claimed within 90 days of the announced game end date. The ticket and Connecticut Lottery Corporation rules control.",
@@ -706,7 +706,7 @@ export function purchaseAgeLine(state: StateConfig): string {
 
 /** Short global age line used in footers and meta. */
 export const APP_AGE_LINE =
-  "18+ to use this tool. Lottery tickets are 18+ in most supported states; Arizona and Iowa are 21+.";
+  "18+ to use this tool. Lottery tickets are 18+ in most supported states; Iowa is 21+.";
 
 /** Heat engine context. Only Tennessee applies a top-prize holdback today. */
 export function heatContextFor(state: StateConfig): HeatContext {

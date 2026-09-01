@@ -90,10 +90,45 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   const en = JSON.parse(read("src/locales/en.json"));
   const card = read("src/components/ticket-card.tsx");
   const banner = read("src/components/data-mode-banner.tsx");
+  const header = read("src/components/site-header.tsx");
+  const home = read("src/routes/index.tsx");
+  const radar = read("src/components/radar-cash-hero.tsx");
+  const alert = read("src/components/desk-alert-banner.tsx");
+  const states = read("src/config/states.ts");
+  const selector = read("src/components/state-selector.tsx");
   assert.equal(en["card.updated"], "Current");
   assert.equal(card.includes('t("card.updated")'), true);
   assert.equal(banner.includes('t("banner.deskSnapshot")'), true);
   assert.equal(banner.includes("banner.lastGood"), false);
+  assert.equal(
+    en["banner.deskSnapshot"],
+    "Remaining counts are a compiled snapshot, not live store inventory, and do not improve odds.",
+  );
+  assert.match(en["banner.scanHeadline"], /keep scanning for the next official update/);
+  assert.equal(banner.includes('t("banner.scanHeadline")'), true);
+  assert.doesNotMatch(en["banner.deskSnapshot"], /August|Week of|as of/);
+  assert.doesNotMatch(en["states.body"], /Arizona/);
+  assert.match(en["states.body"], /Iowa 21\+/);
+  assert.doesNotMatch(en["age.body"], /Arizona/);
+  assert.match(en["age.body"], /Iowa Lottery tickets are 21\+/);
+  assert.equal(header.includes(">Scratch Vault<"), false);
+  assert.match(header, /aria-label="Scratch Vault"/);
+  assert.equal(header.includes("weekLabel"), false);
+  assert.equal(home.includes("weekLabel"), false);
+  assert.equal(radar.includes("weekLabel"), false);
+  assert.equal(alert.includes("DESK_META.weekLabel"), false);
+  assert.equal(selector.includes("PUBLIC_STATE_LIST"), true);
+  assert.doesNotMatch(selector, /\bArizona\b/);
+  for (const m of states.matchAll(/remainingDefinition:\s*\n\s*"([^"]+)"/g)) {
+    assert.doesNotMatch(
+      m[1],
+      /as of August|Week of|Compiled ·|as of \d{4}-\d{2}-\d{2}/,
+      m[1],
+    );
+  }
+  assert.match(states, /id: "ia"[\s\S]*?minAge: 21/);
+  assert.match(states, /Iowa is 21\+/);
+  assert.doesNotMatch(states, /Arizona and Iowa are 21\+/);
 });
 
 test("public home mounts remaining-prize radar beside the trip desk for phone and desktop", () => {

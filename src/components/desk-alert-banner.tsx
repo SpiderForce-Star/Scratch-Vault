@@ -30,7 +30,6 @@ export function DeskAlertBanner() {
       <div className="mx-auto flex max-w-[1120px] flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <p className="text-sm leading-relaxed text-paper">
           {t("alert.updated", {
-            week: DESK_META.weekLabel,
             summary: DESK_META.summary,
           })}
         </p>
