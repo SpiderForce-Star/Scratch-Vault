@@ -418,6 +418,7 @@
   "pricing.unlocked": "Your desk is already unlocked.",
   "pricing.manage": "Manage billing",
   "pricing.checkoutFail": "Could not start checkout. Please try again.",
+  "pricing.waitAccount": "Still loading your account. Tap again in a second.",
   "pricing.purchasePending": "Purchase finished but Full Access is not active yet. Try Restore purchases.",
   "pricing.restoreEmpty": "No active Full Access purchase was found for this store account.",
   "pricing.restoreFailed": "Restore failed.",

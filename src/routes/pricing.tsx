@@ -71,7 +71,6 @@ function PricingPage() {
   const { t } = useI18n();
 
   const startCheckout = async (plan: "monthly" | "annual") => {
-    if (isPending || accessPending) return;
     setLoading(plan);
     setError(null);
     try {
@@ -85,21 +84,26 @@ function PricingPage() {
         setLoading(null);
         return;
       }
+      if (isPending) {
+        setError(t("pricing.waitAccount"));
+        setLoading(null);
+        return;
+      }
       if (!user) {
-        window.location.href = `/signup?next=${encodeURIComponent("/pricing")}`;
+        window.location.assign(`/signup?next=${encodeURIComponent("/pricing")}`);
         return;
       }
       const result = await createCheckoutSession({ data: { plan } });
       if (result?.url) {
-        window.location.href = result.url;
-      } else {
-        setError(t("pricing.checkoutFail"));
-        setLoading(null);
+        window.location.assign(result.url);
+        return;
       }
+      setError(t("pricing.checkoutFail"));
+      setLoading(null);
     } catch (err) {
       const message = checkoutClientMessage(err);
       if (err instanceof Error && err.message === "Unauthorized") {
-        window.location.href = `/signup?next=${encodeURIComponent("/pricing")}`;
+        window.location.assign(`/signup?next=${encodeURIComponent("/pricing")}`);
         return;
       }
       if (message === CHECKOUT_PUBLIC.canceled) {
