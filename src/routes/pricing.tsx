@@ -94,6 +94,14 @@ function PricingPage() {
         return;
       }
       const result = await createCheckoutSession({ data: { plan } });
+      if (result?.needsProfile) {
+        window.location.assign("/account?complete=1");
+        return;
+      }
+      if (result?.alreadySubscribed) {
+        window.location.assign("/account");
+        return;
+      }
       if (result?.url) {
         window.location.assign(result.url);
         return;

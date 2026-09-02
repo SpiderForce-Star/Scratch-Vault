@@ -113,31 +113,38 @@ export function loadCompiledDesk(
   return loadBundledDesk(stateId);
 }
 
+let seedPromise: Promise<void> | null = null;
+
 export async function seedSnapshotsIfEmpty(): Promise<void> {
-  try {
-    for (const id of STATE_IDS) {
-      const existing = await readSnapshot(id);
-      if (existing?.catalog?.length) continue;
-      const bundled = loadBundledDesk(id);
-      if (!bundled.games.length) continue;
-      await upsertSnapshot({
-        stateId: id,
-        ok: false,
-        stale: true,
-        fetchedAt: bundled.fetchedAt || STATES[id].publishedAt,
-        weekLabel: bundled.weekLabel,
-        sourceUrl: STATES[id].remainingPrizesUrl,
-        reason: "compiled last-good in repo",
-        gameCount: bundled.games.length,
-        catalog: bundled.games,
-      });
+  if (seedPromise) return seedPromise;
+  seedPromise = (async () => {
+    try {
+      for (const id of STATE_IDS) {
+        const existing = await readSnapshot(id);
+        if (existing?.catalog?.length) continue;
+        const bundled = loadBundledDesk(id);
+        if (!bundled.games.length) continue;
+        await upsertSnapshot({
+          stateId: id,
+          ok: false,
+          stale: true,
+          fetchedAt: bundled.fetchedAt || STATES[id].publishedAt,
+          weekLabel: bundled.weekLabel,
+          sourceUrl: STATES[id].remainingPrizesUrl,
+          reason: "compiled last-good in repo",
+          gameCount: bundled.games.length,
+          catalog: bundled.games,
+        });
+      }
+    } catch (err) {
+      seedPromise = null;
+      console.error(
+        "[remaining] seed failed",
+        err instanceof Error ? err.message : "error",
+      );
     }
-  } catch (err) {
-    console.error(
-      "[remaining] seed failed",
-      err instanceof Error ? err.message : "error",
-    );
-  }
+  })();
+  return seedPromise;
 }
 
 export async function loadDeskCatalog(

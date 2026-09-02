@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  preferPooledDatabaseUrl,
   publicAuthStatus,
   resolveAuthBackend,
   resolveDatabaseUrl,
@@ -75,6 +76,22 @@ test("POSTGRES_URL is accepted as a DATABASE_URL alias", () => {
     "postgresql://a",
   );
   assert.equal(resolveDatabaseUrl({ DATABASE_URL: "  " }), undefined);
+});
+
+test("Neon session hosts are rewritten to the pooler, and pooled env wins", () => {
+  const session = "postgresql://u:p@ep-cool-name-123.us-east-2.aws.neon.tech/neondb";
+  const pooled = "postgresql://u:p@ep-cool-name-123-pooler.us-east-2.aws.neon.tech/neondb";
+  assert.equal(preferPooledDatabaseUrl(session), pooled);
+  assert.equal(preferPooledDatabaseUrl(pooled), pooled);
+  assert.equal(preferPooledDatabaseUrl("postgresql://u:p@localhost/db"), "postgresql://u:p@localhost/db");
+  assert.equal(
+    resolveDatabaseUrl({
+      DATABASE_URL: session,
+      POSTGRES_URL: pooled,
+    }),
+    pooled,
+  );
+  assert.equal(resolveDatabaseUrl({ DATABASE_URL: session }), pooled);
 });
 
 test("explicit grok_preview on Vercel still disables broker OAuth", () => {

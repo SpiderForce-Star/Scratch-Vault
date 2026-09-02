@@ -104,6 +104,7 @@ function LoginPage() {
         throw new Error(signedIn.error.message ?? t("login.failed"));
       }
       await authClient.getSession();
+      window.location.assign(next || "/");
     } catch (err) {
       const message = err instanceof Error ? err.message : t("login.failed");
       setError(humanAuthError(message, t("login.failed")));
