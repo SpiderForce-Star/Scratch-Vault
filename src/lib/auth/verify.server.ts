@@ -1,4 +1,5 @@
 import { getRequest } from "@tanstack/react-start/server";
+import { resolveAuthBackend } from "./backend";
 import { auth, authConfigured } from "./server";
 
 /**
@@ -11,8 +12,10 @@ import { auth, authConfigured } from "./server";
  * client-supplied user id — only the result of this verification.
  */
 
+const authBackend = resolveAuthBackend();
+
 /** True when a real database is configured server-side. */
-const databaseConfigured = Boolean(process.env.DATABASE_URL?.trim());
+const databaseConfigured = authBackend.usePostgres;
 
 /** Re-export so callers can branch on it without importing `server.ts`. */
 export { authConfigured };
@@ -78,7 +81,9 @@ export async function getSessionUser(
  * - Auth disabled (`VITE_AUTH_ENABLED=false`) + `DATABASE_URL` set -> throw (fail
  *   closed): one shared dev user on a real database would let every visitor
  *   read/write everyone's rows.
- * - Auth disabled + no database -> the shared dev user id.
+ * - Vercel (production/preview) without a persistable auth backend -> throw
+ *   (fail closed). Never share the dev user on a public deploy.
+ * - Auth disabled + no database + not Vercel -> the shared dev user id.
  */
 export async function requireUserId(bearerToken?: string): Promise<string> {
   if (!authConfigured) {
@@ -87,6 +92,9 @@ export async function requireUserId(bearerToken?: string): Promise<string> {
         "Auth is disabled (VITE_AUTH_ENABLED=false) but DATABASE_URL is set — " +
           "refusing to fall back to the shared dev user against a real database.",
       );
+    }
+    if (authBackend.onVercel) {
+      throw new UnauthorizedError();
     }
     return DEV_USER_ID;
   }

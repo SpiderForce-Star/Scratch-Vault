@@ -6,7 +6,11 @@ import type { StateId } from "@/config/states";
 import { trustedCatalog } from "./parse.server";
 
 function hasPostgres(): boolean {
-  return Boolean(process.env.DATABASE_URL?.trim());
+  return Boolean(
+    process.env.DATABASE_URL?.trim() ||
+      process.env.POSTGRES_URL?.trim() ||
+      process.env.POSTGRES_PRISMA_URL?.trim(),
+  );
 }
 
 const LAST_GOOD_DIR = join(dirname(fileURLToPath(import.meta.url)), "last-good");

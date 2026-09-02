@@ -1,10 +1,12 @@
 /**
  * Local email/password sign-in (this app's Better Auth DB — not the broker).
  *
- * Off by default. To enable: set `emailAndPasswordEnabled` to `true` below,
- * then build sign-up / sign-in forms with `authClient.signUp.email` /
- * `authClient.signIn.email` from `@/lib/auth/client` (see the auth skill).
+ * On whenever a persistable auth database exists (Postgres, or local PGLite).
+ * Off on Vercel until `DATABASE_URL` is set — production cannot use PGLite.
  *
- * Do NOT edit `server.ts` for this — that file is frozen pre-wired config.
+ * Forms: `authClient.signUp.email` / `authClient.signIn.email` from
+ * `@/lib/auth/client`.
  */
-export const emailAndPasswordEnabled = false;
+import { resolveAuthBackend } from "./backend";
+
+export const emailAndPasswordEnabled = resolveAuthBackend().useEmailPassword;
