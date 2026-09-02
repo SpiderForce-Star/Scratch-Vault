@@ -418,6 +418,7 @@
   "pricing.unlocked": "Su mesa ya está desbloqueada.",
   "pricing.manage": "Administrar facturación",
   "pricing.checkoutFail": "No se pudo empezar el pago. Inténtelo de nuevo.",
+  "pricing.waitAccount": "Aún se carga su cuenta. Toque de nuevo en un segundo.",
   "pricing.purchasePending": "La compra terminó pero Full Access aún no está activo. Pruebe Restaurar compras.",
   "pricing.restoreEmpty": "No se encontró una compra activa de Full Access para esta cuenta de tienda.",
   "pricing.restoreFailed": "No se pudo restaurar.",
