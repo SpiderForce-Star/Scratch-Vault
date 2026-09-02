@@ -34,8 +34,9 @@ function envPrice(name: "STRIPE_PRICE_MONTHLY" | "STRIPE_PRICE_ANNUAL"): string 
 
 /**
  * Resolve monthly/annual Price IDs at call time.
- * Live keys require env price IDs and refuse sandbox IDs.
- * Test keys use env or the sandbox IDs and refuse live IDs.
+ * Live / unknown keys use env live IDs, or the published live IDs when env is
+ * missing or still set to sandbox. Test keys use env or the sandbox IDs and
+ * refuse live IDs.
  */
 export function getStripePrices(): { monthly: string; annual: string } {
   return resolveStripePrices({

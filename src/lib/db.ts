@@ -43,6 +43,7 @@ export interface Sql {
  */
 const globalRef = globalThis as typeof globalThis & {
   __pgSqlPromise__?: Promise<Sql>;
+  __pgPool__?: import("pg").Pool;
   __pgliteInstance__?: Promise<import("@electric-sql/pglite").PGlite>;
   __pgliteMigrateChain__?: Promise<void>;
 };
@@ -82,15 +83,45 @@ function toSql(run: Run): Sql {
   return sql;
 }
 
+/** One serverless connection. Auth and app SQL must share it. */
+export function postgresPoolOptions(connectionString: string) {
+  return {
+    connectionString,
+    max: 1,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 8_000,
+    allowExitOnIdle: true,
+  };
+}
+
+/** Dedup Better Auth + app SQL onto one pool. */
+export function rememberPgPool(pool: import("pg").Pool): import("pg").Pool {
+  if (!globalRef.__pgPool__) {
+    globalRef.__pgPool__ = pool;
+    return pool;
+  }
+  if (pool !== globalRef.__pgPool__) {
+    void pool.end().catch(() => undefined);
+  }
+  return globalRef.__pgPool__;
+}
+
+async function ensurePgPool(): Promise<import("pg").Pool> {
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not set");
+  }
+  const { Pool, types } = await import("pg");
+  types.setTypeParser(OID_INT8, Number);
+  types.setTypeParser(OID_DATE, identity);
+  types.setTypeParser(OID_INTERVAL, identity);
+  if (globalRef.__pgPool__) return globalRef.__pgPool__;
+  const pool = new Pool(postgresPoolOptions(databaseUrl));
+  return rememberPgPool(pool);
+}
+
 function createNeonSql(): Promise<Sql> {
   globalRef.__pgSqlPromise__ ??= (async () => {
-    // Regular Postgres driver: node-postgres (`pg`) — works directly with Neon's
-    // pooled endpoint. One pool per process; warm serverless instances reuse it.
-    const { Pool, types } = await import("pg");
-    types.setTypeParser(OID_INT8, Number);
-    types.setTypeParser(OID_DATE, identity);
-    types.setTypeParser(OID_INTERVAL, identity);
-    const pool = new Pool({ connectionString: databaseUrl });
+    const pool = await ensurePgPool();
     return toSql(async <T>(text: string, params: unknown[]) => {
       const res = await pool.query(text, params);
       return res.rows as T[];

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { createCheckoutSession } from "@/lib/billing";
 import { getBillingProfile, saveBillingProfile } from "@/lib/profile-api";
 import {
   PROFILE_HOME_STATES,
@@ -26,8 +27,36 @@ export function ProfileForm({
   const [billingConsent, setBillingConsent] = useState(false);
   const [complete, setComplete] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+
+  const startCard = async () => {
+    setBusy(true);
+    setCheckoutBusy(true);
+    setError(null);
+    try {
+      const result = await createCheckoutSession({ data: { plan: "monthly" } });
+      if (result?.alreadySubscribed) {
+        window.location.assign("/account");
+        return;
+      }
+      if (result?.needsProfile) {
+        setError("Save your profile before adding a card.");
+        return;
+      }
+      if (result?.url) {
+        window.location.assign(result.url);
+        return;
+      }
+      setError("Could not start checkout. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not start checkout.");
+    } finally {
+      setCheckoutBusy(false);
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     void getBillingProfile()
@@ -70,6 +99,10 @@ export function ProfileForm({
       });
       setComplete(profile.complete);
       onSaved?.(profile);
+      if (profile.complete && !complete) {
+        await startCard();
+        return;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save profile.");
     } finally {
@@ -215,15 +248,23 @@ export function ProfileForm({
         disabled={busy}
         className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
       >
-        {busy ? "Saving…" : complete ? "Update profile" : "Save profile"}
+        {busy
+          ? checkoutBusy
+            ? "Starting checkout…"
+            : "Saving…"
+          : complete
+            ? "Update profile"
+            : "Save profile"}
       </button>
       {complete ? (
-        <Link
-          to="/pricing"
-          className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void startCard()}
+          className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
         >
-          Add a card — start 7-day trial
-        </Link>
+          {busy ? "Starting checkout…" : "Add a card — start 7-day trial"}
+        </button>
       ) : null}
     </form>
   );

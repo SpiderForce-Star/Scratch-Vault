@@ -38,7 +38,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { getCookie } from "@tanstack/react-start/server";
 import { randomBytes } from "node:crypto";
 import { Pool } from "pg";
-import { ensureDbReady, getPglite } from "../db";
+import { ensureDbReady, getPglite, postgresPoolOptions, rememberPgPool } from "../db";
 import { resolveAuthBackend } from "./backend";
 import { emailAndPasswordEnabled } from "./email-password";
 import { GROK_PROVIDERS } from "./providers";
@@ -165,7 +165,7 @@ const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
 // SAME DB as app data, including email/password users. Both use the Better Auth
 // schema from `migrations/0001_auth.sql`.
 const database = backend.usePostgres
-  ? new Pool({ connectionString: backend.databaseUrl as string })
+  ? rememberPgPool(new Pool(postgresPoolOptions(backend.databaseUrl as string)))
   : backend.usePglite
     ? { dialect: pgliteDialect(() => getPglite()), type: "postgres" as const }
     : { dialect: unavailableDialect(), type: "postgres" as const };

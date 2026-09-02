@@ -32,15 +32,35 @@ export function trimEnv(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+/** Neon session-mode hosts exhaust a 15-client cap on Hobby. Prefer PgBouncer. */
+export function preferPooledDatabaseUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith(".neon.tech")) return url;
+    if (parsed.hostname.includes("-pooler.")) return url;
+    parsed.hostname = parsed.hostname.replace(/^([^.]+)\./, "$1-pooler.");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
+function isPooledUrl(url: string): boolean {
+  return /-pooler\.|[?&]pgbouncer=true/i.test(url);
+}
+
 /** Postgres URL for Better Auth + app SQL. `POSTGRES_URL` is the Vercel/Neon alias. */
 export function resolveDatabaseUrl(
   env: Record<string, string | undefined> = process.env,
 ): string | undefined {
-  return (
-    trimEnv(env.DATABASE_URL) ??
-    trimEnv(env.POSTGRES_URL) ??
-    trimEnv(env.POSTGRES_PRISMA_URL)
-  );
+  const candidates = [
+    trimEnv(env.DATABASE_URL),
+    trimEnv(env.POSTGRES_URL),
+    trimEnv(env.POSTGRES_PRISMA_URL),
+  ].filter((value): value is string => Boolean(value));
+  if (!candidates.length) return undefined;
+  const pooled = candidates.find(isPooledUrl);
+  return preferPooledDatabaseUrl(pooled ?? candidates[0]);
 }
 
 export function resolveAuthBackend(

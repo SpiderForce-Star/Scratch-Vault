@@ -4,7 +4,9 @@
  *
  * STRIPE_PRICES are the live Full Access prices (copied Aug 2026) for plan labels.
  * SANDBOX_STRIPE_PRICES stay for local/dev when using sk_test_ keys.
- * Live checkout does not fall back to these IDs — env must supply live prices.
+ * Live keys use env live IDs when set, otherwise these published live IDs.
+ * A production env that still has sandbox IDs (copied from .env.example) is
+ * rewritten to live IDs so checkout can start.
  * Monthly checkout trial is 7 days (see `TRIAL_PERIOD_DAYS`); set a matching
  * introductory offer on the monthly Price in the Stripe Dashboard.
  * Annual has no trial — $49.99 is billed immediately and auto-renews.
@@ -31,8 +33,9 @@ export function stripeSecretModeFromKey(secretKey: string): StripeSecretMode {
 
 /**
  * Resolve Checkout price IDs.
- * Live / unknown keys require both env IDs and refuse sandbox IDs.
- * Test keys may fall back to sandbox IDs and refuse live IDs.
+ * Live / unknown keys use env live IDs, or the published live IDs when env is
+ * missing or still set to sandbox. Test keys may fall back to sandbox IDs and
+ * refuse live IDs.
  */
 export function resolveStripePrices(input: {
   mode: StripeSecretMode;
@@ -45,15 +48,10 @@ export function resolveStripePrices(input: {
   const liveIds = new Set<string>(Object.values(STRIPE_PRICES));
 
   if (input.mode !== "test") {
-    if (!monthly || !annual) {
-      throw new Error(
-        "Live Stripe checkout requires STRIPE_PRICE_MONTHLY and STRIPE_PRICE_ANNUAL",
-      );
-    }
-    if (sandboxIds.has(monthly) || sandboxIds.has(annual)) {
-      throw new Error("Live Stripe keys cannot use sandbox price IDs");
-    }
-    return { monthly, annual };
+    return {
+      monthly: !monthly || sandboxIds.has(monthly) ? STRIPE_PRICES.monthly : monthly,
+      annual: !annual || sandboxIds.has(annual) ? STRIPE_PRICES.annual : annual,
+    };
   }
 
   const resolved = {

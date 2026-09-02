@@ -39,34 +39,33 @@ function fixture(overrides = {}) {
   };
 }
 
-test("live checkout refuses missing price IDs", () => {
-  assert.throws(
-    () =>
-      resolveStripePrices({
-        mode: "live",
-        monthly: "",
-        annual: STRIPE_PRICES.annual,
-      }),
-    /requires STRIPE_PRICE_MONTHLY and STRIPE_PRICE_ANNUAL/,
+test("live checkout falls back to published live prices when env is missing or sandbox", () => {
+  assert.deepEqual(resolveStripePrices({ mode: "live", monthly: "", annual: "" }), {
+    ...STRIPE_PRICES,
+  });
+  assert.deepEqual(
+    resolveStripePrices({
+      mode: "unknown",
+      monthly: "",
+      annual: "",
+    }),
+    { ...STRIPE_PRICES },
   );
-});
-
-test("live checkout refuses sandbox price IDs", () => {
-  assert.throws(
-    () =>
-      resolveStripePrices({
-        mode: "live",
-        monthly: SANDBOX_STRIPE_PRICES.monthly,
-        annual: SANDBOX_STRIPE_PRICES.annual,
-      }),
-    /cannot use sandbox price IDs/,
+  assert.deepEqual(
+    resolveStripePrices({
+      mode: "live",
+      monthly: SANDBOX_STRIPE_PRICES.monthly,
+      annual: SANDBOX_STRIPE_PRICES.annual,
+    }),
+    { ...STRIPE_PRICES },
   );
-});
-
-test("unknown key mode also refuses missing prices", () => {
-  assert.throws(
-    () => resolveStripePrices({ mode: "unknown", monthly: "", annual: "" }),
-    /requires STRIPE_PRICE_MONTHLY and STRIPE_PRICE_ANNUAL/,
+  assert.deepEqual(
+    resolveStripePrices({
+      mode: "live",
+      monthly: STRIPE_PRICES.monthly,
+      annual: "",
+    }),
+    { ...STRIPE_PRICES },
   );
 });
 
