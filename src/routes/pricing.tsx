@@ -86,7 +86,7 @@ function PricingPage() {
         return;
       }
       if (!user) {
-        window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
+        window.location.href = `/signup?next=${encodeURIComponent("/pricing")}`;
         return;
       }
       const result = await createCheckoutSession({ data: { plan } });
@@ -99,7 +99,7 @@ function PricingPage() {
     } catch (err) {
       const message = checkoutClientMessage(err);
       if (err instanceof Error && err.message === "Unauthorized") {
-        window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
+        window.location.href = `/signup?next=${encodeURIComponent("/pricing")}`;
         return;
       }
       if (message === CHECKOUT_PUBLIC.canceled) {

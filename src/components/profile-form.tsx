@@ -217,6 +217,14 @@ export function ProfileForm({
       >
         {busy ? "Saving…" : complete ? "Update profile" : "Save profile"}
       </button>
+      {complete ? (
+        <Link
+          to="/pricing"
+          className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
+        >
+          Add a card — start 7-day trial
+        </Link>
+      ) : null}
     </form>
   );
 }

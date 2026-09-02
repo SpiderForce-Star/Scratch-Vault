@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -47,6 +48,11 @@ const LegalRoute = LegalRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/legal'
     | '/login'
+    | '/signup'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/legal'
     | '/login'
+    | '/signup'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/legal'
     | '/login'
+    | '/signup'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,

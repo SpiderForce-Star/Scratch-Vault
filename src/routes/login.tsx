@@ -23,6 +23,18 @@ const UNAVAILABLE: PublicAuthStatus = {
   email: false,
 };
 
+function humanAuthError(message: string, fallback: string): string {
+  const lower = message.toLowerCase();
+  if (
+    lower.includes("invalid input") ||
+    lower.includes("body.email") ||
+    lower.includes("body.password")
+  ) {
+    return fallback;
+  }
+  return message || fallback;
+}
+
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => ({
     next: safeNext(search.next),
@@ -42,8 +54,6 @@ function LoginPage() {
   const { t } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [status, setStatus] = useState<PublicAuthStatus | null>(null);
 
   useEffect(() => {
@@ -73,21 +83,18 @@ function LoginPage() {
   const checking = authEnabled && status === null;
   const unavailable = authEnabled && status !== null && !oauthOn && !emailOn;
 
-  async function submitEmail(mode: "in" | "up") {
-    setBusy(mode);
+  async function submitEmail(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+    if (!email.includes("@") || password.length < 8) {
+      setError(t("login.invalidCreds"));
+      return;
+    }
+    setBusy("in");
     setError(null);
     try {
-      if (mode === "up") {
-        const name = email.split("@")[0]?.trim() || "Member";
-        const signedUp = await authClient.signUp.email({
-          email,
-          password,
-          name,
-        });
-        if (signedUp.error) {
-          throw new Error(signedUp.error.message ?? t("login.failed"));
-        }
-      }
       const signedIn = await authClient.signIn.email({
         email,
         password,
@@ -98,7 +105,8 @@ function LoginPage() {
       }
       await authClient.getSession();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("login.failed"));
+      const message = err instanceof Error ? err.message : t("login.failed");
+      setError(humanAuthError(message, t("login.failed")));
       setBusy(null);
     }
   }
@@ -109,9 +117,7 @@ function LoginPage() {
         {t("login.kicker")}
       </p>
       <h1 className="mt-3 font-display text-4xl tracking-tight">{t("login.title")}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-muted">
-        {t("login.lead")}
-      </p>
+      <p className="mt-3 text-sm leading-relaxed text-muted">{t("login.lead")}</p>
 
       {!authEnabled ? (
         <p className="mt-8 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-muted">
@@ -158,13 +164,7 @@ function LoginPage() {
           ) : null}
 
           {emailOn ? (
-            <form
-              className="flex flex-col gap-3"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void submitEmail("in");
-              }}
-            >
+            <form className="flex flex-col gap-3" onSubmit={(event) => void submitEmail(event)}>
               <label className="block text-sm">
                 <span className="text-muted">{t("login.email")}</span>
                 <input
@@ -172,8 +172,6 @@ function LoginPage() {
                   name="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
                   className="mt-1 min-h-12 w-full rounded-md border border-line bg-surface px-3 text-sm text-fg"
                 />
               </label>
@@ -185,8 +183,6 @@ function LoginPage() {
                   autoComplete="current-password"
                   required
                   minLength={8}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
                   className="mt-1 min-h-12 w-full rounded-md border border-line bg-surface px-3 text-sm text-fg"
                 />
                 <span className="mt-1 block text-xs text-faint">{t("login.passwordHint")}</span>
@@ -198,14 +194,13 @@ function LoginPage() {
               >
                 {busy === "in" ? t("login.working") : t("login.submit")}
               </button>
-              <button
-                type="button"
-                disabled={busy !== null || isPending}
-                onClick={() => void submitEmail("up")}
-                className="inline-flex min-h-12 items-center justify-center rounded-md border border-line bg-surface px-4 text-sm font-medium text-fg disabled:opacity-60"
+              <Link
+                to="/signup"
+                search={{ next: next || "/account" }}
+                className="inline-flex min-h-12 items-center justify-center rounded-md border border-line bg-surface px-4 text-sm font-medium text-fg"
               >
-                {busy === "up" ? t("login.working") : t("login.create")}
-              </button>
+                {t("login.create")}
+              </Link>
             </form>
           ) : null}
         </div>
@@ -214,9 +209,13 @@ function LoginPage() {
       {error ? <p className="mt-4 text-sm text-bust">{error}</p> : null}
 
       <p className="mt-8 text-sm text-faint">
-        {t("login.new")}{" "}
-        <Link to="/pricing" className="underline underline-offset-2 hover:text-fg">
-          {t("login.seePricing")}
+        {t("login.createHint")}{" "}
+        <Link
+          to="/signup"
+          search={{ next: next || "/account" }}
+          className="underline underline-offset-2 hover:text-fg"
+        >
+          {t("login.create")}
         </Link>
         . {t("login.only18")}{" "}
         <Link to="/terms" className="underline underline-offset-2 hover:text-fg">
