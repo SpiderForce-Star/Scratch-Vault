@@ -33,7 +33,8 @@ import { NO_REFUNDS_ACCOUNT, NO_REFUNDS_LINE } from "@/lib/billing-policy";
 export const Route = createFileRoute("/account")({
   validateSearch: (search: Record<string, unknown>) => {
     const complete = search.complete === "1" || search.complete === true;
-    return complete ? { complete: true as const } : {};
+    const plan = search.plan === "annual" ? ("annual" as const) : ("monthly" as const);
+    return complete ? { complete: true as const, plan } : { plan };
   },
   component: AccountPage,
   head: () =>
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
-  const { complete } = Route.useSearch();
+  const { complete, plan } = Route.useSearch();
   const { user, isPending } = useCurrentUserState();
   const native = isNativeApp();
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -86,7 +87,12 @@ function AccountPage() {
   }
 
   if (!native && !user) {
-    return <Navigate to="/login" search={{ next: "/account" }} />;
+    return (
+      <Navigate
+        to="/signup"
+        search={{ next: complete ? `/account?complete=1&plan=${plan ?? "monthly"}` : "/account" }}
+      />
+    );
   }
 
   const paid =
@@ -317,7 +323,7 @@ function AccountPage() {
 
       {user && !native ? (
         <div className="mt-8">
-          <ProfileForm highlight={complete} />
+          <ProfileForm highlight={complete} plan={plan ?? "monthly"} />
         </div>
       ) : null}
 

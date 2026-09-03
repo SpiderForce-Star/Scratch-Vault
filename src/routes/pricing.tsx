@@ -188,14 +188,25 @@ function PricingPage() {
             $49.99<span className="text-lg text-muted">{t("pricing.perYear")}</span>
           </p>
           <p className="mt-1 text-sm text-muted">{t("pricing.annualCard")}</p>
-          <button
-            type="button"
-            disabled={loading !== null || paid}
-            onClick={() => startCheckout("annual")}
-            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+          <Link
+            to={user ? "/account" : "/signup"}
+            search={
+              user
+                ? { complete: true as const, plan: "annual" as const }
+                : { next: "/account?complete=1&plan=annual" }
+            }
+            onClick={(event) => {
+              if (native) {
+                event.preventDefault();
+                void startCheckout("annual");
+                return;
+              }
+              if (user) setLoading("annual");
+            }}
+            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
           >
             {loading === "annual" ? t("pricing.startingAnnual") : t("cta.annual")}
-          </button>
+          </Link>
         </div>
 
         <div className="rounded-xl border border-line bg-surface p-6 sm:order-1">
@@ -206,14 +217,25 @@ function PricingPage() {
             $4.99<span className="text-lg text-muted">{t("pricing.perMo")}</span>
           </p>
           <p className="mt-1 text-sm text-muted">{t("pricing.trialCard")}</p>
-          <button
-            type="button"
-            disabled={loading !== null || paid}
-            onClick={() => startCheckout("monthly")}
-            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper disabled:opacity-60"
+          <Link
+            to={user ? "/account" : "/signup"}
+            search={
+              user
+                ? { complete: true as const, plan: "monthly" as const }
+                : { next: "/account?complete=1&plan=monthly" }
+            }
+            onClick={(event) => {
+              if (native) {
+                event.preventDefault();
+                void startCheckout("monthly");
+                return;
+              }
+              if (user) setLoading("monthly");
+            }}
+            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper"
           >
             {loading === "monthly" ? t("pricing.starting") : t("cta.trial")}
-          </button>
+          </Link>
         </div>
       </div>
 
