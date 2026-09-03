@@ -9,7 +9,26 @@ import {
   toCatalog,
   isImportedJunkGame,
   trustedCatalog,
+  sanitizeGameName,
 } from "../src/data/states/parse.server.ts";
+
+test("sanitizeGameName strips leftover HTML fragments", () => {
+  assert.equal(sanitizeGameName("/span> $5 Set For Life"), "$5 Set For Life");
+  assert.equal(sanitizeGameName("Wild Cash 50X"), "Wild Cash 50X");
+  const cleaned = trustedCatalog([
+    {
+      number: 153,
+      name: "/span> $5 Set For Life",
+      price: 5,
+      topPrize: 343000,
+      odds: 3.95,
+      source: "official-remaining",
+      theme: "cash",
+      tiers: [{ amount: 343000, remaining: 3 }],
+    },
+  ]);
+  assert.equal(cleaned[0].name, "$5 Set For Life");
+});
 
 test("remaining counts stay published integers or null", () => {
   assert.equal(remainingCount("12"), 12);

@@ -13,6 +13,7 @@ import {
   isMonitoredDesk,
   publishedTopRemaining,
   quietJackpotContacts,
+  radarBillCount,
 } from "../src/lib/radar.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -141,20 +142,71 @@ test("new capture hash moves off the previous snapshot blip", () => {
   assert.equal(hashRadarPos("ky", 105, "2026-08-31T12:00:00Z").angle, b.angle);
 });
 
+test("TN and KY do not share a blip for the same game number", () => {
+  const snap = "2026-08-31T12:00:00Z";
+  const tn = hashRadarPos("tn", 105, snap);
+  const ky = hashRadarPos("ky", 105, snap);
+  assert.equal(tn.angle === ky.angle && tn.radius === ky.radius, false);
+});
+
 test("quiet remaining jackpots stay on the scope when nothing dropped", () => {
   const games = [
     jackpot({ number: 1, tiers: [{ amount: 500_000, remaining: 2 }, { amount: 10_000, remaining: 1 }, { amount: 1_000, remaining: 1 }] }),
     cashOut({ number: 2 }),
     jackpot({ number: 3, tiers: [{ amount: 200_000, remaining: 0 }, { amount: 5_000, remaining: 1 }, { amount: 500, remaining: 1 }] }),
   ];
-  const quiet = quietJackpotContacts(games, { stateId: "tn", shortName: "TN" }, new Set());
+  const quiet = quietJackpotContacts(
+    games,
+    { stateId: "tn", shortName: "TN", snapshotAt: "2026-08-31T12:00:00Z" },
+    new Set(),
+  );
   assert.equal(quiet.length, 1);
   assert.equal(quiet[0].id, "quiet-tn-1");
+  assert.equal(quiet[0].stateId, "tn");
   assert.equal(publishedTopRemaining(games[0]), 2);
-  const scope = assembleRadarScope([], quiet);
+  const scope = assembleRadarScope([], quiet, {
+    stateId: "tn",
+    snapshotAt: "2026-08-31T12:00:00Z",
+  });
   assert.equal(scope.bleeps, 0);
   assert.equal(scope.captures.length, 0);
   assert.equal(scope.contacts.length, 1);
+  assert.equal(scope.stateId, "tn");
+  assert.match(scope.cycleId, /^tn:2026-08-31T12:00:00Z/);
+});
+
+test("a new official snapshot reshuffles that state's quiet bills", () => {
+  const games = [
+    jackpot({ number: 1, tiers: [{ amount: 500_000, remaining: 2 }, { amount: 10_000, remaining: 1 }, { amount: 1_000, remaining: 1 }] }),
+  ];
+  const a = quietJackpotContacts(
+    games,
+    { stateId: "tn", shortName: "TN", snapshotAt: "2026-08-27T12:00:00Z" },
+    new Set(),
+  )[0];
+  const b = quietJackpotContacts(
+    games,
+    { stateId: "tn", shortName: "TN", snapshotAt: "2026-08-31T12:00:00Z" },
+    new Set(),
+  )[0];
+  assert.equal(a.angle === b.angle && a.radius === b.radius, false);
+});
+
+test("cash stacks are 1 bill for contacts and stack+1 for captures", () => {
+  assert.equal(radarBillCount("contact"), 1);
+  assert.equal(radarBillCount("capture", 1), 2);
+  assert.equal(radarBillCount("capture", 2), 3);
+});
+
+test("radar server builds one selected public desk and the hub is cash", () => {
+  const server = readFileSync(join(root, "src/lib/radar.server.ts"), "utf8");
+  const hero = readFileSync(join(root, "src/components/radar-cash-hero.tsx"), "utf8");
+  assert.match(server, /buildRadarScope\(\s*stateId/);
+  assert.equal(server.includes("PUBLIC_STATE_IDS.map"), false);
+  assert.equal(hero.includes("CashHub"), true);
+  assert.equal(hero.includes("CashStack"), true);
+  assert.equal(hero.includes('width="16"'), false);
+  assert.equal(hero.includes("v-4 a4 4 0 0 1 8 0 v4"), false);
 });
 
 test("assembleRadarScope keeps two stacked captures and fades extras", () => {

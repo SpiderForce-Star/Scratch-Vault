@@ -185,19 +185,36 @@ function ThemeMark({
   );
 }
 
+function titleLines(name: string): [string, string?] {
+  const clean = name.replace(/\s+/g, " ").trim();
+  if (clean.length <= 22) return [clean];
+  const words = clean.split(" ");
+  if (words.length === 1) return [`${clean.slice(0, 21)}…`];
+  let line1 = words[0] ?? clean;
+  let i = 1;
+  while (i < words.length && `${line1} ${words[i]}`.length <= 22) {
+    line1 += ` ${words[i]}`;
+    i += 1;
+  }
+  const rest = words.slice(i).join(" ");
+  const line2 = rest.length > 24 ? `${rest.slice(0, 23)}…` : rest;
+  return line2 ? [line1, line2] : [line1];
+}
+
 function ChromeArt({ spec, uid }: { spec: TicketChrome; uid: string }) {
-  const { palette, sash, pattern, rotate, phase, state, number, theme, mark, name } =
+  const { palette, sash, pattern, rotate, phase, state, number, theme, mark, name, price } =
     spec;
   const pat = `${uid}-pat`;
   const glow = `${uid}-glow`;
-  const title = name.length > 22 ? `${name.slice(0, 21)}…` : name;
-  const sashX = 420 + (phase % 40);
+  const [line1, line2] = titleLines(name);
+  const sashX = 430 + (phase % 36);
   return (
     <svg
       viewBox="0 0 640 420"
       className="pointer-events-none h-full w-full"
       aria-hidden="true"
       preserveAspectRatio="xMidYMin slice"
+      data-ticket-family={spec.family}
     >
       <defs>
         <linearGradient id={glow} x1="0" y1="0" x2="1" y2="1">
@@ -207,71 +224,129 @@ function ChromeArt({ spec, uid }: { spec: TicketChrome; uid: string }) {
         </linearGradient>
         <PatternFill id={pat} pattern={pattern} foil={palette.foil} phase={phase} />
       </defs>
-      <rect width="640" height="420" fill={`url(#${glow})`} />
+      <rect width="640" height="420" rx="18" fill={`url(#${glow})`} />
       <rect
         width="640"
         height="420"
         fill={`url(#${pat})`}
-        opacity="0.34"
+        opacity="0.28"
         transform={`rotate(${rotate} 320 210)`}
       />
       <polygon
-        points={`${sashX},0 ${sashX + 86},0 ${sashX - 10},420 ${sashX - 96},420`}
+        points={`${sashX},0 ${sashX + 78},0 ${sashX - 18},420 ${sashX - 96},420`}
         fill={sash.accent}
-        opacity="0.88"
+        opacity="0.82"
       />
-      <rect x="0" y="0" width="640" height="52" fill={palette.bg} />
-      <rect x="0" y="52" width="640" height="5" fill={palette.foil} />
-      <rect x="0" y="0" width="10" height="420" fill={sash.bg2} />
+      <rect x="0" y="0" width="640" height="48" fill={palette.bg} />
+      <rect x="0" y="48" width="640" height="4" fill={palette.foil} />
       <text
-        x="168"
-        y="33"
+        x="22"
+        y="32"
         fill={palette.foil}
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
-        fontSize="14"
-        letterSpacing="2.4"
+        fontSize="13"
+        letterSpacing="2.2"
       >
         {state.toUpperCase()} · GAME {number}
       </text>
+      <circle cx="572" cy="88" r="42" fill={sash.bg2} stroke={palette.foil} strokeWidth="2.2" />
       <text
-        x="24"
-        y="108"
+        x="572"
+        y="82"
+        textAnchor="middle"
         fill={palette.ink}
         fontFamily="Fraunces, Times New Roman, serif"
-        fontSize="34"
-        fontWeight="600"
+        fontSize="22"
+        fontWeight="700"
       >
-        {title}
+        ${price}
       </text>
       <text
-        x="24"
-        y="210"
+        x="572"
+        y="100"
+        textAnchor="middle"
         fill={palette.foil}
-        fillOpacity="0.4"
-        fontFamily="Fraunces, Times New Roman, serif"
-        fontSize="96"
-        fontWeight="600"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+        fontSize="9"
+        letterSpacing="1.4"
       >
-        {number}
+        TICKET
       </text>
       <text
-        x="612"
-        y="108"
-        textAnchor="end"
+        x="22"
+        y={line2 ? 92 : 102}
         fill={palette.ink}
-        fillOpacity="0.55"
         fontFamily="Fraunces, Times New Roman, serif"
-        fontSize="48"
+        fontSize={name.length > 28 ? 28 : 34}
+        fontWeight="600"
+      >
+        {line1}
+      </text>
+      {line2 ? (
+        <text
+          x="22"
+          y="128"
+          fill={palette.ink}
+          fontFamily="Fraunces, Times New Roman, serif"
+          fontSize="28"
+          fontWeight="600"
+        >
+          {line2}
+        </text>
+      ) : null}
+      <text
+        x="28"
+        y="188"
+        fill={palette.foil}
+        fillOpacity="0.28"
+        fontFamily="Fraunces, Times New Roman, serif"
+        fontSize="72"
         fontWeight="600"
       >
         {mark}
       </text>
-      <ThemeMark theme={theme} accent={sash.foil} foil={palette.foil} x={560} y={168} />
+      <ThemeMark theme={theme} accent={sash.foil} foil={palette.foil} x={430} y={168} />
+      <rect
+        x="22"
+        y="232"
+        width="596"
+        height="148"
+        rx="10"
+        fill="#1a1f1c"
+        fillOpacity="0.45"
+        stroke={palette.foil}
+        strokeOpacity="0.55"
+        strokeWidth="1.6"
+      />
+      <text
+        x="36"
+        y="258"
+        fill={palette.foil}
+        fillOpacity="0.7"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+        fontSize="11"
+        letterSpacing="1.8"
+      >
+        PLAY AREA
+      </text>
+      <text
+        x="320"
+        y="404"
+        textAnchor="middle"
+        fill={palette.ink}
+        fillOpacity="0.62"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+        fontSize="9"
+        letterSpacing="0.4"
+      >
+        Independent reconstruction — not official ticket art.
+      </text>
       <rect
         x="8"
         y="8"
         width="624"
         height="404"
+        rx="12"
         fill="none"
         stroke={palette.foil}
         strokeOpacity="0.45"

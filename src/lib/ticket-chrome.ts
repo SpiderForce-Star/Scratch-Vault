@@ -49,12 +49,37 @@ export const TICKET_PALETTES: readonly TicketPalette[] = [
   { bg: "#143028", bg2: "#2a8860", foil: "#c8f0d8", accent: "#48c890", ink: "#e4f8ec" },
 ];
 
+export type TicketFamily =
+  | "frenzy"
+  | "jumbo"
+  | "crossword"
+  | "multiplier"
+  | "cash"
+  | "high"
+  | "ice"
+  | "hearts"
+  | "currency";
+
+/** Palette indices that recall a ticket's vibe without copying official art. */
+const FAMILY_PALETTES: Record<TicketFamily, readonly number[]> = {
+  frenzy: [1, 6, 17, 21],
+  jumbo: [11, 16, 19, 4],
+  crossword: [2, 5, 8, 12],
+  multiplier: [3, 10, 14, 22],
+  cash: [0, 9, 7, 23],
+  high: [16, 11, 20, 22],
+  ice: [2, 8, 12, 20],
+  hearts: [1, 6, 10, 21],
+  currency: [0, 9, 23, 16],
+};
+
 export type TicketChrome = {
   state: string;
   number: number;
   name: string;
   price: number;
   theme: TicketTheme;
+  family: TicketFamily;
   palette: TicketPalette;
   paletteIndex: number;
   sash: TicketPalette;
@@ -84,13 +109,41 @@ function nameMark(name: string): string {
   return letters || "SV";
 }
 
+/** Color family from the game name, then theme. Original palettes only. */
+export function ticketFamily(name: string, theme: TicketTheme): TicketFamily {
+  const n = name.toLowerCase();
+  if (/lincoln|hamilton|jackson|washington|franklin|grant/.test(n)) return "currency";
+  if (/ice|winter|frost|bluegrass/.test(n)) return "ice";
+  if (/heart|queen|love|valentine/.test(n)) return "hearts";
+  if (/frenzy|fever|hot|fire|fiery|blowout/.test(n)) return "frenzy";
+  if (/crossword|cashword|bingo/.test(n)) return "crossword";
+  if (/\d+\s*x\b|multiplier|times\s+\d/.test(n)) return "multiplier";
+  if (/jumbo|gold|24k|platinum/.test(n)) return "jumbo";
+  if (theme === "high" || /million|max-a-million|high roller/.test(n)) return "high";
+  if (theme === "frenzy") return "frenzy";
+  if (theme === "crossword") return "crossword";
+  if (theme === "multiplier") return "multiplier";
+  if (theme === "jumbo") return "jumbo";
+  return "cash";
+}
+
+function pickFamilyIndex(family: TicketFamily, offset: number): number {
+  const list = FAMILY_PALETTES[family];
+  return list[((offset % list.length) + list.length) % list.length]!;
+}
+
 /** Deterministic original chrome for one game. Keyed by state + number. */
 export function ticketChrome(game: Game): TicketChrome {
   const state = stateCode(game);
-  const seed = fnv1a(`${state}:${game.number}:${game.theme}:${game.price}`);
+  const seed = fnv1a(`${state}:${game.number}:${game.theme}:${game.price}:${game.name}`);
   const n = TICKET_PALETTES.length;
-  const paletteIndex = (game.number * 7 + (seed % 13) + state.charCodeAt(0) * 11) % n;
-  const sashIndex = (paletteIndex + 7 + (seed % 5) + game.price) % n;
+  const family = ticketFamily(game.name, game.theme);
+  const paletteIndex = pickFamilyIndex(
+    family,
+    game.number * 7 + (seed % 13) + state.charCodeAt(0),
+  );
+  const sashIndex =
+    (paletteIndex + 7 + (seed % 5) + game.price + state.charCodeAt(0)) % n;
   const patternIndex = (game.number * 3 + (seed >>> 8) + state.length * 5) % TICKET_PATTERNS.length;
   const rotate = ((seed >>> 16) % 21) - 10;
   const phase = (game.number * 11 + (seed >>> 4)) % 48;
@@ -100,6 +153,7 @@ export function ticketChrome(game: Game): TicketChrome {
     name: game.name,
     price: game.price,
     theme: game.theme,
+    family,
     palette: TICKET_PALETTES[paletteIndex]!,
     paletteIndex,
     sash: TICKET_PALETTES[sashIndex]!,
@@ -117,6 +171,7 @@ export function ticketChromeFingerprint(game: Game): string {
   return [
     c.state,
     c.number,
+    c.family,
     c.paletteIndex,
     c.sashIndex,
     c.pattern,
@@ -125,5 +180,6 @@ export function ticketChromeFingerprint(game: Game): string {
     c.theme,
     c.price,
     c.mark,
+    c.name,
   ].join("|");
 }

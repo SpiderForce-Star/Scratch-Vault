@@ -128,5 +128,11 @@ test("skip copy and Franklin reconstruction are on the desk", () => {
   assert.match(home, /to="\/games"/);
   assert.match(home, /home\.catalogLine/);
   assert.equal(existsSync(join(root, "public/tickets/1397.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1401.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1388.jpg")), true);
   assert.match(read("src/data/ticket-art.ts"), /1397/);
+  assert.match(read("src/data/ticket-art.ts"), /1395/);
+  assert.match(read("src/data/ticket-art.ts"), /1388/);
+  assert.match(read("src/data/ticket-art.ts"), /1401/);
 });

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { money } from "@/data/games";
 import { deskNotifyEnabled } from "@/lib/desk-alert";
 import { useI18n } from "@/lib/locale";
-import type { RadarCapture, RadarContact } from "@/lib/radar";
+import { radarBillCount, type RadarCapture, type RadarContact } from "@/lib/radar";
 
 const SIZE = 360;
 const CX = SIZE / 2;
@@ -65,11 +65,13 @@ function playGoldBleeps(count: 1 | 2): void {
 }
 
 export function RadarCashHero({
+  stateId = "",
   captures = [],
   contacts = [],
   cycleId = "",
   bleeps = 0,
 }: {
+  stateId?: string;
   captures?: RadarCapture[];
   contacts?: RadarContact[];
   cycleId?: string;
@@ -79,11 +81,13 @@ export function RadarCashHero({
   const [reduce, setReduce] = useState(false);
   const [scopeReady, setScopeReady] = useState(false);
   const [seenCycle, setSeenCycle] = useState("");
+  const seenStore = stateId ? `${SEEN_CYCLE_KEY}.${stateId}` : SEEN_CYCLE_KEY;
+  const playedStore = stateId ? `${PLAYED_CYCLE_KEY}.${stateId}` : PLAYED_CYCLE_KEY;
 
   useEffect(() => {
     setScopeReady(true);
-    setSeenCycle(readKey(SEEN_CYCLE_KEY));
-  }, []);
+    setSeenCycle(readKey(seenStore));
+  }, [seenStore]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -98,18 +102,18 @@ export function RadarCashHero({
   useEffect(() => {
     if (!fresh || reduce || !bleeps) return;
     if (!deskNotifyEnabled()) return;
-    if (readSession(PLAYED_CYCLE_KEY) === cycleId) return;
-    writeKey("session", PLAYED_CYCLE_KEY, cycleId);
+    if (readSession(playedStore) === cycleId) return;
+    writeKey("session", playedStore, cycleId);
     try {
       playGoldBleeps(bleeps === 2 ? 2 : 1);
     } catch {
       /* default mute if audio is blocked */
     }
-  }, [fresh, reduce, bleeps, cycleId]);
+  }, [fresh, reduce, bleeps, cycleId, playedStore]);
 
   const dismiss = () => {
     if (!cycleId) return;
-    writeKey("local", SEEN_CYCLE_KEY, cycleId);
+    writeKey("local", seenStore, cycleId);
     setSeenCycle(cycleId);
   };
 
@@ -132,6 +136,8 @@ export function RadarCashHero({
       <div className="mx-auto mt-3 w-full max-w-[320px] min-w-0">
         {scopeReady ? (
           <RadarScope
+            stateId={stateId}
+            cycleId={cycleId}
             captures={captures}
             contacts={contacts}
             reduce={reduce}
@@ -176,21 +182,30 @@ export function RadarCashHero({
 }
 
 function RadarScope({
+  stateId,
+  cycleId,
   captures,
   contacts,
   reduce,
   alert,
 }: {
+  stateId: string;
+  cycleId: string;
   captures: RadarCapture[];
   contacts: RadarContact[];
   reduce: boolean;
   alert: boolean;
 }) {
   const rings = [56, 96, 136, 168];
+  const uid = `vsv-${stateId || "desk"}-${cycleId.slice(0, 24) || "idle"}`;
   return (
     <svg
+      key={uid}
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       className="block h-auto w-full overflow-visible"
+      data-radar-state={stateId}
+      data-radar-cycle={cycleId}
+      data-radar-hub="cash"
       role="img"
       aria-label={
         alert
@@ -202,23 +217,23 @@ function RadarScope({
       }
     >
       <defs>
-        <radialGradient id="vsv-scope" cx="50%" cy="50%" r="50%">
+        <radialGradient id={`${uid}-scope`} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#141a16" />
           <stop offset="100%" stopColor="#0b0f0c" />
         </radialGradient>
-        <linearGradient id="vsv-beam" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={`${uid}-beam`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#c4a574" stopOpacity="0" />
           <stop offset="55%" stopColor="#7c9a72" stopOpacity="0.06" />
           <stop offset="100%" stopColor="#c4a574" stopOpacity="0.18" />
         </linearGradient>
-        <linearGradient id="vsv-bill" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={`${uid}-bill`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#2a2418" />
           <stop offset="55%" stopColor="#1a211c" />
           <stop offset="100%" stopColor="#141a16" />
         </linearGradient>
       </defs>
 
-      <circle cx={CX} cy={CY} r={174} fill="url(#vsv-scope)" stroke="#2a332c" />
+      <circle cx={CX} cy={CY} r={174} fill={`url(#${uid}-scope)`} stroke="#2a332c" />
       {alert ? (
         <>
           <circle
@@ -273,28 +288,28 @@ function RadarScope({
         );
       })}
 
-      <g
-        style={{
-          transformOrigin: `${CX}px ${CY}px`,
-          animation: reduce
-            ? undefined
-            : `vsv-radar-sweep ${alert ? "4s" : "5.5s"} linear infinite`,
-        }}
-      >
-        <path
-          d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 92} ${CY - 143} Z`}
-          fill="url(#vsv-beam)"
-        />
-        <line
-          x1={CX}
-          y1={CY}
-          x2={CX}
-          y2={CY - 170}
-          stroke="#c4a574"
-          strokeOpacity="0.7"
-          strokeWidth="1.2"
-        />
-      </g>
+      {reduce ? null : (
+        <g
+          style={{
+            transformOrigin: `${CX}px ${CY}px`,
+            animation: `vsv-radar-sweep ${alert ? "4s" : "5.5s"} linear infinite`,
+          }}
+        >
+          <path
+            d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 92} ${CY - 143} Z`}
+            fill={`url(#${uid}-beam)`}
+          />
+          <line
+            x1={CX}
+            y1={CY}
+            x2={CX}
+            y2={CY - 170}
+            stroke="#c4a574"
+            strokeOpacity="0.7"
+            strokeWidth="1.2"
+          />
+        </g>
+      )}
 
       {contacts.map((blip) => (
         <ScopeMark
@@ -303,10 +318,11 @@ function RadarScope({
           radius={blip.radius}
           label={`${blip.shortName} ${blip.name} ${money(blip.amount)}`}
           amount={blip.amount}
-          stacked={0}
+          bills={1}
           dim
           ping={false}
           reduce={reduce}
+          fillId={`${uid}-bill`}
         />
       ))}
 
@@ -317,50 +333,15 @@ function RadarScope({
           radius={blip.radius}
           label={`${blip.shortName} ${blip.name} ${money(blip.amount)}`}
           amount={blip.amount}
-          stacked={alert ? blip.stack : 0}
+          bills={radarBillCount("capture", blip.stack)}
           dim={!alert}
           ping={alert && !reduce}
           reduce={reduce}
+          fillId={`${uid}-bill`}
         />
       ))}
 
-      <circle cx={CX} cy={CY} r="24" fill="#0b0f0c" stroke="#c4a574" strokeWidth="1.1" />
-      <rect
-        x={CX - 6}
-        y={CY - 9}
-        width="12"
-        height="10"
-        rx="1"
-        fill="none"
-        stroke="#c4a574"
-        strokeWidth="1.1"
-      />
-      <path
-        d={`M${CX - 4} ${CY - 9} v-4 a4 4 0 0 1 8 0 v4`}
-        fill="none"
-        stroke="#c4a574"
-        strokeWidth="1.1"
-      />
-      <text
-        x={CX - 4}
-        y={CY + 18}
-        textAnchor="middle"
-        fill="#c4a574"
-        fontSize="6"
-        fontFamily="IBM Plex Mono, ui-monospace, monospace"
-      >
-        $
-      </text>
-      <text
-        x={CX + 4}
-        y={CY + 18}
-        textAnchor="middle"
-        fill="#7c9a72"
-        fontSize="6"
-        fontFamily="IBM Plex Mono, ui-monospace, monospace"
-      >
-        V
-      </text>
+      <CashHub fillId={`${uid}-bill`} />
     </svg>
   );
 }
@@ -370,19 +351,21 @@ function ScopeMark({
   radius,
   label,
   amount,
-  stacked,
+  bills,
   dim,
   ping,
   reduce,
+  fillId,
 }: {
   angle: number;
   radius: number;
   label: string;
   amount: number;
-  stacked: 0 | 1 | 2;
+  bills: 1 | 2 | 3;
   dim: boolean;
   ping: boolean;
   reduce: boolean;
+  fillId: string;
 }) {
   const rad = ((angle - 90) * Math.PI) / 180;
   const r = radius * 168;
@@ -391,7 +374,8 @@ function ScopeMark({
   return (
     <g
       transform={`translate(${x} ${y})`}
-      opacity={dim ? 0.34 : 1}
+      opacity={dim ? 0.55 : 1}
+      data-radar-bills={bills}
       style={{
         animation: reduce || dim ? undefined : "vsv-blip-in 0.55s ease-out both",
       }}
@@ -408,25 +392,11 @@ function ScopeMark({
           }}
         />
       ) : null}
-      {stacked >= 2 ? <DollarBill x={-14} y={-13} /> : null}
-      {stacked >= 1 ? (
-        <DollarBill x={stacked >= 2 ? -9 : -12} y={stacked >= 2 ? -6 : -8} />
-      ) : (
-        <rect
-          x="-8"
-          y="-5"
-          width="16"
-          height="10"
-          rx="1.2"
-          fill="#141a16"
-          stroke="#c4a574"
-          strokeWidth="0.7"
-        />
-      )}
+      <CashStack bills={bills} fillId={fillId} />
       {dim ? null : (
         <>
           <text
-            y={stacked >= 1 ? 16 : 12}
+            y={bills >= 3 ? 18 : 15}
             textAnchor="middle"
             fill="#c4a574"
             fontSize="6"
@@ -435,7 +405,7 @@ function ScopeMark({
             {money(amount)}
           </text>
           <text
-            y={stacked >= 1 ? 25 : 21}
+            y={bills >= 3 ? 27 : 24}
             textAnchor="middle"
             fill="#7c9a72"
             fontSize="5.5"
@@ -449,15 +419,64 @@ function ScopeMark({
   );
 }
 
-/** Original $V chrome bills — not lottery ticket art. */
-function DollarBill({ x, y }: { x: number; y: number }) {
+function CashStack({ bills, fillId }: { bills: 1 | 2 | 3; fillId: string }) {
+  if (bills === 3) {
+    return (
+      <>
+        <DollarBill x={-16} y={-15} rotate={-14} fillId={fillId} />
+        <DollarBill x={-11} y={-9} rotate={8} fillId={fillId} />
+        <DollarBill x={-12} y={-3} rotate={-3} fillId={fillId} />
+      </>
+    );
+  }
+  if (bills === 2) {
+    return (
+      <>
+        <DollarBill x={-14} y={-12} rotate={-10} fillId={fillId} />
+        <DollarBill x={-11} y={-5} rotate={6} fillId={fillId} />
+      </>
+    );
+  }
+  return <DollarBill x={-12} y={-7} rotate={-4} fillId={fillId} />;
+}
+
+/** Center pile of original $V chrome bills — not lottery art, not a lock. */
+function CashHub({ fillId }: { fillId: string }) {
   return (
-    <g transform={`translate(${x} ${y})`}>
+    <g transform={`translate(${CX} ${CY})`} data-radar-hub="cash">
+      <circle r="30" fill="#0b0f0c" stroke="#c4a574" strokeWidth="1.15" />
+      <g transform="translate(-12 -18) rotate(-16)">
+        <DollarBill x={0} y={0} fillId={fillId} />
+      </g>
+      <g transform="translate(-6 -11) rotate(11)">
+        <DollarBill x={0} y={0} fillId={fillId} />
+      </g>
+      <g transform="translate(-10 -5) rotate(-5)">
+        <DollarBill x={0} y={0} fillId={fillId} />
+      </g>
+    </g>
+  );
+}
+
+/** Original $V chrome bills — not lottery ticket art. */
+function DollarBill({
+  x,
+  y,
+  rotate = 0,
+  fillId,
+}: {
+  x: number;
+  y: number;
+  rotate?: number;
+  fillId: string;
+}) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
       <rect
         width="24"
         height="14"
         rx="1.6"
-        fill="url(#vsv-bill)"
+        fill={`url(#${fillId})`}
         stroke="#c4a574"
         strokeWidth="0.95"
       />

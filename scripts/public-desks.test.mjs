@@ -140,6 +140,11 @@ test("public home mounts remaining-prize radar beside the trip desk for phone an
   assert.equal(radar.includes("hidden lg:block"), false);
   assert.equal(radar.includes("playGoldBleeps"), true);
   assert.equal(radar.includes("DollarBill"), true);
+  assert.equal(radar.includes("CashHub"), true);
+  assert.equal(radar.includes('data-radar-hub="cash"'), true);
+  assert.equal(radar.includes("v-4 a4 4 0 0 1 8 0 v4"), false);
+  assert.equal(home.includes("key={stateId}"), true);
+  assert.equal(home.includes("getRadarScope({ data: { stateId"), true);
   assert.equal(radar.includes("deskNotifyEnabled"), true);
   assert.equal(radar.includes("prefers-reduced-motion"), true);
 });

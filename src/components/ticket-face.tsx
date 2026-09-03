@@ -66,6 +66,9 @@ export function TicketFace({
             ${game.price}
           </span>
         </div>
+        <p className="mt-1 font-mono text-[9px] tracking-[0.08em] text-faint uppercase">
+          {t("card.reconstruction")}
+        </p>
       </div>
     </div>
   );
