@@ -3,7 +3,7 @@ import type { Game } from "./games";
 /** TN reconstructions that exist as /tickets/{number}.jpg for that exact game. */
 const NAMED_FACES = new Set([
   1265, 1310, 1355, 1358, 1359, 1360, 1361, 1364, 1368, 1369, 1370, 1372, 1373,
-  1376, 1386, 1856, 1990, 1996,
+  1376, 1386, 1397, 1856, 1990, 1996,
 ]);
 
 function isTennessee(game: Game): boolean {

@@ -70,11 +70,12 @@ i18n.on("languageChanged", (lng) => {
 });
 
 export function heatBandKey(
-  band: "hot" | "warm" | "cool" | "bust",
+  band: "hot" | "warm" | "cool" | "bust" | "new",
 ): MessageKey {
   if (band === "hot") return "heat.hot";
   if (band === "warm") return "heat.warm";
   if (band === "cool") return "heat.cool";
+  if (band === "new") return "heat.new";
   return "heat.pass";
 }
 

@@ -17,7 +17,7 @@ import {
 import { publicCatalog } from "./index";
 import type { RemainingRow } from "./compile";
 import { COMPILED_REMAINING } from "./compiled.remaining.server";
-import { trustedCatalog } from "./parse.server";
+import { trustedCatalog, unionBundledGames } from "./parse.server";
 import { readSnapshot, upsertSnapshot } from "./snapshots.server";
 
 export type { RemainingRow };
@@ -157,15 +157,17 @@ export async function loadDeskCatalog(
     await seedSnapshotsIfEmpty();
     const row = await readSnapshot(id);
     if (row?.catalog && row.catalog.length) {
-      const games = trustedCatalog(row.catalog.map((game) => ({ ...game, stateId: id })));
+      const snapshot = trustedCatalog(row.catalog.map((game) => ({ ...game, stateId: id })));
+      const games = unionBundledGames(snapshot, bundled.games);
       if (games.length) {
+        const added = games.length > snapshot.length;
         return {
           games,
           error: null,
           stale: row.stale || !row.ok,
-          ok: Boolean(row.ok) && !row.stale,
-          fetchedAt: row.fetchedAt,
-          weekLabel: row.weekLabel,
+          ok: Boolean(row.ok) && !row.stale && !added,
+          fetchedAt: added ? bundled.fetchedAt : row.fetchedAt,
+          weekLabel: added ? bundled.weekLabel : row.weekLabel,
         };
       }
     }

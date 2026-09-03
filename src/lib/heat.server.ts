@@ -1,4 +1,5 @@
 import type { Game, PrizeTier } from "@/data/games";
+import { isUnpostedNewGame } from "../data/tn-snapshot.ts";
 import type {
   CashBlip,
   DeskPick,
@@ -97,6 +98,22 @@ export function scoreGame(
   game: Game,
   ctx: HeatContext = DEFAULT_HEAT,
 ): HeatReport {
+  if (isUnpostedNewGame(game)) {
+    return {
+      grand: 0,
+      medium: 0,
+      vault: 0,
+      band: "new",
+      bust: false,
+      mediumKnown: false,
+      role: gameRole(game),
+      topRemaining: null,
+      effectiveTop: null,
+      midRemaining: null,
+      lowRemaining: null,
+    };
+  }
+
   const role = gameRole(game);
   const top = game.tiers[0];
   const topRemaining = top?.remaining ?? null;
@@ -237,7 +254,7 @@ export function scoreGamePublic(
 }
 
 function hasRetailTop(heat: HeatReport): boolean {
-  if (heat.bust) return false;
+  if (heat.bust || heat.band === "new") return false;
   if (heat.effectiveTop != null && heat.effectiveTop <= 0) return false;
   return true;
 }
@@ -395,6 +412,9 @@ export function buildDesk(
   const usesHoldback = ctx.topHoldback > 0 && Boolean(holdbackLabel);
 
   const why = (g: Game, h: HeatReport): string => {
+    if (h.band === "new") {
+      return "Remaining prizes not posted yet. New tickets start with a full book — we do not guess heat.";
+    }
     if (h.role === "cash-out" && h.topRemaining != null) {
       return `${h.topRemaining.toLocaleString()} cash prizes of $${g.topPrize.toLocaleString()} still posted`;
     }
@@ -435,7 +455,11 @@ export function buildDesk(
     .map((r) => ({ ...r, why: why(r.game, r.heat) }));
 
   const avoid = rows
-    .filter((r) => r.heat.bust || (r.heat.effectiveTop === 0 && r.heat.role === "jackpot"))
+    .filter(
+      (r) =>
+        r.heat.band !== "new" &&
+        (r.heat.bust || (r.heat.effectiveTop === 0 && r.heat.role === "jackpot")),
+    )
     .sort((a, b) => a.heat.vault - b.heat.vault)
     .slice(0, 8)
     .map((r) => ({

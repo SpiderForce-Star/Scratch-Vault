@@ -10,6 +10,7 @@ import {
   extractAsOf,
   gamesFromParse,
   parseOfficialRemaining,
+  unionBundledGames,
 } from "./parse.server";
 import {
   archivePriorSnapshot,
@@ -134,14 +135,15 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
 
     const lastGood = await readSnapshot(stateId);
     const bundled = loadBundledDesk(stateId);
-    const known =
-      lastGood?.catalog?.length
-        ? lastGood.catalog
-        : stateId === "tn"
-          ? tennesseeFullCatalog()
-          : publicCatalog(stateId).length
-            ? bundled.games
-            : [];
+    const fallbackKnown =
+      stateId === "tn"
+        ? tennesseeFullCatalog()
+        : publicCatalog(stateId).length
+          ? bundled.games
+          : [];
+    const known = lastGood?.catalog?.length
+      ? unionBundledGames(lastGood.catalog, fallbackKnown)
+      : fallbackKnown;
 
     const games = gamesFromParse(stateId, parsed, known);
     if (!games.length) {

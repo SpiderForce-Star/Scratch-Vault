@@ -5,7 +5,7 @@
 import type { Game, GameSource, TicketTheme } from "../games";
 import type { StateId } from "../../config/states";
 
-const PRICES = new Set([5, 10, 20, 25, 30, 50]);
+const PRICES = new Set([1, 2, 3, 5, 10, 20, 25, 30, 50]);
 
 export type ParsedPrize = { amount: number; remaining: number | null };
 export type ParsedGame = {
@@ -78,7 +78,10 @@ function typicalOdds(price: number): number {
   if (price >= 25) return 2.97;
   if (price >= 20) return 3.18;
   if (price >= 10) return 3.45;
-  return 3.95;
+  if (price >= 5) return 3.95;
+  if (price >= 3) return 3.85;
+  if (price >= 2) return 4.4;
+  return 4.6;
 }
 
 function themeOf(name: string, price: number): TicketTheme {
@@ -124,6 +127,18 @@ export function trustedCatalog<T extends { number: number; name: string }>(games
     out.push(game);
   }
   return out;
+}
+
+/** Keep snapshot remaining; add bundled games the snapshot does not have. */
+export function unionBundledGames<T extends { number: number; name: string }>(
+  snapshot: T[],
+  bundled: T[],
+): T[] {
+  const byNumber = new Map(snapshot.map((game) => [game.number, game]));
+  for (const game of bundled) {
+    if (!byNumber.has(game.number)) byNumber.set(game.number, game);
+  }
+  return trustedCatalog([...byNumber.values()]);
 }
 
 export function toCatalog(games: ParsedGame[], source: GameSource): Game[] {
