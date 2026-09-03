@@ -72,6 +72,14 @@ export function decodeHtml(s: string): string {
     .trim();
 }
 
+/** Strip leftover markup fragments from remaining-prize HTML parses. */
+export function sanitizeGameName(name: string): string {
+  return decodeHtml(name)
+    .replace(/^\/?(span|div|h[1-6]|p|strong|em|b|i|label|a)\s*>\s*/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function typicalOdds(price: number): number {
   if (price >= 50) return 2.7;
   if (price >= 30) return 2.9;
@@ -120,11 +128,14 @@ export function trustedCatalog<T extends { number: number; name: string }>(games
   const seen = new Set<number>();
   const out: T[] = [];
   for (const game of games) {
-    if (isImportedJunkGame(game)) continue;
-    if (!game.number || !game.name) continue;
-    if (seen.has(game.number)) continue;
-    seen.add(game.number);
-    out.push(game);
+    const name = sanitizeGameName(game.name);
+    if (!name) continue;
+    const cleaned = name === game.name ? game : { ...game, name };
+    if (isImportedJunkGame(cleaned)) continue;
+    if (!cleaned.number || !cleaned.name) continue;
+    if (seen.has(cleaned.number)) continue;
+    seen.add(cleaned.number);
+    out.push(cleaned);
   }
   return out;
 }
@@ -157,7 +168,7 @@ export function toCatalog(games: ParsedGame[], source: GameSource): Game[] {
     seen.add(game.number);
     out.push({
       number: game.number,
-      name: game.name,
+      name: sanitizeGameName(game.name),
       price: game.price as Game["price"],
       topPrize,
       odds: game.odds && game.odds > 1 ? game.odds : typicalOdds(game.price),

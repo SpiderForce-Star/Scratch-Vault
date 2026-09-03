@@ -1,8 +1,8 @@
 /**
- * Server-only radar scope. Compares prior trusted snapshot vs current desk.
- * PUBLIC_STATE_IDS only. Never invents remaining counts.
+ * Server-only radar scope for ONE selected public desk.
+ * Hidden desks stay off the scope. Never invents remaining counts.
  */
-import { PUBLIC_STATE_IDS, getState } from "@/config/states";
+import { DEFAULT_STATE_ID, getState, type StateId } from "@/config/states";
 import { loadDeskCatalog, seedSnapshotsIfEmpty } from "@/data/states/load.server";
 import { readPriorCatalog } from "@/data/states/snapshots.server";
 import {
@@ -11,39 +11,34 @@ import {
   EMPTY_RADAR,
   isMonitoredDesk,
   quietJackpotContacts,
-  type RadarCapture,
-  type RadarContact,
   type RadarScopePayload,
 } from "./radar";
 
-export async function buildRadarScope(): Promise<RadarScopePayload> {
+export async function buildRadarScope(
+  stateId: StateId = DEFAULT_STATE_ID,
+): Promise<RadarScopePayload> {
+  if (!isMonitoredDesk(stateId)) return { ...EMPTY_RADAR, stateId };
   await seedSnapshotsIfEmpty();
-  const captures: RadarCapture[] = [];
-  const contacts: RadarContact[] = [];
-
-  await Promise.all(
-    PUBLIC_STATE_IDS.map(async (stateId) => {
-      if (!isMonitoredDesk(stateId)) return;
-      const loaded = await loadDeskCatalog(stateId);
-      if (!loaded.games.length) return;
-      const shortName = getState(stateId).shortName;
-      const snapshotAt = loaded.fetchedAt || loaded.weekLabel || "";
-      const prior = await readPriorCatalog(stateId, loaded.fetchedAt);
-      const found = prior?.length
-        ? detectGrandCaptures(prior, loaded.games, {
-            stateId,
-            shortName,
-            snapshotAt,
-          })
-        : [];
-      captures.push(...found);
-      const capturedNumbers = new Set(found.map((row) => row.gameId));
-      contacts.push(
-        ...quietJackpotContacts(loaded.games, { stateId, shortName }, capturedNumbers),
-      );
-    }),
+  const loaded = await loadDeskCatalog(stateId);
+  if (!loaded.games.length) return { ...EMPTY_RADAR, stateId };
+  const shortName = getState(stateId).shortName;
+  const snapshotAt = loaded.fetchedAt || loaded.weekLabel || getState(stateId).publishedAt || "";
+  const prior = await readPriorCatalog(stateId, loaded.fetchedAt);
+  const captures = prior?.length
+    ? detectGrandCaptures(prior, loaded.games, {
+        stateId,
+        shortName,
+        snapshotAt,
+      })
+    : [];
+  const capturedNumbers = new Set(captures.map((row) => row.gameId));
+  const contacts = quietJackpotContacts(
+    loaded.games,
+    { stateId, shortName, snapshotAt },
+    capturedNumbers,
   );
-
-  if (!captures.length && !contacts.length) return EMPTY_RADAR;
-  return assembleRadarScope(captures, contacts);
+  if (!captures.length && !contacts.length) {
+    return { ...EMPTY_RADAR, stateId, snapshotAt, cycleId: `${stateId}:${snapshotAt}` };
+  }
+  return assembleRadarScope(captures, contacts, { stateId, snapshotAt });
 }

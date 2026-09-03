@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -7,6 +7,7 @@ import { hasNamedFace, ticketArt } from "../src/data/ticket-art.ts";
 import {
   ticketChrome,
   ticketChromeFingerprint,
+  ticketFamily,
 } from "../src/lib/ticket-chrome.ts";
 import { skipNameLocked, SKIP_TEASER_CLEAR } from "../src/lib/skip-teaser.ts";
 
@@ -32,9 +33,17 @@ test("named TN photos are only used for that exact game number", () => {
   const fever = game({ number: 1391, name: "$500 Fever", price: 10, theme: "frenzy", stateId: "tn" });
   const win200x = game({ number: 1315, name: "200X The Win", price: 20, theme: "multiplier", stateId: "tn" });
   const twoHundredX = game({ number: 1370, name: "200X", price: 20, theme: "multiplier", stateId: "tn" });
+  const collectible5 = game({ number: 1395, name: "Jumbo Bucks Collectible", price: 5, theme: "jumbo", stateId: "tn" });
+  const collectible10 = game({ number: 1396, name: "Jumbo Bucks Collectible", price: 10, theme: "jumbo", stateId: "tn" });
+  const seasons = game({ number: 1401, name: "Jumbo Bucks Seasons", price: 3, theme: "jumbo", stateId: "tn" });
+  const payMe = game({ number: 1388, name: "Pay Me!", price: 1, theme: "cash", stateId: "tn" });
 
   assert.equal(ticketArt(frenzy), "/tickets/1359.jpg");
   assert.equal(hasNamedFace(frenzy), true);
+  assert.equal(ticketArt(collectible5), "/tickets/1395.jpg");
+  assert.equal(ticketArt(collectible10), "/tickets/1396.jpg");
+  assert.equal(ticketArt(seasons), "/tickets/1401.jpg");
+  assert.equal(ticketArt(payMe), "/tickets/1388.jpg");
 
   assert.equal(ticketArt(or500), null);
   assert.equal(hasNamedFace(or500), false);
@@ -126,6 +135,15 @@ test("every catalog number gets a unique chrome fingerprint", () => {
   assert.equal(seen.size, numbers.length);
 });
 
+test("chrome family follows ticket name vibe", () => {
+  assert.equal(ticketFamily("$1,000 Frenzy", "frenzy"), "frenzy");
+  assert.equal(ticketFamily("Queen of Hearts", "cash"), "hearts");
+  assert.equal(ticketFamily("Lincoln", "cash"), "currency");
+  assert.equal(ticketFamily("Wild Cash 50X", "multiplier"), "multiplier");
+  assert.equal(ticketFamily("Lucky Horseshoe Crossword", "crossword"), "crossword");
+  assert.equal(ticketFamily("Jumbo Bucks Extravaganza", "jumbo"), "jumbo");
+});
+
 test("same theme and price still get different chrome", () => {
   const a = ticketChrome(game({ number: 1363, name: "$50, $100 OR $500!", theme: "frenzy", price: 10, stateId: "tn" }));
   const b = ticketChrome(game({ number: 1391, name: "$500 Fever", theme: "frenzy", price: 10, stateId: "tn" }));
@@ -157,4 +175,17 @@ test("homepage skip rows send locked names to pricing", () => {
   assert.equal(home.includes('to="/pricing"'), true);
   assert.equal(home.includes("skipNameLocked"), true);
   assert.equal(home.includes("home.skipHidden"), true);
+});
+
+test("ticket faces caption independent reconstructions", () => {
+  const face = readFileSync(join(root, "src/components/ticket-face.tsx"), "utf8");
+  const chrome = readFileSync(join(root, "src/components/ticket-chrome.tsx"), "utf8");
+  const en = JSON.parse(readFileSync(join(root, "src/locales/en.json"), "utf8"));
+  assert.equal(en["card.reconstruction"], "Independent reconstruction — not official ticket art.");
+  assert.equal(face.includes("card.reconstruction"), true);
+  assert.equal(chrome.includes("Independent reconstruction — not official ticket art."), true);
+  assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1396.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1401.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1388.jpg")), true);
 });

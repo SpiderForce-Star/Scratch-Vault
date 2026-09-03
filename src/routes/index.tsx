@@ -45,9 +45,12 @@ export const Route = createFileRoute("/")({
   loader: async ({ deps }): Promise<{ desk: DeskSnapshot | null; radar: RadarScopePayload }> => {
     const [desk, radar] = await Promise.all([
       getDeskSnapshot({ data: { stateId: deps.stateId } }).catch(() => null),
-      getRadarScope().catch(() => EMPTY_RADAR),
+      getRadarScope({ data: { stateId: deps.stateId } }).catch(() => ({
+        ...EMPTY_RADAR,
+        stateId: deps.stateId,
+      })),
     ]);
-    return { desk, radar: radar ?? EMPTY_RADAR };
+    return { desk, radar: radar ?? { ...EMPTY_RADAR, stateId: deps.stateId } };
   },
   head: () =>
     pageHead({
@@ -94,7 +97,7 @@ function VaultHome() {
   const search = Route.useSearch();
   const loaded = Route.useLoaderData();
   const loadedSnap = loaded?.desk ?? null;
-  const radar = loaded?.radar ?? EMPTY_RADAR;
+  const loadedRadar = loaded?.radar ?? EMPTY_RADAR;
   const { stateId, setStateId, config, setDeskMode } = useActiveState();
   const { t } = useI18n();
   const [filter, setFilter] = useState<PriceFilter>("10");
@@ -102,6 +105,7 @@ function VaultHome() {
   const [query, setQuery] = useState("");
   const { paid } = useAccess();
   const [snap, setSnap] = useState<DeskSnapshot | null>(loadedSnap);
+  const [radar, setRadar] = useState<RadarScopePayload>(loadedRadar);
   const locked = !(snap?.paid ?? paid);
 
   useEffect(() => {
@@ -125,6 +129,10 @@ function VaultHome() {
   }, [loadedSnap, setDeskMode]);
 
   useEffect(() => {
+    setRadar(loadedRadar);
+  }, [loadedRadar]);
+
+  useEffect(() => {
     let cancelled = false;
     void getDeskSnapshot({ data: { stateId } })
       .then((next) => {
@@ -139,6 +147,20 @@ function VaultHome() {
       cancelled = true;
     };
   }, [paid, stateId, setDeskMode]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getRadarScope({ data: { stateId } })
+      .then((next) => {
+        if (!cancelled) setRadar(next);
+      })
+      .catch(() => {
+        /* keep loader radar */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [stateId]);
 
   const selectState = (id: StateId) => {
     setStateId(id);
@@ -205,6 +227,8 @@ function VaultHome() {
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
             <RadarCashHero
+              key={stateId}
+              stateId={stateId}
               captures={radar.captures}
               contacts={radar.contacts}
               cycleId={radar.cycleId}

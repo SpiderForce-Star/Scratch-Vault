@@ -42,13 +42,18 @@ export const getDeskSnapshot = createServerFn({ method: "GET" })
     return buildDeskSnapshot(context.userId, context.email, data.stateId);
   });
 
-export const getRadarScope = createServerFn({ method: "GET" }).handler(
-  async (): Promise<RadarScopePayload> => {
+export const getRadarScope = createServerFn({ method: "GET" })
+  .validator((data: unknown) => {
+    if (!data || typeof data !== "object") {
+      return { stateId: DEFAULT_STATE_ID };
+    }
+    return { stateId: parsePublicStateId((data as { stateId?: unknown }).stateId) };
+  })
+  .handler(async ({ data }): Promise<RadarScopePayload> => {
     try {
       const { buildRadarScope } = await import("./radar.server");
-      return await buildRadarScope();
+      return await buildRadarScope(data.stateId);
     } catch {
-      return EMPTY_RADAR;
+      return { ...EMPTY_RADAR, stateId: data.stateId };
     }
-  },
-);
+  });

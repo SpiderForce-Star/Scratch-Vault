@@ -31,11 +31,13 @@ export type RadarCapture = {
   snapshotAt: string;
   angle: number;
   radius: number;
+  /** Capture drop size. Visual bills = stack + 1 (2 or 3 bills). */
   stack: 1 | 2;
 };
 
 export type RadarContact = {
   id: string;
+  stateId: string;
   shortName: string;
   name: string;
   amount: number;
@@ -44,6 +46,8 @@ export type RadarContact = {
 };
 
 export type RadarScopePayload = {
+  stateId: string;
+  snapshotAt: string;
   captures: RadarCapture[];
   contacts: RadarContact[];
   cycleId: string;
@@ -51,11 +55,19 @@ export type RadarScopePayload = {
 };
 
 export const EMPTY_RADAR: RadarScopePayload = {
+  stateId: "",
+  snapshotAt: "",
   captures: [],
   contacts: [],
   cycleId: "",
   bleeps: 0,
 };
+
+/** Quiet contact = 1 bill. Capture stack 1 → 2 bills. Capture stack 2 → 3 bills. */
+export function radarBillCount(kind: "contact" | "capture", stack?: 1 | 2): 1 | 2 | 3 {
+  if (kind === "contact") return 1;
+  return stack === 2 ? 3 : 2;
+}
 
 export function isMonitoredDesk(stateId: string): boolean {
   if (BLOCKED_DESKS.has(stateId)) return false;
@@ -155,7 +167,7 @@ export function detectGrandCaptures(
 
 export function quietJackpotContacts(
   games: Game[],
-  meta: { stateId: string; shortName: string },
+  meta: { stateId: string; shortName: string; snapshotAt: string },
   skipGameIds: Set<number>,
 ): RadarContact[] {
   if (!isMonitoredDesk(meta.stateId)) return [];
@@ -165,9 +177,10 @@ export function quietJackpotContacts(
     if (!isGrandJackpot(game)) continue;
     const remaining = publishedTopRemaining(game);
     if (remaining == null || remaining <= 0) continue;
-    const pos = hashRadarPos(meta.stateId, game.number, "quiet");
+    const pos = hashRadarPos(meta.stateId, game.number, meta.snapshotAt);
     out.push({
       id: `quiet-${meta.stateId}-${game.number}`,
+      stateId: meta.stateId,
       shortName: meta.shortName,
       name: shortRadarName(game.name),
       amount: game.topPrize,
@@ -181,6 +194,7 @@ export function quietJackpotContacts(
 export function assembleRadarScope(
   captures: RadarCapture[],
   contacts: RadarContact[],
+  meta?: { stateId?: string; snapshotAt?: string },
 ): RadarScopePayload {
   const ranked = [...captures].sort(
     (a, b) => b.dropped - a.dropped || b.amount - a.amount || a.gameId - b.gameId,
@@ -190,6 +204,7 @@ export function assembleRadarScope(
   const stackedIds = new Set(stacked.map((row) => row.id));
   const dimFromCaptures: RadarContact[] = older.map((row) => ({
     id: row.id,
+    stateId: row.stateId,
     shortName: row.shortName,
     name: row.name,
     amount: row.amount,
@@ -199,11 +214,15 @@ export function assembleRadarScope(
   const quiet = contacts
     .filter((row) => !stackedIds.has(row.id))
     .sort((a, b) => b.amount - a.amount)
-    .slice(0, 8);
+    .slice(0, 14);
+  const captureId = captureCycleId(ranked);
+  const cycleId = [meta?.stateId, meta?.snapshotAt, captureId].filter(Boolean).join(":");
   return {
+    stateId: meta?.stateId ?? stacked[0]?.stateId ?? contacts[0]?.stateId ?? "",
+    snapshotAt: meta?.snapshotAt ?? "",
     captures: stacked,
-    contacts: [...dimFromCaptures, ...quiet].slice(0, 10),
-    cycleId: captureCycleId(ranked),
+    contacts: [...dimFromCaptures, ...quiet].slice(0, 16),
+    cycleId,
     bleeps: captureBleeps(ranked),
   };
 }
