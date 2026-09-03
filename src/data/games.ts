@@ -1,4 +1,5 @@
 import { DESK_META } from "./desk-meta";
+import { TN_MISSING_GAMES } from "./tn-missing";
 
 export type PrizeTier = {
   amount: number;
@@ -19,10 +20,12 @@ export type GameSource =
   | "public-compiled"
   | "sample";
 
+export type TicketPrice = 1 | 2 | 3 | 5 | 10 | 20 | 25 | 30 | 50;
+
 export type Game = {
   number: number;
   name: string;
-  price: 5 | 10 | 20 | 25 | 30 | 50;
+  price: TicketPrice;
   topPrize: number;
   odds: number;
   tiers: PrizeTier[];
@@ -31,6 +34,13 @@ export type Game = {
   /** Stamped by the state catalog loader. Tennessee games may omit this. */
   stateId?: string;
 };
+
+export {
+  PREVIOUS_TN_GAME_NUMBERS,
+  isNewCatalogGame,
+  isUnpostedGame,
+  isUnpostedNewGame,
+} from "./tn-snapshot";
 
 export function isOfficialSource(source: GameSource): boolean {
   return source === "tn-remaining" || source === "official-remaining";
@@ -749,6 +759,8 @@ export const GAMES: Game[] = [
     source: "public-compiled",
     theme: "jumbo",
   },
+
+  ...TN_MISSING_GAMES,
 ];
 
 export { hasNamedFace, ticketArt } from "./ticket-art";

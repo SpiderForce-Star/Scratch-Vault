@@ -12,12 +12,12 @@ import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const NAV: {
-  to: "/" | "/pricing" | "/disclaimer";
+  to: "/" | "/games" | "/pricing" | "/disclaimer";
   hash?: string;
   key: MessageKey;
 }[] = [
   { to: "/", hash: "desk", key: "nav.desk" },
-  { to: "/", hash: "games", key: "nav.games" },
+  { to: "/games", key: "nav.games" },
   { to: "/pricing", key: "nav.pricing" },
   { to: "/disclaimer", key: "nav.responsible" },
 ];

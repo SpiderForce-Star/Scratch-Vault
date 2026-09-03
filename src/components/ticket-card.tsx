@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { money, moneyFull, postedBook, type Game } from "@/data/games";
+import {
+  isNewCatalogGame,
+  money,
+  moneyFull,
+  postedBook,
+  type Game,
+} from "@/data/games";
 import { type HeatReport } from "@/lib/heat";
 import { TicketFace } from "@/components/ticket-face";
 import { useActiveState } from "@/lib/active-state";
@@ -21,6 +27,8 @@ export function TicketCard({
   const topLeft = heat.effectiveTop ?? heat.topRemaining;
   const midLeft = heat.midRemaining;
   const book = postedBook(game);
+  const isNew = isNewCatalogGame(game);
+  const unposted = heat.band === "new";
 
   return (
     <Link
@@ -32,14 +40,20 @@ export function TicketCard({
         "rounded-xl transition-transform duration-200",
         "hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
         heat.bust && "border-bust/40",
+        isNew && "border-gold/50",
       )}
     >
       <div className="relative overflow-hidden">
         <TicketFace game={game} />
         <BandChip band={heat.band} className="absolute top-3 right-3 z-10" />
-        <span className="absolute top-3 left-3 z-10 inline-flex min-h-9 items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
-          {t("heat.score", { score: Math.round(heat.vault) })}
-        </span>
+        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1">
+          {isNew ? <NewGameChip /> : null}
+          {unposted ? null : (
+            <span className="inline-flex min-h-9 items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
+              {t("heat.score", { score: Math.round(heat.vault) })}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 p-4">
@@ -92,7 +106,9 @@ export function TicketCard({
         <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
           {t("card.updated")}
         </p>
-        {heat.bust ? (
+        {unposted ? (
+          <p className="text-xs text-gold">{t("card.unposted")}</p>
+        ) : heat.bust ? (
           <p className="text-xs text-bust">
             {t("card.skip")}
           </p>
@@ -141,6 +157,7 @@ export function BandChip({
     warm: "border-warm bg-warm-ink text-warm",
     cool: "border-cool bg-cool-ink text-cool",
     bust: "border-bust bg-bust-ink text-bust",
+    new: "border-gold bg-[#14240c] text-[#c8e08a]",
   };
   return (
     <span
@@ -151,6 +168,20 @@ export function BandChip({
       )}
     >
       {t(heatBandKey(band))}
+    </span>
+  );
+}
+
+export function NewGameChip({ className }: { className?: string }) {
+  const { t } = useI18n();
+  return (
+    <span
+      className={cn(
+        "inline-flex min-h-8 items-center rounded-md border-2 border-gold bg-[#14240c] px-3 py-1.5 text-sm font-bold tracking-[0.14em] text-[#c8e08a] uppercase",
+        className,
+      )}
+    >
+      {t("card.newGame")}
     </span>
   );
 }

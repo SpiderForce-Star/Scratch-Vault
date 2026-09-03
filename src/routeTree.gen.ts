@@ -16,6 +16,7 @@ import { Route as LegalRouteImport } from './routes/legal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as GamesRouteImport } from './routes/games'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as BillingIndexRouteImport } from './routes/billing/index'
@@ -58,6 +59,11 @@ const SignupRoute = SignupRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesRoute = GamesRouteImport.update({
+  id: '/games',
+  path: '/games',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
+  '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/billing': typeof BillingIndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
+  '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/billing': typeof BillingIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
+  '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/billing': typeof BillingIndexRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/pricing'
+    | '/games'
     | '/privacy'
     | '/terms'
     | '/billing'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/pricing'
+    | '/games'
     | '/privacy'
     | '/terms'
     | '/billing'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/pricing'
+    | '/games'
     | '/privacy'
     | '/terms'
     | '/billing'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   PricingRoute: typeof PricingRoute
+  GamesRoute: typeof GamesRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   BillingIndexRoute: typeof BillingIndexRoute
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games': {
+      id: '/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof GamesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   PricingRoute: PricingRoute,
+  GamesRoute: GamesRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   BillingIndexRoute: BillingIndexRoute,

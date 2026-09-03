@@ -9,17 +9,21 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const origin = "https://scratch-vault.com";
 const gamesSrc = readFileSync(join(root, "src/data/games.ts"), "utf8");
+const extraSrc = readFileSync(join(root, "src/data/tn-missing.ts"), "utf8");
 const metaSrc = readFileSync(join(root, "src/data/desk-meta.ts"), "utf8");
 
 const numbers = [
-  ...gamesSrc.matchAll(/^\s+number:\s+(\d+),/gm),
-].map((m) => m[1]);
+  ...new Set([
+    ...[...gamesSrc.matchAll(/^\s+number:\s+(\d+),/gm)].map((m) => m[1]),
+    ...[...extraSrc.matchAll(/\bg\((\d+),/g)].map((m) => m[1]),
+  ]),
+];
 
 const published =
   metaSrc.match(/publishedAt:\s*"([^"]+)"/)?.[1]?.slice(0, 10) ??
   new Date().toISOString().slice(0, 10);
 
-const staticPaths = ["/", "/pricing", "/privacy", "/terms", "/disclaimer", "/legal"];
+const staticPaths = ["/", "/games", "/pricing", "/privacy", "/terms", "/disclaimer", "/legal"];
 
 const urls = [
   ...staticPaths.map((path) => ({ path, lastmod: published, priority: path === "/" ? "1.0" : "0.6" })),

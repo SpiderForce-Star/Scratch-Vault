@@ -8,6 +8,7 @@ import {
   isPublicStateId,
 } from "@/config/states";
 import {
+  pickNewGames,
   pickSkipGames,
   pickTripGames,
   reportMap,
@@ -18,7 +19,8 @@ import {
 } from "@/lib/heat";
 import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
-import { BandChip, TicketCard } from "@/components/ticket-card";
+import { BandChip, NewGameChip, TicketCard } from "@/components/ticket-card";
+import { TicketFace } from "@/components/ticket-face";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
@@ -171,6 +173,10 @@ function VaultHome() {
     () => pickSkipGames(catalog, reports, filter, 5),
     [catalog, reports, filter],
   );
+  const newGames = useMemo(
+    () => pickNewGames(catalog, reports, 8),
+    [catalog, reports],
+  );
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -222,6 +228,52 @@ function VaultHome() {
                   </button>
                 ))}
               </div>
+              {newGames.length > 0 ? (
+                <div className="mb-6">
+                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                    {t("home.newKicker")}
+                  </p>
+                  <h2 className="mt-1 font-display text-xl tracking-tight">
+                    {t("home.newTitle")}
+                  </h2>
+                  <p className="mt-1 text-sm text-muted">{t("home.newSub")}</p>
+                  <div className="-mx-1 mt-3 flex gap-3 overflow-x-auto pb-2">
+                    {newGames.map((game) => {
+                      const heat = reports.get(game.number);
+                      if (!heat) return null;
+                      return (
+                        <Link
+                          key={`new-${game.number}`}
+                          to="/game/$number"
+                          params={{ number: String(game.number) }}
+                          search={{ state: stateId }}
+                          className="w-56 shrink-0 overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold"
+                        >
+                          <div className="relative">
+                            <TicketFace game={game} />
+                            <NewGameChip className="absolute top-2 left-2 z-10" />
+                            <BandChip
+                              band={heat.band}
+                              className="absolute top-2 right-2 z-10"
+                            />
+                          </div>
+                          <div className="p-3">
+                            <p className="font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
+                              ${game.price}
+                            </p>
+                            <p className="mt-1 truncate font-display text-base leading-snug">
+                              {game.name}
+                            </p>
+                            <p className="mt-1 font-mono text-[10px] text-faint uppercase">
+                              #{game.number}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
               <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
                 {t("trip.kicker", { price: priceLabel })}
               </p>
@@ -251,6 +303,18 @@ function VaultHome() {
                   })}
                 </div>
               )}
+              <p className="mt-5">
+                <Link
+                  to="/games"
+                  search={{ state: stateId }}
+                  className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
+                >
+                  {t("home.catalogLine", {
+                    short: config.shortName,
+                    count: catalog.length,
+                  })}
+                </Link>
+              </p>
             </div>
           </div>
         </div>
@@ -258,12 +322,12 @@ function VaultHome() {
 
       <section id="skip" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
+          <h2 className="font-display text-4xl tracking-[0.16em] text-gold uppercase sm:text-6xl [text-shadow:0_0_28px_rgb(196,92,74,0.45)]">
             {t("home.skipKicker")}
-          </p>
-          <h2 className="mt-2 font-display text-2xl tracking-tight">
-            {t("home.skipTitle")}
           </h2>
+          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
+            {t("home.skipTitle")}
+          </p>
           {skipGames.length === 0 ? (
             <p className="mt-4 text-sm text-muted">{t("home.skipEmpty")}</p>
           ) : (

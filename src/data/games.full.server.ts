@@ -52,6 +52,10 @@ const REMAINING: Record<number, [number | null, number | null, number | null]> =
   1247: [1, null, null],
   1310: [3, null, null],
   1364: [1, null, null],
+  1365: [1, 12, 32],
+  1366: [2, 82, 142],
+  1367: [2, 4, 3],
+  1401: [9, 121, 2518],
 };
 
 export function fullCatalog(): Game[] {

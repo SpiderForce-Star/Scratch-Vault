@@ -43,6 +43,16 @@ test("named TN photos are only used for that exact game number", () => {
   assert.equal(ticketArt(fever), null);
   assert.equal(ticketArt(win200x), null);
   assert.equal(ticketArt(twoHundredX), "/tickets/1370.jpg");
+
+  const collectible = game({
+    number: 1397,
+    name: "Jumbo Bucks Collectible",
+    price: 20,
+    theme: "jumbo",
+    stateId: "tn",
+  });
+  assert.equal(ticketArt(collectible), "/tickets/1397.jpg");
+  assert.equal(hasNamedFace(collectible), true);
 });
 
 test("ticketArt never returns another game's jpg", () => {

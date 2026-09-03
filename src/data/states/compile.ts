@@ -6,7 +6,7 @@ export type RemainingRow = readonly (number | null)[];
 export type CompiledDraft = {
   number: number;
   name: string;
-  price: 5 | 10 | 20 | 25 | 30 | 50;
+  price: 1 | 2 | 3 | 5 | 10 | 20 | 25 | 30 | 50;
   topPrize: number;
   odds: number;
   tiers: { amount: number }[];

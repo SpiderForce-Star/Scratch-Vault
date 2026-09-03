@@ -216,7 +216,11 @@ function GameDetail() {
           </section>
         ) : null}
 
-        {heat.bust ? (
+        {heat.band === "new" ? (
+          <p className="mt-8 rounded-lg border border-gold/40 bg-[#14240c] px-4 py-3 text-sm text-[#c8e08a]">
+            {t("game.unposted")}
+          </p>
+        ) : heat.bust ? (
           <p className="mt-8 rounded-lg border border-bust/40 bg-bust-ink px-4 py-3 text-sm text-bust">
             {t("game.bust")}
           </p>

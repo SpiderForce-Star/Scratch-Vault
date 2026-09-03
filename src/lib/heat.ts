@@ -1,6 +1,7 @@
 import type { Game } from "@/data/games";
+import { isNewCatalogGame, isUnpostedNewGame } from "../data/tn-snapshot.ts";
 
-export type HeatBand = "hot" | "warm" | "cool" | "bust";
+export type HeatBand = "hot" | "warm" | "cool" | "bust" | "new";
 export type GameRole = "cash-out" | "jackpot";
 
 /** State-aware scoring context. Default matches Tennessee (Play It Again). */
@@ -84,6 +85,7 @@ export function bandLabel(band: HeatBand): string {
   if (band === "hot") return "Hot";
   if (band === "warm") return "Warm";
   if (band === "cool") return "Cold";
+  if (band === "new") return "NEW";
   return "Pass";
 }
 
@@ -158,14 +160,37 @@ export function pickTripGames(
 ): Game[] {
   const pool = games.filter((g) => inPriceFilter(g, filter));
   const ranked = sortGames(pool, "heat", reports);
-  const live = ranked.filter((g) => !reports.get(g.number)?.bust);
-  return (live.length >= count ? live : ranked).slice(0, count);
+  const live = ranked.filter((g) => {
+    const heat = reports.get(g.number);
+    return heat && !heat.bust && heat.band !== "new";
+  });
+  return (live.length >= count ? live : ranked.filter((g) => reports.get(g.number)?.band !== "new")).slice(
+    0,
+    count,
+  );
 }
 
 function isSkipGame(heat: HeatReport | undefined): boolean {
   if (!heat) return false;
+  if (heat.band === "new") return false;
   if (heat.bust || heat.band === "bust") return true;
   return heat.role === "jackpot" && heat.grand <= 0;
+}
+
+/** New-to-desk games for the TN New Games strip. Unposted first, then newest numbers. */
+export function pickNewGames(
+  games: Game[],
+  _reports: Map<number, HeatReport>,
+  max = 8,
+): Game[] {
+  const fresh = games.filter((g) => isNewCatalogGame(g));
+  fresh.sort((a, b) => {
+    const aNew = isUnpostedNewGame(a) ? 1 : 0;
+    const bNew = isUnpostedNewGame(b) ? 1 : 0;
+    if (aNew !== bNew) return bNew - aNew;
+    return b.number - a.number;
+  });
+  return fresh.slice(0, max);
 }
 
 /** 3–5 busts to walk past. Prefer the selected price, then fill. */
