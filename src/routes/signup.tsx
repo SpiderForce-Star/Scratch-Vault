@@ -73,7 +73,8 @@ function SignupPage() {
   }, []);
 
   if (!isPending && user) {
-    return <Navigate to={"/account"} search={{ complete: true }} />;
+    const plan = next.includes("plan=annual") ? ("annual" as const) : ("monthly" as const);
+    return <Navigate to="/account" search={{ complete: "1" as const, plan }} />;
   }
 
   const emailOn = Boolean(authEnabled && status?.email);
@@ -126,7 +127,7 @@ function SignupPage() {
         throw new Error(signedIn.error.message ?? t("login.failed"));
       }
       await authClient.getSession();
-      window.location.assign("/account?complete=1");
+      window.location.assign(next || "/account?complete=1");
     } catch (err) {
       const message = err instanceof Error ? err.message : t("login.failed");
       setError(humanAuthError(message, t("signup.exists"), t("login.invalidCreds")));

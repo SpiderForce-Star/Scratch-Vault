@@ -31,10 +31,24 @@ import { pageHead } from "@/lib/site";
 import { NO_REFUNDS_ACCOUNT, NO_REFUNDS_LINE } from "@/lib/billing-policy";
 
 export const Route = createFileRoute("/account")({
-  validateSearch: (search: Record<string, unknown>) => {
-    const complete = search.complete === "1" || search.complete === true;
-    const plan = search.plan === "annual" ? ("annual" as const) : ("monthly" as const);
-    return complete ? { complete: true as const, plan } : { plan };
+  validateSearch: (search: Record<string, unknown>): {
+    complete?: "1";
+    plan?: "monthly" | "annual";
+  } => {
+    const complete =
+      search.complete === "1" ||
+      search.complete === 1 ||
+      search.complete === true;
+    const plan =
+      search.plan === "annual"
+        ? ("annual" as const)
+        : search.plan === "monthly"
+          ? ("monthly" as const)
+          : undefined;
+    return {
+      ...(complete ? { complete: "1" as const } : {}),
+      ...(plan ? { plan } : {}),
+    };
   },
   component: AccountPage,
   head: () =>
@@ -46,7 +60,8 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
-  const { complete, plan } = Route.useSearch();
+  const { complete, plan: checkoutPlan } = Route.useSearch();
+  const selectedPlan = checkoutPlan ?? "monthly";
   const { user, isPending } = useCurrentUserState();
   const native = isNativeApp();
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -90,7 +105,7 @@ function AccountPage() {
     return (
       <Navigate
         to="/signup"
-        search={{ next: complete ? `/account?complete=1&plan=${plan ?? "monthly"}` : "/account" }}
+        search={{ next: `/account?complete=1&plan=${selectedPlan}` }}
       />
     );
   }
@@ -104,7 +119,7 @@ function AccountPage() {
     : user?.isDevFallback
       ? "active"
       : summary?.status;
-  const plan = nativeAccess?.paid
+  const billingPlan = nativeAccess?.paid
     ? nativeAccess.plan
     : user?.isDevFallback
       ? "monthly"
@@ -185,7 +200,7 @@ function AccountPage() {
       : paid
         ? `Active. Next charge ${formatBillingDate(periodEnd)}.`
         : (subscriptionStatusCopy(status) ??
-          "No Full Access yet. Complete your profile and add a card on Pricing.");
+          "No Full Access yet. Complete your profile and add a card to start the 7-day trial.");
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12 sm:px-6">
@@ -195,12 +210,18 @@ function AccountPage() {
       <h1 className="mt-3 font-display text-4xl tracking-tight">Your desk</h1>
       <p className="mt-2 text-sm text-muted">{signedInAs}</p>
 
+      {user && !native && !paid ? (
+        <div className="mt-8" id="account-profile">
+          <ProfileForm highlight={Boolean(complete) || !paid} plan={selectedPlan} />
+        </div>
+      ) : null}
+
       <div className="mt-8 rounded-xl border border-line bg-surface p-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
           Plan
         </p>
         <p className="mt-2 font-display text-2xl">
-          {paid ? planLabel(plan ?? null) : "Locked"}
+          {paid ? planLabel(billingPlan ?? null) : "Locked"}
         </p>
         <p className="mt-1 text-sm text-muted">{planStatus}</p>
 
@@ -256,8 +277,15 @@ function AccountPage() {
               ) : null}
               {!paid ? (
                 <Link
-                  to="/pricing"
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
+                  to="/account"
+                  search={{ complete: "1" as const, plan: selectedPlan }}
+                  hash="account-profile"
+                  onClick={() => {
+                    document
+                      .getElementById("account-profile")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
                 >
                   {TRIAL_CTA}
                 </Link>
@@ -321,9 +349,9 @@ function AccountPage() {
         </div>
       </div>
 
-      {user && !native ? (
+      {user && !native && paid ? (
         <div className="mt-8">
-          <ProfileForm highlight={complete} plan={plan ?? "monthly"} />
+          <ProfileForm plan={selectedPlan} />
         </div>
       ) : null}
 

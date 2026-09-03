@@ -90,12 +90,14 @@ function PricingPage() {
         return;
       }
       if (!user) {
-        window.location.assign(`/signup?next=${encodeURIComponent("/pricing")}`);
+        window.location.assign(
+          `/signup?next=${encodeURIComponent(`/account?complete=1&plan=${plan}`)}`,
+        );
         return;
       }
       const result = await createCheckoutSession({ data: { plan } });
       if (result?.needsProfile) {
-        window.location.assign("/account?complete=1");
+        window.location.assign(result.url || `/account?complete=1&plan=${plan}`);
         return;
       }
       if (result?.alreadySubscribed) {
@@ -111,7 +113,9 @@ function PricingPage() {
     } catch (err) {
       const message = checkoutClientMessage(err);
       if (err instanceof Error && err.message === "Unauthorized") {
-        window.location.assign(`/signup?next=${encodeURIComponent("/pricing")}`);
+        window.location.assign(
+          `/signup?next=${encodeURIComponent(`/account?complete=1&plan=${plan}`)}`,
+        );
         return;
       }
       if (message === CHECKOUT_PUBLIC.canceled) {
@@ -188,25 +192,32 @@ function PricingPage() {
             $49.99<span className="text-lg text-muted">{t("pricing.perYear")}</span>
           </p>
           <p className="mt-1 text-sm text-muted">{t("pricing.annualCard")}</p>
-          <Link
-            to={user ? "/account" : "/signup"}
-            search={
-              user
-                ? { complete: true as const, plan: "annual" as const }
-                : { next: "/account?complete=1&plan=annual" }
-            }
-            onClick={(event) => {
-              if (native) {
-                event.preventDefault();
-                void startCheckout("annual");
-                return;
-              }
-              if (user) setLoading("annual");
-            }}
-            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
-          >
-            {loading === "annual" ? t("pricing.startingAnnual") : t("cta.annual")}
-          </Link>
+          {native ? (
+            <button
+              type="button"
+              disabled={loading !== null}
+              onClick={() => void startCheckout("annual")}
+              className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+            >
+              {loading === "annual" ? t("pricing.startingAnnual") : t("cta.annual")}
+            </button>
+          ) : user ? (
+            <Link
+              to="/account"
+              search={{ complete: "1" as const, plan: "annual" as const }}
+              className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
+            >
+              {t("cta.annual")}
+            </Link>
+          ) : (
+            <Link
+              to="/signup"
+              search={{ next: "/account?complete=1&plan=annual" }}
+              className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
+            >
+              {t("cta.annual")}
+            </Link>
+          )}
         </div>
 
         <div className="rounded-xl border border-line bg-surface p-6 sm:order-1">
@@ -217,25 +228,32 @@ function PricingPage() {
             $4.99<span className="text-lg text-muted">{t("pricing.perMo")}</span>
           </p>
           <p className="mt-1 text-sm text-muted">{t("pricing.trialCard")}</p>
-          <Link
-            to={user ? "/account" : "/signup"}
-            search={
-              user
-                ? { complete: true as const, plan: "monthly" as const }
-                : { next: "/account?complete=1&plan=monthly" }
-            }
-            onClick={(event) => {
-              if (native) {
-                event.preventDefault();
-                void startCheckout("monthly");
-                return;
-              }
-              if (user) setLoading("monthly");
-            }}
-            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper"
-          >
-            {loading === "monthly" ? t("pricing.starting") : t("cta.trial")}
-          </Link>
+          {native ? (
+            <button
+              type="button"
+              disabled={loading !== null}
+              onClick={() => void startCheckout("monthly")}
+              className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper disabled:opacity-60"
+            >
+              {loading === "monthly" ? t("pricing.starting") : t("cta.trial")}
+            </button>
+          ) : user ? (
+            <Link
+              to="/account"
+              search={{ complete: "1" as const, plan: "monthly" as const }}
+              className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper"
+            >
+              {t("cta.trial")}
+            </Link>
+          ) : (
+            <Link
+              to="/signup"
+              search={{ next: "/account?complete=1&plan=monthly" }}
+              className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper"
+            >
+              {t("cta.trial")}
+            </Link>
+          )}
         </div>
       </div>
 
