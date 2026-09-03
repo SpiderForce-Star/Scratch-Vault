@@ -12,9 +12,11 @@ import { CHECKOUT_CONSENT_MESSAGE, NO_REFUNDS_LINE } from "@/lib/billing-policy"
 export function ProfileForm({
   onSaved,
   highlight,
+  plan = "monthly",
 }: {
   onSaved?: (profile: BillingProfile) => void;
   highlight?: boolean;
+  plan?: "monthly" | "annual";
 }) {
   const [legalName, setLegalName] = useState("");
   const [dob, setDob] = useState("");
@@ -36,7 +38,7 @@ export function ProfileForm({
     setCheckoutBusy(true);
     setError(null);
     try {
-      const result = await createCheckoutSession({ data: { plan: "monthly" } });
+      const result = await createCheckoutSession({ data: { plan } });
       if (result?.alreadySubscribed) {
         window.location.assign("/account");
         return;
@@ -263,7 +265,7 @@ export function ProfileForm({
           onClick={() => void startCard()}
           className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
         >
-          {busy ? "Starting checkout…" : "Add a card — start 7-day trial"}
+          {busy ? "Starting checkout…" : plan === "annual" ? "Add a card — pay $49.99" : "Add a card — start 7-day trial"}
         </button>
       ) : null}
     </form>
