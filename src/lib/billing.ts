@@ -76,7 +76,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const profile = await loadBillingProfile(context.userId);
       if (!profile.complete) {
         return {
-          url: "/account?complete=1",
+          url: `/account?complete=1&plan=${data.plan}`,
           alreadySubscribed: false as const,
           needsProfile: true as const,
         };

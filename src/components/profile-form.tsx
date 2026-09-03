@@ -61,6 +61,13 @@ export function ProfileForm({
   };
 
   useEffect(() => {
+    if (!highlight || !loaded) return;
+    document
+      .getElementById("account-profile")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [highlight, loaded]);
+
+  useEffect(() => {
     void getBillingProfile()
       .then((profile) => {
         setLegalName(profile.legalName ?? "");
