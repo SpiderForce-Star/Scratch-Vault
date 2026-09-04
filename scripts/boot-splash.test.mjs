@@ -37,6 +37,6 @@ test("age gate still shows 1-800-GAMBLER", () => {
 test("cards stay Current and the snapshot banner is not live inventory", () => {
   const en = JSON.parse(readFileSync(join(ROOT, "src/locales/en.json"), "utf8"));
   assert.equal(en["card.updated"], "Current");
-  assert.match(en["banner.deskSnapshot"], /compiled snapshot/i);
-  assert.match(en["banner.deskSnapshot"], /not live store inventory/i);
+  assert.match(en["banner.deskSnapshot"], /leftover-prize list/i);
+  assert.match(en["banner.deskSnapshot"], /Not what’s in one store/i);
 });

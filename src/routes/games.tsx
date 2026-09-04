@@ -8,13 +8,14 @@ import {
   isPublicStateId,
 } from "@/config/states";
 import {
+  buildGamesBoard,
   reportMap,
-  sortGames,
+  underFiveGames,
   type HeatReport,
-  type SortKey,
 } from "@/lib/heat";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { TicketCard } from "@/components/ticket-card";
+import { GAMES_PRICE_FILTERS, GamesBoardView } from "@/components/games-board";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { useAccess } from "@/lib/use-access";
@@ -22,7 +23,6 @@ import { useActiveState } from "@/lib/active-state";
 import { pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/locale";
-import type { MessageKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/games")({
   component: GamesCatalog,
@@ -41,9 +41,9 @@ export const Route = createFileRoute("/games")({
   },
   head: () =>
     pageHead({
-      title: "Scratch-off catalog",
+      title: "Scratch-off games",
       description:
-        "Full remaining-prize catalog of tracked scratch-off games. Remaining counts do not improve odds. 18+ (Iowa Lottery tickets are 21+).",
+        "New, hot, warm, and skip lists for $5+ scratch-offs. Leftover prizes are the lottery’s list, not what’s in one store. 18+ (Iowa Lottery tickets are 21+).",
       path: "/games",
     }),
 });
@@ -62,15 +62,6 @@ const FALLBACK_HEAT: HeatReport = {
   lowRemaining: null,
 };
 
-const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
-  { id: "heat", labelKey: "home.sortHeat" },
-  { id: "medium", labelKey: "home.sortMedium" },
-  { id: "safest", labelKey: "home.sortSafest" },
-  { id: "grand", labelKey: "home.sortGrand" },
-  { id: "price", labelKey: "home.sortPrice" },
-  { id: "name", labelKey: "home.sortName" },
-];
-
 function GamesCatalog() {
   const navigate = useNavigate({ from: "/games" });
   const search = Route.useSearch();
@@ -78,7 +69,6 @@ function GamesCatalog() {
   const loadedSnap = loaded?.desk ?? null;
   const { stateId, setStateId, config, setDeskMode } = useActiveState();
   const { t } = useI18n();
-  const [sort, setSort] = useState<SortKey>("heat");
   const [query, setQuery] = useState("");
   const [price, setPrice] = useState<number | "all">("all");
   const { paid } = useAccess();
@@ -128,20 +118,17 @@ function GamesCatalog() {
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
   }, [snap, catalog]);
 
-  const prices = useMemo(() => {
-    const set = new Set(catalog.map((g) => g.price));
-    return [...set].sort((a, b) => a - b);
-  }, [catalog]);
-
-  const list = useMemo(() => {
+  const board = useMemo(
+    () => buildGamesBoard(catalog, reports, price, query),
+    [catalog, reports, price, query],
+  );
+  const cheap = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = catalog.filter((g) => {
-      if (price !== "all" && g.price !== price) return false;
+    return underFiveGames(catalog).filter((g) => {
       if (!q) return true;
       return g.name.toLowerCase().includes(q) || String(g.number).includes(q);
     });
-    return sortGames(filtered, sort, reports);
-  }, [catalog, sort, query, reports, price]);
+  }, [catalog, query]);
 
   return (
     <div>
@@ -156,13 +143,10 @@ function GamesCatalog() {
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {t("home.allGames")}
+            {t("games.kicker")}
           </p>
           <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
-            {t("home.catalogLine", {
-              short: config.shortName,
-              count: catalog.length,
-            })}
+            {t("games.title")}
           </h1>
           <p className="mt-3">
             <Link
@@ -175,36 +159,24 @@ function GamesCatalog() {
           </p>
 
           <div className="mt-5 flex flex-wrap gap-1">
-            <button
-              type="button"
-              onClick={() => setPrice("all")}
-              className={cn(
-                "min-h-11 rounded-md px-3 text-sm",
-                price === "all"
-                  ? "bg-gold text-accent-fg"
-                  : "bg-surface text-muted hover:text-fg",
-              )}
-            >
-              {t("home.filterAll")}
-            </button>
-            {prices.map((p) => (
+            {GAMES_PRICE_FILTERS.map((f) => (
               <button
-                key={p}
+                key={String(f.id)}
                 type="button"
-                onClick={() => setPrice(p)}
+                onClick={() => setPrice(f.id)}
                 className={cn(
                   "min-h-11 min-w-11 rounded-md px-3 text-sm",
-                  price === p
+                  price === f.id
                     ? "bg-gold text-accent-fg"
                     : "bg-surface text-muted hover:text-fg",
                 )}
               >
-                ${p}
+                {f.labelKey ? t(f.labelKey) : f.label}
               </button>
             ))}
           </div>
 
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <div className="mt-4">
             <label className="sr-only" htmlFor="catalog-q">
               {t("home.search")}
             </label>
@@ -215,41 +187,34 @@ function GamesCatalog() {
               placeholder={t("home.searchPh")}
               className="min-h-11 w-full rounded-md border border-line bg-surface px-3 text-sm text-fg placeholder:text-faint sm:max-w-56"
             />
-            <label className="sr-only" htmlFor="catalog-sort">
-              {t("home.sort")}
-            </label>
-            <select
-              id="catalog-sort"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className="min-h-11 rounded-md border border-line bg-surface px-3 text-sm text-fg"
-            >
-              {SORTS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {t(s.labelKey)}
-                </option>
-              ))}
-            </select>
           </div>
 
-          {list.length === 0 ? (
-            <p className="mt-6 text-muted">{t("home.none")}</p>
-          ) : (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((game) => {
-                const heat = reports.get(game.number);
-                if (!heat) return null;
-                return (
-                  <TicketCard
-                    key={game.number}
-                    game={game}
-                    heat={heat}
-                    locked={locked}
-                  />
-                );
-              })}
-            </div>
-          )}
+          <GamesBoardView board={board} reports={reports} locked={locked} />
+
+          {price === "all" && cheap.length ? (
+            <details className="mt-12 border-t border-line pt-6">
+              <summary className="cursor-pointer list-none font-display text-xl tracking-tight [&::-webkit-details-marker]:hidden">
+                {t("games.underFive")}
+                <span className="ml-3 font-sans text-sm font-normal text-muted">
+                  {t("games.underFiveHint")}
+                </span>
+              </summary>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {cheap.map((game) => {
+                  const heat = reports.get(game.number);
+                  if (!heat) return null;
+                  return (
+                    <TicketCard
+                      key={`u5-${game.number}`}
+                      game={game}
+                      heat={heat}
+                      locked={locked}
+                    />
+                  );
+                })}
+              </div>
+            </details>
+          ) : null}
         </div>
       </section>
     </div>

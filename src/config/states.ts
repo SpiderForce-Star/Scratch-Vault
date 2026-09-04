@@ -84,6 +84,8 @@ export type StateConfig = {
   lotteryShort: string;
   timezone: string;
   remainingPrizesUrl: string | null;
+  /** Official newest / new scratch-off listing. Merge $5+ games; do not invent remaining. */
+  newGamesUrl: string | null;
   playResponsiblyUrl: string | null;
   dataSourceNotes: string;
   fieldMapping: string;
@@ -121,6 +123,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Tennessee Lottery",
     timezone: "America/Chicago",
     remainingPrizesUrl: "https://www.tnlottery.com/games/scratch-offs",
+    newGamesUrl: "https://tnlottery.com/games/instant-games/",
     playResponsiblyUrl: "https://tnlottery.com/play-responsibly/",
     dataSourceNotes:
       "Compiled from the public Tennessee remaining-prizes table and other published counts.",
@@ -155,6 +158,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Kentucky Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://www.kylottery.com/apps/scratch_offs/prizes_remaining.html",
+    newGamesUrl: "https://www.kylottery.com/apps/scratch_offs/index.html",
     playResponsiblyUrl: "https://www.kylottery.com/",
     dataSourceNotes:
       "Compiled from the official Kentucky remaining-prizes page. Not a live feed and not store inventory. $5–$50 games. No Tennessee Play It Again holdback.",
@@ -187,6 +191,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "SC Education Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://www.sceducationlottery.com/Games/PrizesRemaining",
+    newGamesUrl: "https://www.sceducationlottery.com/Games/InstantGames",
     playResponsiblyUrl: "https://www.sceducationlottery.com/FAQ/PlayerProtection",
     dataSourceNotes:
       "Compiled from official SC Education Lottery per-game unclaimed-prize tables. Not a live feed and not store inventory. $5–$20 games currently listed.",
@@ -222,6 +227,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Oklahoma Lottery",
     timezone: "America/Chicago",
     remainingPrizesUrl: "https://www.lottery.ok.gov/scratchers/remaining-prizes",
+    newGamesUrl: "https://www.lottery.ok.gov/scratchers",
     playResponsiblyUrl: "https://www.lottery.ok.gov/",
     dataSourceNotes:
       "Compiled from the official Oklahoma remaining-prizes listing. Not a live feed. $5–$50 games.",
@@ -254,6 +260,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Michigan Lottery",
     timezone: "America/Detroit",
     remainingPrizesUrl: "https://www.michiganlottery.com/resources/instant-games-prizes-remaining",
+    newGamesUrl: "https://www.michiganlottery.com/games",
     playResponsiblyUrl: "https://www.michiganlottery.com/resources",
     dataSourceNotes:
       "Compiled from official Michigan instant remaining-prize listings. Michigan states remaining prizes are unclaimed and may include unsold tickets. Not a live feed.",
@@ -289,6 +296,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Arizona Lottery",
     timezone: "America/Phoenix",
     remainingPrizesUrl: "https://www.arizonalottery.com/scratchers/top-prizes-remaining",
+    newGamesUrl: "https://www.arizonalottery.com/scratchers",
     playResponsiblyUrl: "https://www.arizonalottery.com/winners/player-security/",
     dataSourceNotes:
       "Compiled from official Arizona top-prizes-remaining listings. The public page is top-prize heavy; mid-tier remaining is included only when published. Not a live feed.",
@@ -324,6 +332,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "NC Education Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://nclottery.com/scratch-off-prizes-remaining",
+    newGamesUrl: "https://nclottery.com/scratch-offs",
     playResponsiblyUrl: "https://nclottery.com/responsible-gaming",
     dataSourceNotes:
       "Compiled from the official NC Education Lottery remaining-prizes page. Value / Total / Remaining. Map Remaining → remaining. Not a live feed and not store inventory. $5–$50 games.",
@@ -359,6 +368,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Pennsylvania Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://www.palottery.pa.gov/scratch-offs/prizes-remaining.aspx",
+    newGamesUrl: "https://www.palottery.pa.gov/scratch-offs/scratch-offs.aspx",
     playResponsiblyUrl: "https://www.palottery.pa.gov/About-PA-Lottery/Responsible-Gaming.aspx",
     dataSourceNotes:
       "Compiled from the official Pennsylvania Top Six Prizes / Wins Remaining table. Not a live feed and not store inventory. $5–$50 games.",
@@ -392,6 +402,7 @@ export const STATES: Record<StateId, StateConfig> = {
     timezone: "America/Chicago",
     remainingPrizesUrl:
       "https://www.texaslottery.com/export/sites/lottery/Games/Scratch_Offs/all.html",
+    newGamesUrl: "https://www.texaslottery.com/export/sites/lottery/Games/Scratch_Offs/index.html",
     playResponsiblyUrl:
       "https://www.texaslottery.com/export/sites/lottery/Misc/responsible_gaming.html",
     dataSourceNotes:
@@ -425,6 +436,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Missouri Lottery",
     timezone: "America/Chicago",
     remainingPrizesUrl: "https://www.molottery.com/scratchers-list.do",
+    newGamesUrl: "https://www.molottery.com/scratchers",
     playResponsiblyUrl: "https://www.molottery.com/play-responsibly",
     dataSourceNotes:
       "Compiled from official Missouri Scratchers prize tables (Prize Level / Total Prizes / Unclaimed Prizes). Map Unclaimed → remaining. Not a live feed and not store inventory. $5–$50 games.",
@@ -460,6 +472,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Ohio Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://www.ohiolottery.com/games/scratch-offs/prizes-remaining",
+    newGamesUrl: "https://www.ohiolottery.com/games/scratch-offs",
     playResponsiblyUrl: "https://www.ohiolottery.com/about/responsible-gaming",
     dataSourceNotes:
       "Compiled from the official Ohio daily remaining report. Not a live feed and not store inventory. $5–$50 games.",
@@ -496,6 +509,7 @@ export const STATES: Record<StateId, StateConfig> = {
     timezone: "America/Chicago",
     remainingPrizesUrl:
       "https://www.illinoislottery.com/about-the-games/unpaid-instant-games-prizes",
+    newGamesUrl: "https://www.illinoislottery.com/about-the-games/instant-games",
     playResponsiblyUrl: "https://www.illinoislottery.com/about-the-games/play-responsibly",
     dataSourceNotes:
       "Official unpaid instant-game prizes table (Name | Price | Game Number | Prize Values | Total | Unclaimed). Map Unclaimed → remaining. This snapshot could not be fetched at compile time; the desk fails closed until a trusted parse exists.",
@@ -526,6 +540,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Massachusetts Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://www.masslottery.com/tools/prizes-remaining",
+    newGamesUrl: "https://www.masslottery.com/games/draw-and-instants",
     playResponsiblyUrl: "https://www.masslottery.com/about/responsible-gaming",
     dataSourceNotes:
       "Official prizes-remaining table (Game | Prize Amount | Start | Claimed | Remaining). Cash option when an annuity is listed. This snapshot could not be fetched at compile time; the desk fails closed until a trusted parse exists.",
@@ -559,6 +574,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Iowa Lottery",
     timezone: "America/Chicago",
     remainingPrizesUrl: "https://www.ialottery.com/Pages/Games/RemainingPrizes.aspx",
+    newGamesUrl: "https://www.ialottery.com/Pages/Games/Instant.aspx",
     playResponsiblyUrl: "https://www.ialottery.com/Pages/AboutUs/ResponsibleGambling.aspx",
     dataSourceNotes:
       "Compiled from the official Iowa remaining-prizes table. Scratch games only. Unclaimed → remaining. Official table lists prizes of $50 and greater.",
@@ -595,6 +611,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "Idaho Lottery",
     timezone: "America/Boise",
     remainingPrizesUrl: "https://www.idaholottery.com/games/scratch?view=remaining_prizes",
+    newGamesUrl: "https://www.idaholottery.com/games/scratch",
     playResponsiblyUrl: "https://www.idaholottery.com/play-responsibly",
     dataSourceNotes:
       "Compiled from the official Idaho remaining-prizes print table. Prize | Remaining. Map Remaining → remaining.",
@@ -625,6 +642,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryShort: "CT Lottery",
     timezone: "America/New_York",
     remainingPrizesUrl: "https://ctlottery.org/ScratchGamesTable",
+    newGamesUrl: "https://ctlottery.org/ScratchGames",
     playResponsiblyUrl: "https://ctlottery.org/ResponsibleGaming",
     dataSourceNotes:
       "Compiled from official Connecticut per-game remaining tables (Prize Amount | Total Prizes | Unclaimed Prizes). Map Unclaimed Prizes → remaining. Not a live feed and not store inventory. $5–$50 games.",
@@ -691,7 +709,7 @@ export function isSampleDesk(state: StateConfig | StateId): boolean {
 
 export function deskStatusLabel(state: StateConfig): string {
   if (state.dataMode === "sample") return "Demo data";
-  if (state.dataMode === "compiled") return "Compiled snapshot";
+  if (state.dataMode === "compiled") return "Leftover-prize list";
   return "Official table";
 }
 

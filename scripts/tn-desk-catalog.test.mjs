@@ -87,7 +87,9 @@ test("new games strip prefers unposted collectible tickets", () => {
   const fresh = pickNewGames(TN_MISSING_GAMES, reports, 8);
   assert.ok(fresh.length >= 1);
   assert.equal(fresh.some((g) => g.number === 1397), true);
+  assert.equal(fresh.some((g) => g.number === 1401), false);
   assert.equal(fresh.every((g) => isNewCatalogGame(g)), true);
+  assert.equal(fresh.every((g) => g.price >= 5), true);
 });
 
 test("snapshot union adds bundled games without inventing remaining", () => {
@@ -126,7 +128,7 @@ test("skip copy and Franklin reconstruction are on the desk", () => {
   assert.equal(es["home.skipTitle"], "No desperdicies dinero en un juego agotado.");
   assert.match(home, /font-display text-4xl tracking-\[0\.16em\] text-gold/);
   assert.match(home, /to="\/games"/);
-  assert.match(home, /home\.catalogLine/);
+  assert.match(home, /games\.seeAll/);
   assert.equal(existsSync(join(root, "public/tickets/1397.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1401.jpg")), true);

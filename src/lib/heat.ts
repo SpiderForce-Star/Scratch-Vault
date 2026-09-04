@@ -61,6 +61,38 @@ export type PricePoint = (typeof PRICE_POINTS)[number];
 export type PriceFilter = "all" | `${PricePoint}`;
 export type SortKey = "heat" | "grand" | "medium" | "safest" | "price" | "name";
 
+export function isDeskPrice(price: number): boolean {
+  return (PRICE_POINTS as readonly number[]).includes(price);
+}
+
+export function isUnderFivePrice(price: number): boolean {
+  return price === 1 || price === 2 || price === 3;
+}
+
+export function deskGames(games: Game[]): Game[] {
+  return games.filter((g) => isDeskPrice(g.price));
+}
+
+export function underFiveGames(games: Game[]): Game[] {
+  return games.filter((g) => isUnderFivePrice(g.price));
+}
+
+export type PriceGroup = { price: number; games: Game[] };
+
+export function groupByDeskPrice(games: Game[]): PriceGroup[] {
+  return PRICE_POINTS.map((price) => ({
+    price,
+    games: games.filter((g) => g.price === price),
+  })).filter((group) => group.games.length > 0);
+}
+
+export type GamesBoard = {
+  newGames: Game[];
+  hot: Game[];
+  warm: Game[];
+  skip: Game[];
+};
+
 export type DeskPick = {
   game: Game;
   heat: HeatReport;
@@ -158,7 +190,7 @@ export function pickTripGames(
   filter: PriceFilter,
   count = 3,
 ): Game[] {
-  const pool = games.filter((g) => inPriceFilter(g, filter));
+  const pool = games.filter((g) => isDeskPrice(g.price) && inPriceFilter(g, filter));
   const ranked = sortGames(pool, "heat", reports);
   const live = ranked.filter((g) => {
     const heat = reports.get(g.number);
@@ -177,13 +209,13 @@ function isSkipGame(heat: HeatReport | undefined): boolean {
   return heat.role === "jackpot" && heat.grand <= 0;
 }
 
-/** New-to-desk games for the TN New Games strip. Unposted first, then newest numbers. */
+/** New $5+ games. Unposted first, then newest numbers. Under $5 stays off this strip. */
 export function pickNewGames(
   games: Game[],
   _reports: Map<number, HeatReport>,
   max = 8,
 ): Game[] {
-  const fresh = games.filter((g) => isNewCatalogGame(g));
+  const fresh = games.filter((g) => isDeskPrice(g.price) && isNewCatalogGame(g));
   fresh.sort((a, b) => {
     const aNew = isUnpostedNewGame(a) ? 1 : 0;
     const bNew = isUnpostedNewGame(b) ? 1 : 0;
@@ -193,6 +225,84 @@ export function pickNewGames(
   return fresh.slice(0, max);
 }
 
+function vaultOf(reports: Map<number, HeatReport>, game: Game): number {
+  return reports.get(game.number)?.vault ?? 0;
+}
+
+function matchesBoardQuery(game: Game, query: string): boolean {
+  if (!query) return true;
+  return game.name.toLowerCase().includes(query) || String(game.number).includes(query);
+}
+
+/** Default Games page: New → Hot → Warm → Skip these. $5+ only. */
+export function buildGamesBoard(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+  priceFilter: number | "all" = "all",
+  query = "",
+): GamesBoard {
+  const q = query.trim().toLowerCase();
+  const pool = games.filter((g) => {
+    if (!isDeskPrice(g.price)) return false;
+    if (priceFilter !== "all" && g.price !== priceFilter) return false;
+    return matchesBoardQuery(g, q);
+  });
+  const fresh = pickNewGames(pool, reports, pool.length);
+  const freshIds = new Set(fresh.map((g) => g.number));
+  const rest = pool.filter((g) => !freshIds.has(g.number));
+  const hot = rest
+    .filter((g) => reports.get(g.number)?.band === "hot")
+    .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a) || a.price - b.price);
+  const warm = rest
+    .filter((g) => reports.get(g.number)?.band === "warm")
+    .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a) || a.price - b.price);
+  const skip = rest
+    .filter((g) => {
+      const heat = reports.get(g.number);
+      if (!heat || heat.band === "new") return false;
+      return heat.band === "cool" || heat.band === "bust" || heat.bust;
+    })
+    .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b) || a.price - b.price);
+  return { newGames: fresh, hot, warm, skip };
+}
+
+/** Hot/warm tickets at this price, not this game. */
+export function pickBetterPicks(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+  price: number,
+  excludeNumber: number,
+  max = 4,
+): Game[] {
+  return games
+    .filter((g) => g.price === price && g.number !== excludeNumber)
+    .filter((g) => {
+      const heat = reports.get(g.number);
+      return Boolean(heat && (heat.band === "hot" || heat.band === "warm"));
+    })
+    .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a))
+    .slice(0, max);
+}
+
+/** Cold/skip tickets at this price, not this game. */
+export function pickSkipAtPrice(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+  price: number,
+  excludeNumber: number,
+  max = 4,
+): Game[] {
+  return games
+    .filter((g) => g.price === price && g.number !== excludeNumber)
+    .filter((g) => {
+      const heat = reports.get(g.number);
+      if (!heat || heat.band === "new") return false;
+      return heat.band === "cool" || heat.band === "bust" || heat.bust;
+    })
+    .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b))
+    .slice(0, max);
+}
+
 /** 3–5 busts to walk past. Prefer the selected price, then fill. */
 export function pickSkipGames(
   games: Game[],
@@ -200,7 +310,9 @@ export function pickSkipGames(
   filter: PriceFilter,
   max = 5,
 ): Game[] {
-  const busts = games.filter((g) => isSkipGame(reports.get(g.number)));
+  const busts = games.filter(
+    (g) => isDeskPrice(g.price) && isSkipGame(reports.get(g.number)),
+  );
   const atPrice = busts.filter((g) => inPriceFilter(g, filter));
   const rest = busts.filter((g) => !inPriceFilter(g, filter));
   return [...atPrice, ...rest].slice(0, max);

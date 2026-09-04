@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { moneyFull } from "@/data/games";
-import { findPublicGame, publicGameMatches } from "@/data/states";
+import { findPublicGame, publicCatalog, publicGameMatches } from "@/data/states";
 import {
   DEFAULT_STATE_ID,
   getState,
@@ -9,9 +9,14 @@ import {
   type DataMode,
   type StateId,
 } from "@/config/states";
-import { getDeskSnapshot } from "@/lib/desk";
-import type { HeatReport } from "@/lib/heat";
-import { BandChip } from "@/components/ticket-card";
+import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
+import {
+  pickBetterPicks,
+  pickSkipAtPrice,
+  reportMap,
+  type HeatReport,
+} from "@/lib/heat";
+import { BandChip, TicketCard } from "@/components/ticket-card";
 import { TicketFace } from "@/components/ticket-face";
 import { PostedBookPanel } from "@/components/posted-book";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
@@ -90,6 +95,7 @@ function GameDetail() {
   const [locked, setLocked] = useState(true);
   const [ready, setReady] = useState(false);
   const [dataMode, setDataMode] = useState<DataMode>(state.dataMode);
+  const [desk, setDesk] = useState<DeskSnapshot | null>(null);
 
   useEffect(() => {
     if (listed.stateId !== activeStateId) setStateId(listed.stateId);
@@ -107,6 +113,7 @@ function GameDetail() {
         setHeat(snap.reports[String(next.number)] ?? EMPTY_HEAT);
         setLocked(!snap.paid);
         setDataMode(snap.dataMode);
+        setDesk(snap);
         setReady(true);
       })
       .catch(() => {
@@ -118,6 +125,23 @@ function GameDetail() {
     // listed.game is rebuilt each render; number + stateId uniquely identify it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [number, listed.stateId]);
+
+  const catalog = useMemo(
+    () => desk?.games ?? publicCatalog(listed.stateId),
+    [desk, listed.stateId],
+  );
+  const reports = useMemo(() => {
+    if (desk) return reportMap(desk.reports);
+    return new Map(catalog.map((row) => [row.number, EMPTY_HEAT]));
+  }, [desk, catalog]);
+  const better = useMemo(
+    () => pickBetterPicks(catalog, reports, game.price, game.number, 4),
+    [catalog, reports, game.price, game.number],
+  );
+  const skipAt = useMemo(
+    () => pickSkipAtPrice(catalog, reports, game.price, game.number, 4),
+    [catalog, reports, game.price, game.number],
+  );
 
   return (
     <div>
@@ -227,6 +251,66 @@ function GameDetail() {
         ) : null}
 
         <PostedBookPanel game={game} heat={heat} locked={locked || !ready} />
+
+        {better.length ? (
+          <section className="mt-10">
+            <h2 className="font-display text-2xl tracking-tight">
+              {t("games.betterPicks", { price: game.price })}
+            </h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {better.map((row) => {
+                const rowHeat = reports.get(row.number);
+                if (!rowHeat) return null;
+                return (
+                  <TicketCard
+                    key={`better-${row.number}`}
+                    game={row}
+                    heat={rowHeat}
+                    locked={locked || !ready}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {skipAt.length ? (
+          <section className="mt-10">
+            <h2 className="font-display text-2xl tracking-tight">
+              {t("games.skipAtPrice", { price: game.price })}
+            </h2>
+            <ul className="mt-4 divide-y divide-line border border-line">
+              {skipAt.map((row) => {
+                const rowHeat = reports.get(row.number);
+                return (
+                  <li key={`skip-${row.number}`}>
+                    <Link
+                      to="/game/$number"
+                      params={{ number: String(row.number) }}
+                      search={state.id === DEFAULT_STATE_ID ? {} : { state: state.id }}
+                      className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
+                    >
+                      <span className="truncate text-sm">
+                        ${row.price} · {row.name}
+                      </span>
+                      {rowHeat ? <BandChip band={rowHeat.band} /> : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+
+        <p className="mt-8">
+          <Link
+            to="/games"
+            search={state.id === DEFAULT_STATE_ID ? {} : { state: state.id }}
+            className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
+          >
+            {t("games.seeAll")}
+          </Link>
+        </p>
 
         <StateRulesCompact state={state} />
 
