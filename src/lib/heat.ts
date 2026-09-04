@@ -306,7 +306,7 @@ function skipRank(reports: Map<number, HeatReport>, a: Game, b: Game): number {
   return vaultOf(reports, a) - vaultOf(reports, b) || a.price - b.price;
 }
 
-/** Skip-qualified games only. Prefer selected price; other-price fills must also be skip. Empty → []. */
+/** Same-price skip-qualified games only. Empty → []. Never pad with other prices. */
 export function pickSkipGames(
   games: Game[],
   reports: Map<number, HeatReport>,
@@ -318,13 +318,11 @@ export function pickSkipGames(
   const skips = games.filter(
     (g) =>
       isDeskPrice(g.price) &&
+      inPriceFilter(g, filter) &&
       !blocked.has(g.number) &&
       isSkipGame(reports.get(g.number)),
   );
-  if (skips.length === 0) return [];
-  const atPrice = skips.filter((g) => inPriceFilter(g, filter)).sort((a, b) => skipRank(reports, a, b));
-  const rest = skips.filter((g) => !inPriceFilter(g, filter)).sort((a, b) => skipRank(reports, a, b));
-  return [...atPrice, ...rest].slice(0, max);
+  return skips.sort((a, b) => skipRank(reports, a, b)).slice(0, max);
 }
 
 export function sortGames(

@@ -60,6 +60,21 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   assert.match(board, /games\.warmTitle/);
   assert.match(board, /home\.skipKicker/);
   assert.match(board, /home\.skipTitle/);
+  assert.match(board, /forceBand/);
+  assert.equal(
+    en["pricing.featHeat"],
+    "Three tickets to look at at your price — not 100 rows.",
+  );
+  assert.equal(
+    en["pricing.featSkip"],
+    "Skip the drained ones. Tennessee’s Play It Again holdback is not counted as a store jackpot.",
+  );
+  assert.equal(
+    en["pricing.featRadar"],
+    "7 days free, then $4.99/mo. Or $49.99/year.",
+  );
+  assert.equal(en["cta.trial"], "Try 7 days free");
+  assert.equal(en["hero.titleAll"], "Three tickets to look at. A list to walk past.");
   assert.equal(en["games.hotTitle"], "Hot — better leftover prizes.");
   assert.equal(en["games.warmTitle"], "Warm — okay, not first pick.");
   assert.equal(en["home.skipTitle"], "Don't waste money on a drained game.");
@@ -177,9 +192,9 @@ test("public last-good desks keep $2/$3 out of New, Hot, Warm, and Skip", () => 
         `${id} $${price} skip rule`,
       );
       assert.equal(
-        skip.every((g) => g.price >= 5),
+        skip.every((g) => g.price === Number(price)),
         true,
-        `${id} $${price} skip $5+`,
+        `${id} $${price} skip same price`,
       );
       const tripIds = new Set(trip.map((g) => g.number));
       assert.equal(
@@ -312,8 +327,11 @@ test("pickSkipGames never pads empty price lists with hot games", () => {
   const withCool = [...games, coolFive];
   reports.set(107, report({ band: "cool", grand: 0, vault: 10, medium: 20 }));
   const filled = pickSkipGames(withCool, reports, "50", 5);
-  assert.deepEqual(filled.map((g) => g.number), [107]);
-  assert.equal(filled.every((g) => isSkipGame(reports.get(g.number))), true);
+  assert.deepEqual(filled.map((g) => g.number), []);
+  assert.deepEqual(
+    pickSkipGames(withCool, reports, "5", 5).map((g) => g.number),
+    [107],
+  );
 });
 
 test("PA $10 Skip These has no HOT crossword chips", () => {
@@ -343,6 +361,7 @@ test("KY $30 and $50 Skip These are not padded with $5 HOT games", () => {
     assert.equal(skip.every((g) => isSkipGame(reports.get(g.number))), true, `ky $${price}`);
     assert.equal(skip.some((g) => reports.get(g.number)?.band === "hot"), false, `ky $${price} hot`);
     assert.equal(skip.some((g) => hotFives.test(g.name)), false, `ky $${price} named hots`);
+    assert.equal(skip.every((g) => g.price === Number(price)), true, `ky $${price} same price`);
     assert.equal(
       skip.some((g) => g.price === 5 && reports.get(g.number)?.band === "hot"),
       false,
@@ -360,4 +379,8 @@ test("homepage skip rows force Cold or Skip chips", () => {
   assert.match(home, /home\.skipKicker/);
   assert.match(home, /RadarCashHero/);
   assert.match(home, /home\.skipTitle/);
+  assert.match(home, /order-2 lg:order-1/);
+  assert.match(home, /sm:grid-cols-2 lg:grid-cols-3/);
+  assert.match(home, /hero\.titleAll/);
+  assert.match(home, /cta\.trial/);
 });

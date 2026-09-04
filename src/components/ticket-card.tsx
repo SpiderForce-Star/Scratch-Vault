@@ -17,10 +17,12 @@ export function TicketCard({
   game,
   heat,
   locked = false,
+  forceBand,
 }: {
   game: Game;
   heat: HeatReport;
   locked?: boolean;
+  forceBand?: HeatReport["band"];
 }) {
   const { stateId } = useActiveState();
   const deskId = game.stateId ?? stateId;
@@ -46,11 +48,11 @@ export function TicketCard({
     >
       <div className="relative overflow-hidden">
         <TicketFace game={game} />
-        <BandChip band={heat.band} className="absolute top-3 right-3 z-10" />
+        <BandChip band={forceBand ?? heat.band} className="absolute top-3 right-3 z-10" />
         <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1">
           {isNew ? <NewGameChip /> : null}
           {unposted ? null : (
-            <span className="inline-flex min-h-9 items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
+            <span className="hidden min-h-9 items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:inline-flex sm:text-lg">
               {t("heat.score", { score: Math.round(heat.vault) })}
             </span>
           )}

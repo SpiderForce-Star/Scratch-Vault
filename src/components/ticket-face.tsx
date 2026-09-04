@@ -49,9 +49,11 @@ export function TicketFace({
             <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
               #{game.number}
             </p>
-            <p className="truncate font-display text-base leading-tight text-fg sm:text-lg">
-              {game.name}
-            </p>
+            {full ? (
+              <p className="truncate font-display text-base leading-tight text-fg sm:text-lg">
+                {game.name}
+              </p>
+            ) : null}
             {href ? (
               <a
                 href={href}
@@ -68,9 +70,11 @@ export function TicketFace({
             ${game.price}
           </span>
         </div>
-        <p className="mt-1 font-mono text-[9px] tracking-[0.08em] text-faint uppercase">
-          {t("card.reconstruction")}
-        </p>
+        {full ? (
+          <p className="mt-1 font-mono text-[9px] tracking-[0.08em] text-faint uppercase">
+            {t("card.reconstruction")}
+          </p>
+        ) : null}
       </div>
     </div>
   );

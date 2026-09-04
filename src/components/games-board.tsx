@@ -19,7 +19,7 @@ function TicketGrid({
   locked: boolean;
 }) {
   return (
-    <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {games.map((game) => {
         const heat = reports.get(game.number);
         if (!heat) return null;
@@ -122,7 +122,30 @@ export function GamesBoardView({
         {board.skip.length === 0 ? (
           <p className="mt-4 text-sm text-muted">{t("home.skipEmpty")}</p>
         ) : (
-          <PriceGrouped games={board.skip} reports={reports} locked={locked} />
+          <div className="mt-4 flex flex-col gap-8">
+            {groupByDeskPrice(board.skip).map((group) => (
+              <div key={group.price}>
+                <h3 className="font-mono text-sm tracking-[0.14em] text-gold uppercase">
+                  {t("games.priceGroup", { price: group.price })}
+                </h3>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.games.map((game) => {
+                    const heat = reports.get(game.number);
+                    if (!heat) return null;
+                    return (
+                      <TicketCard
+                        key={`${game.stateId ?? "g"}-${game.number}`}
+                        game={game}
+                        heat={heat}
+                        locked={locked}
+                        forceBand={heat.bust || heat.band === "bust" ? "bust" : "cool"}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </div>

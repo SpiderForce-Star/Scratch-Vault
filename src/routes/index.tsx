@@ -210,15 +210,32 @@ function VaultHome() {
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
-            <RadarCashHero
-              key={viewState}
-              stateId={viewState}
-              captures={radar.captures}
-              contacts={radar.contacts}
-              cycleId={radar.cycleId}
-              bleeps={radar.bleeps}
-            />
-            <div className="min-w-0">
+            <div className="min-w-0 order-2 lg:order-1">
+              <RadarCashHero
+                key={viewState}
+                stateId={viewState}
+                captures={radar.captures}
+                contacts={radar.contacts}
+                cycleId={radar.cycleId}
+                bleeps={radar.bleeps}
+              />
+            </div>
+            <div className="min-w-0 order-1 lg:order-2">
+              {locked ? (
+                <>
+                  <p className="font-display text-2xl tracking-tight sm:text-3xl">
+                    {t("hero.titleAll")}
+                  </p>
+                  <p className="mt-2 max-w-xl text-sm text-muted">{t("hero.body")}</p>
+                  <Link
+                    to="/signup"
+                    search={{ next: "/account?complete=1&plan=monthly" }}
+                    className="mt-4 mb-6 inline-flex min-h-12 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg"
+                  >
+                    {t("cta.trial")}
+                  </Link>
+                </>
+              ) : null}
               <div className="mb-4 flex flex-wrap gap-1">
                 {FILTERS.map((f) => (
                   <button
@@ -296,7 +313,7 @@ function VaultHome() {
                   {t("home.nothingPosted", { price: priceLabel })}
                 </p>
               ) : (
-                <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {tripGames.map((game) => {
                     const heat = reports.get(game.number);
                     if (!heat) return null;
