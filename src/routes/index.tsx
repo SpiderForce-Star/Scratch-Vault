@@ -12,6 +12,7 @@ import {
   pickSkipGames,
   pickTripGames,
   reportMap,
+  skipChipBand,
   type HeatReport,
   type PriceFilter,
 } from "@/lib/heat";
@@ -179,8 +180,15 @@ function VaultHome() {
     [catalog, reports, filter],
   );
   const skipGames = useMemo(
-    () => pickSkipGames(catalog, reports, filter, 5),
-    [catalog, reports, filter],
+    () =>
+      pickSkipGames(
+        catalog,
+        reports,
+        filter,
+        5,
+        tripGames.map((game) => game.number),
+      ),
+    [catalog, reports, filter, tripGames],
   );
   const newGames = useMemo(
     () => pickNewGames(catalog, reports, 8),
@@ -332,12 +340,8 @@ function VaultHome() {
               {skipGames.map((game, index) => {
                 const heat = reports.get(game.number);
                 const hideName = skipNameLocked(index, !locked);
-                const chip = heat ? (
-                  <BandChip band={heat.band} />
-                ) : (
-                  <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
-                    {t("home.skip")}
-                  </span>
+                const chip = (
+                  <BandChip band={heat ? skipChipBand(heat) : "bust"} />
                 );
                 const label = (
                   <span className="flex min-w-0 items-center gap-2 truncate text-sm">

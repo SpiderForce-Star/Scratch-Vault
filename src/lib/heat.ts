@@ -183,7 +183,23 @@ export function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   return game.price === Number(filter);
 }
 
-/** Three tickets to review at this price, then stop. Prefer non-busts. */
+/**
+ * Skip IFF band is cool or bust, or heat.bust is true.
+ * Hot, warm, and new are never skip — even jackpots with grand leftover 0.
+ */
+export function isSkipGame(heat: HeatReport | undefined): boolean {
+  if (!heat) return false;
+  if (heat.band === "hot" || heat.band === "warm" || heat.band === "new") return false;
+  return heat.band === "cool" || heat.band === "bust" || heat.bust === true;
+}
+
+/** Homepage SKIP THESE chips: Cold or Skip only. Never Hot / Warm / NEW. */
+export function skipChipBand(heat: HeatReport): "cool" | "bust" {
+  if (heat.band === "bust" || heat.bust) return "bust";
+  return "cool";
+}
+
+/** Three tickets to review at this price, then stop. Never share a game with Skip These. */
 export function pickTripGames(
   games: Game[],
   reports: Map<number, HeatReport>,
@@ -192,21 +208,12 @@ export function pickTripGames(
 ): Game[] {
   const pool = games.filter((g) => isDeskPrice(g.price) && inPriceFilter(g, filter));
   const ranked = sortGames(pool, "heat", reports);
-  const live = ranked.filter((g) => {
-    const heat = reports.get(g.number);
-    return heat && !heat.bust && heat.band !== "new";
-  });
-  return (live.length >= count ? live : ranked.filter((g) => reports.get(g.number)?.band !== "new")).slice(
-    0,
-    count,
-  );
-}
-
-function isSkipGame(heat: HeatReport | undefined): boolean {
-  if (!heat) return false;
-  if (heat.band === "new") return false;
-  if (heat.bust || heat.band === "bust") return true;
-  return heat.role === "jackpot" && heat.grand <= 0;
+  return ranked
+    .filter((g) => {
+      const heat = reports.get(g.number);
+      return Boolean(heat && !isSkipGame(heat) && heat.band !== "new");
+    })
+    .slice(0, count);
 }
 
 /** New $5+ games. Unposted first, then newest numbers. Under $5 stays off this strip. */
@@ -257,11 +264,7 @@ export function buildGamesBoard(
     .filter((g) => reports.get(g.number)?.band === "warm")
     .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a) || a.price - b.price);
   const skip = rest
-    .filter((g) => {
-      const heat = reports.get(g.number);
-      if (!heat || heat.band === "new") return false;
-      return heat.band === "cool" || heat.band === "bust" || heat.bust;
-    })
+    .filter((g) => isSkipGame(reports.get(g.number)))
     .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b) || a.price - b.price);
   return { newGames: fresh, hot, warm, skip };
 }
@@ -294,27 +297,33 @@ export function pickSkipAtPrice(
 ): Game[] {
   return games
     .filter((g) => g.price === price && g.number !== excludeNumber)
-    .filter((g) => {
-      const heat = reports.get(g.number);
-      if (!heat || heat.band === "new") return false;
-      return heat.band === "cool" || heat.band === "bust" || heat.bust;
-    })
+    .filter((g) => isSkipGame(reports.get(g.number)))
     .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b))
     .slice(0, max);
 }
 
-/** 3–5 busts to walk past. Prefer the selected price, then fill. */
+function skipRank(reports: Map<number, HeatReport>, a: Game, b: Game): number {
+  return vaultOf(reports, a) - vaultOf(reports, b) || a.price - b.price;
+}
+
+/** Skip-qualified games only. Prefer selected price; other-price fills must also be skip. Empty → []. */
 export function pickSkipGames(
   games: Game[],
   reports: Map<number, HeatReport>,
   filter: PriceFilter,
   max = 5,
+  exclude: Iterable<number> = [],
 ): Game[] {
-  const busts = games.filter(
-    (g) => isDeskPrice(g.price) && isSkipGame(reports.get(g.number)),
+  const blocked = new Set(exclude);
+  const skips = games.filter(
+    (g) =>
+      isDeskPrice(g.price) &&
+      !blocked.has(g.number) &&
+      isSkipGame(reports.get(g.number)),
   );
-  const atPrice = busts.filter((g) => inPriceFilter(g, filter));
-  const rest = busts.filter((g) => !inPriceFilter(g, filter));
+  if (skips.length === 0) return [];
+  const atPrice = skips.filter((g) => inPriceFilter(g, filter)).sort((a, b) => skipRank(reports, a, b));
+  const rest = skips.filter((g) => !inPriceFilter(g, filter)).sort((a, b) => skipRank(reports, a, b));
   return [...atPrice, ...rest].slice(0, max);
 }
 

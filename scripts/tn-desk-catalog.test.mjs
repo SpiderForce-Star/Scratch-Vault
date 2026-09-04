@@ -7,7 +7,7 @@ import { TN_MISSING_GAMES } from "../src/data/tn-missing.ts";
 import { isNewCatalogGame, isUnpostedNewGame } from "../src/data/tn-snapshot.ts";
 import { unionBundledGames } from "../src/data/states/parse.server.ts";
 import { scoreGame } from "../src/lib/heat.server.ts";
-import { pickNewGames, pickSkipGames, pickTripGames, reportMap } from "../src/lib/heat.ts";
+import { isSkipGame, pickNewGames, pickSkipGames, pickTripGames, reportMap } from "../src/lib/heat.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -70,14 +70,27 @@ test("desk still recommends 3 review cards per $5–$50 price", () => {
   const reports = new Map(catalog.map((game) => [game.number, scoreGame(game)]));
   for (const price of ["5", "10", "20", "25", "30", "50"]) {
     const trip = pickTripGames(catalog, reports, price, 3);
-    const live = catalog.filter(
-      (g) => g.price === Number(price) && scoreGame(g).band !== "new",
+    const skip = pickSkipGames(
+      catalog,
+      reports,
+      price,
+      5,
+      trip.map((g) => g.number),
     );
+    const reviewable = catalog.filter((g) => {
+      const heat = reports.get(g.number);
+      return g.price === Number(price) && heat && !isSkipGame(heat) && heat.band !== "new";
+    });
     assert.ok(trip.length <= 3, `$${price} must not dump the full book`);
-    assert.equal(trip.length, Math.min(3, live.length), `$${price} review count`);
+    assert.equal(trip.length, Math.min(3, reviewable.length), `$${price} review count`);
     assert.equal(
-      trip.every((g) => g.price === Number(price) && scoreGame(g).band !== "new"),
+      trip.every((g) => g.price === Number(price) && !isSkipGame(reports.get(g.number))),
       true,
+    );
+    assert.equal(
+      skip.some((g) => trip.some((row) => row.number === g.number)),
+      false,
+      `$${price} trip/skip overlap`,
     );
   }
 });
