@@ -89,6 +89,7 @@ const EMPTY_HEAT: HeatReport = {
   effectiveTop: null,
   midRemaining: null,
   lowRemaining: null,
+  remainingUnknown: true,
 };
 
 function GameDetail() {

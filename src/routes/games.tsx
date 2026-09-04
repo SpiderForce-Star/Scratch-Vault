@@ -10,12 +10,13 @@ import {
 import {
   buildGamesBoard,
   reportMap,
+  soldPricePoints,
   underFiveGames,
   type HeatReport,
 } from "@/lib/heat";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { TicketCard } from "@/components/ticket-card";
-import { GAMES_PRICE_FILTERS, GamesBoardView } from "@/components/games-board";
+import { gamesPriceFilters, GamesBoardView } from "@/components/games-board";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { useAccess } from "@/lib/use-access";
@@ -60,6 +61,7 @@ const FALLBACK_HEAT: HeatReport = {
   effectiveTop: null,
   midRemaining: null,
   lowRemaining: null,
+  remainingUnknown: true,
 };
 
 function GamesCatalog() {
@@ -114,10 +116,18 @@ function GamesCatalog() {
   };
 
   const catalog = snap?.games ?? publicCatalog(viewState);
+  const priceFilters = useMemo(() => gamesPriceFilters(catalog), [catalog]);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
   }, [snap, catalog]);
+
+  useEffect(() => {
+    if (price === "all") return;
+    const sold = soldPricePoints(catalog);
+    if (!sold.length || sold.some((p) => p === price)) return;
+    setPrice("all");
+  }, [catalog, price]);
 
   const board = useMemo(
     () => buildGamesBoard(catalog, reports, price, query),
@@ -160,7 +170,7 @@ function GamesCatalog() {
           </p>
 
           <div className="mt-5 flex flex-wrap gap-1">
-            {GAMES_PRICE_FILTERS.map((f) => (
+            {priceFilters.map((f) => (
               <button
                 key={String(f.id)}
                 type="button"

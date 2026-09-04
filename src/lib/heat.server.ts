@@ -111,6 +111,7 @@ export function scoreGame(
       effectiveTop: null,
       midRemaining: null,
       lowRemaining: null,
+      remainingUnknown: true,
     };
   }
 
@@ -200,6 +201,7 @@ export function scoreGame(
     effectiveTop,
     midRemaining,
     lowRemaining,
+    remainingUnknown: topRemaining == null && midRemaining == null,
   };
 }
 
@@ -234,6 +236,7 @@ export function redactHeatReport(heat: HeatReport): HeatReport {
     midRemaining: null,
     lowRemaining: null,
     mediumKnown: false,
+    remainingUnknown: heat.remainingUnknown,
   };
 }
 

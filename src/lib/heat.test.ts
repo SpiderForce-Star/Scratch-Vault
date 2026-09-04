@@ -3,6 +3,7 @@ import {
   isSkipGame,
   pickSkipGames,
   skipChipBand,
+  soldPricePoints,
   type HeatReport,
 } from "./heat";
 import type { Game } from "@/data/games";
@@ -49,5 +50,19 @@ describe("skip", () => {
     const reports = new Map<number, HeatReport>([[1, hot], [2, cool]]);
     const out = pickSkipGames(games, reports, "10", 5);
     expect(out.map((x) => x.number)).toEqual([2]);
+  });
+  it("unknown remaining is not skip", () => {
+    const unknown: HeatReport = {
+      ...cool,
+      topRemaining: null,
+      midRemaining: null,
+      remainingUnknown: true,
+    };
+    expect(isSkipGame(unknown)).toBe(false);
+    expect(isSkipGame({ ...cool, topRemaining: null, midRemaining: null })).toBe(false);
+    expect(isSkipGame({ ...cool, remainingUnknown: false, topRemaining: null, midRemaining: null })).toBe(true);
+  });
+  it("soldPricePoints is catalog intersect PRICE_POINTS", () => {
+    expect(soldPricePoints([g(1, 5), g(2, 10), g(3, 50), g(4, 5)])).toEqual([5, 10, 50]);
   });
 });

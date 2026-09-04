@@ -34,6 +34,8 @@ export type HeatReport = {
   effectiveTop: number | null;
   midRemaining: number | null;
   lowRemaining: number | null;
+  /** True when top and mid remaining were both unpublished at score time. Survives guest redaction. */
+  remainingUnknown?: boolean;
 };
 
 /** Compact remaining-heat card for the top-of-desk strip. */
@@ -84,6 +86,12 @@ export function groupByDeskPrice(games: Game[]): PriceGroup[] {
     price,
     games: games.filter((g) => g.price === price),
   })).filter((group) => group.games.length > 0);
+}
+
+/** Price chips this lottery actually sells: catalog ∩ PRICE_POINTS. */
+export function soldPricePoints(games: Game[]): PricePoint[] {
+  const sold = new Set(games.map((game) => game.price));
+  return PRICE_POINTS.filter((price) => sold.has(price));
 }
 
 export type GamesBoard = {
@@ -186,10 +194,19 @@ export function inPriceFilter(game: Game, filter: PriceFilter): boolean {
 /**
  * Skip IFF band is cool or bust, or heat.bust is true.
  * Hot, warm, and new are never skip — even jackpots with grand leftover 0.
+ * Unknown remaining (top and mid both null) is not skip.
  */
 export function isSkipGame(heat: HeatReport | undefined): boolean {
   if (!heat) return false;
   if (heat.band === "hot" || heat.band === "warm" || heat.band === "new") return false;
+  if (heat.remainingUnknown === true) return false;
+  if (
+    heat.remainingUnknown !== false &&
+    heat.topRemaining == null &&
+    heat.midRemaining == null
+  ) {
+    return false;
+  }
   return heat.band === "cool" || heat.band === "bust" || heat.bust === true;
 }
 

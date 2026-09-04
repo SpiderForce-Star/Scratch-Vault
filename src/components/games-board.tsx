@@ -1,7 +1,7 @@
 import type { Game } from "@/data/games";
 import {
-  PRICE_POINTS,
   groupByDeskPrice,
+  soldPricePoints,
   type GamesBoard,
   type HeatReport,
 } from "@/lib/heat";
@@ -152,5 +152,11 @@ export function GamesBoardView({
   );
 }
 
-export const GAMES_PRICE_FILTERS: { id: number | "all"; labelKey?: MessageKey; label?: string }[] =
-  [{ id: "all", labelKey: "home.filterAll" }, ...PRICE_POINTS.map((p) => ({ id: p, label: `$${p}` }))];
+export function gamesPriceFilters(
+  games: Game[],
+): { id: number | "all"; labelKey?: MessageKey; label?: string }[] {
+  return [
+    { id: "all", labelKey: "home.filterAll" },
+    ...soldPricePoints(games).map((p) => ({ id: p, label: `$${p}` })),
+  ];
+}

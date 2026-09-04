@@ -5,7 +5,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { TN_MISSING_GAMES } from "../src/data/tn-missing.ts";
 import { isNewCatalogGame } from "../src/data/tn-snapshot.ts";
-import { mergeNewGameListings, unionBundledGames } from "../src/data/states/parse.server.ts";
+import {
+  looksLikeDateName,
+  mergeNewGameListings,
+  unionBundledGames,
+} from "../src/data/states/parse.server.ts";
 import { scoreGame } from "../src/lib/heat.server.ts";
 import {
   PRICE_POINTS,
@@ -17,7 +21,9 @@ import {
   pickSkipGames,
   pickTripGames,
   skipChipBand,
+  soldPricePoints,
 } from "../src/lib/heat.ts";
+
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -27,7 +33,12 @@ function read(rel) {
 
 function scored(games) {
   const catalog = games.map((g) => ({ ...g, stateId: g.stateId ?? "tn" }));
-  const reports = new Map(catalog.map((game) => [game.number, scoreGame(game)]));
+  const reports = new Map(
+    catalog.map((game) => [
+      game.number,
+      scoreGame(game, game.stateId === "tn" ? undefined : { topHoldback: 0 }),
+    ]),
+  );
   return { catalog, reports };
 }
 
@@ -383,4 +394,160 @@ test("homepage skip rows force Cold or Skip chips", () => {
   assert.match(home, /sm:grid-cols-2 lg:grid-cols-3/);
   assert.match(home, /hero\.titleAll/);
   assert.match(home, /cta\.trial/);
+  assert.match(home, /viewState === "tn"/);
+  assert.match(home, /pia\.title/);
+  assert.match(home, /pia\.body/);
+  assert.match(home, /soldPricePoints/);
+  assert.match(home, /home\.noPrice/);
+  assert.match(home, /home\.allSkip/);
+  assert.match(home, /home\.noSnapshot/);
+  const gamesPage = read("src/routes/games.tsx");
+  assert.doesNotMatch(gamesPage, /pia\.title/);
+  const card = read("src/components/ticket-card.tsx");
+  assert.match(card, /showStoreJackpot/);
+  assert.match(card, /state\.holdback/);
+  const en = JSON.parse(read("src/locales/en.json"));
+  assert.equal(en["pia.title"], "Play It Again (Tennessee)");
+  assert.match(en["pia.body"], /Tennessee Lottery holds one top prize/);
+  assert.equal(en["home.noPrice"], "{{state}} doesn’t sell ${{price}} scratch-offs.");
+  assert.equal(en["home.allSkip"], "No ${{price}} tickets worth a look tonight.");
+  assert.equal(
+    en["home.noSnapshot"],
+    "We’re still reading this lottery’s leftover-prize list.",
+  );
+});
+
+test("Texas last-good date names yield to bundled names", () => {
+  const tx = JSON.parse(read("src/data/states/last-good/tx.json"));
+  assert.equal(tx.catalog.some((g) => looksLikeDateName(g.name)), false);
+  const fiftyX = tx.catalog.find((g) => g.number === 2712);
+  assert.ok(fiftyX);
+  assert.equal(fiftyX.name, "50X The Cash");
+  const dated = tx.catalog.map((g) => ({ ...g, name: "01/05/26", stateId: "tx" }));
+  const bundled = tx.catalog.map((g) => ({
+    ...g,
+    tiers: g.tiers.map((tier) => ({ ...tier, remaining: null })),
+    stateId: "tx",
+  }));
+  const healed = unionBundledGames(dated, bundled);
+  assert.equal(healed.some((g) => looksLikeDateName(g.name)), false);
+  const healedFifty = healed.find((g) => g.number === 2712);
+  assert.equal(healedFifty.name, "50X The Cash");
+  assert.equal(healedFifty.tiers[0].remaining, fiftyX.tiers[0].remaining);
+});
+
+test("SC catalog does not sell $25/$30/$50", () => {
+  const sc = JSON.parse(read("src/data/states/last-good/sc.json"));
+  const prices = soldPricePoints(sc.catalog);
+  assert.deepEqual(prices, [5, 10, 20]);
+  const home = read("src/routes/index.tsx");
+  assert.match(home, /sold\.map/);
+  assert.doesNotMatch(home, /id: "50"/);
+});
+
+test("Idaho $50 with posted remaining is not blank-trip plus all-skip", () => {
+  const unknown = [
+    {
+      number: 1847,
+      name: "$1,000,000 King",
+      price: 50,
+      topPrize: 1_000_000,
+      odds: 2.7,
+      source: "official-remaining",
+      theme: "high",
+      stateId: "id",
+      tiers: [
+        { amount: 1_000_000, remaining: null },
+        { amount: 50_000, remaining: null },
+        { amount: 1_000, remaining: null },
+      ],
+    },
+    {
+      number: 1897,
+      name: "High Life",
+      price: 50,
+      topPrize: 1_000_000,
+      odds: 2.7,
+      source: "official-remaining",
+      theme: "high",
+      stateId: "id",
+      tiers: [
+        { amount: 1_000_000, remaining: null },
+        { amount: 5_000, remaining: null },
+        { amount: 1_000, remaining: null },
+      ],
+    },
+  ];
+  const unknownScored = scored(unknown);
+  assert.equal(
+    unknownScored.catalog.every((g) => !isSkipGame(unknownScored.reports.get(g.number))),
+    true,
+  );
+  assert.equal(pickTripGames(unknownScored.catalog, unknownScored.reports, "50", 3).length, 2);
+  assert.equal(pickSkipGames(unknownScored.catalog, unknownScored.reports, "50", 5).length, 0);
+
+  const posted = [
+    {
+      ...unknown[0],
+      tiers: [
+        { amount: 1_000_000, remaining: 1 },
+        { amount: 50_000, remaining: 0 },
+        { amount: 10_000, remaining: 1 },
+        { amount: 1_000, remaining: 4 },
+        { amount: 100, remaining: 400 },
+      ],
+    },
+    {
+      ...unknown[1],
+      tiers: [
+        { amount: 1_000_000, remaining: 2 },
+        { amount: 5_000, remaining: 3 },
+        { amount: 1_000, remaining: 5 },
+        { amount: 500, remaining: 90 },
+        { amount: 100, remaining: 400 },
+      ],
+    },
+  ];
+  const postedScored = scored(posted);
+  const trip = pickTripGames(postedScored.catalog, postedScored.reports, "50", 3);
+  const skip = pickSkipGames(
+    postedScored.catalog,
+    postedScored.reports,
+    "50",
+    5,
+    trip.map((g) => g.number),
+  );
+  assert.equal(trip.length, 2);
+  assert.equal(skip.length, 0);
+});
+
+test("OK $50 has two posted games and does not invent a third", () => {
+  const ok = JSON.parse(read("src/data/states/last-good/ok.json"));
+  const { catalog, reports } = scored(ok.catalog.map((g) => ({ ...g, stateId: "ok" })));
+  const fifties = catalog.filter((g) => g.price === 50);
+  assert.equal(fifties.length, 2);
+  const trip = pickTripGames(catalog, reports, "50", 3);
+  const skip = pickSkipGames(
+    catalog,
+    reports,
+    "50",
+    5,
+    trip.map((g) => g.number),
+  );
+  assert.equal(trip.length, 2);
+  assert.equal(skip.length, 0);
+});
+
+test("unknown remaining is not skip", () => {
+  assert.equal(
+    isSkipGame(
+      report({
+        band: "cool",
+        topRemaining: null,
+        midRemaining: null,
+        remainingUnknown: true,
+      }),
+    ),
+    false,
+  );
 });
