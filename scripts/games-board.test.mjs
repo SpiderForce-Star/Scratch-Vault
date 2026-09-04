@@ -8,10 +8,15 @@ import { isNewCatalogGame } from "../src/data/tn-snapshot.ts";
 import { mergeNewGameListings, unionBundledGames } from "../src/data/states/parse.server.ts";
 import { scoreGame } from "../src/lib/heat.server.ts";
 import {
+  PRICE_POINTS,
   buildGamesBoard,
+  isSkipGame,
   pickBetterPicks,
   pickNewGames,
   pickSkipAtPrice,
+  pickSkipGames,
+  pickTripGames,
+  skipChipBand,
 } from "../src/lib/heat.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -72,18 +77,20 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   );
 });
 
-test("TN $2/$3 stay out of New, Hot, and Warm", () => {
+test("TN $2/$3 stay out of New, Hot, Warm, and Skip", () => {
   const { catalog, reports } = scored(tnCatalog());
   const board = buildGamesBoard(catalog, reports, "all");
   const cheapNames = /Jumbo Bucks Seasons|^20X$/;
-  for (const section of [board.newGames, board.hot, board.warm]) {
+  for (const section of [board.newGames, board.hot, board.warm, board.skip]) {
     assert.equal(section.some((g) => g.price < 5), false);
     assert.equal(section.some((g) => cheapNames.test(g.name) && g.price < 5), false);
   }
   assert.equal(pickNewGames(catalog, reports, 50).some((g) => g.price < 5), false);
+  assert.equal(pickSkipGames(catalog, reports, "5", 8).some((g) => g.price < 5), false);
   const seasons = catalog.find((g) => g.number === 1401);
   assert.ok(seasons);
   assert.equal(isNewCatalogGame({ ...seasons, stateId: "tn" }), true);
+  assert.deepEqual([...PRICE_POINTS], [5, 10, 20, 25, 30, 50]);
 });
 
 test("board order is new, then hot, then warm, then skip/cold", () => {
@@ -91,10 +98,11 @@ test("board order is new, then hot, then warm, then skip/cold", () => {
   const board = buildGamesBoard(catalog, reports, "all");
   assert.equal(board.hot.every((g) => reports.get(g.number)?.band === "hot"), true);
   assert.equal(board.warm.every((g) => reports.get(g.number)?.band === "warm"), true);
+  assert.equal(board.skip.every((g) => isSkipGame(reports.get(g.number))), true);
   assert.equal(
     board.skip.every((g) => {
       const heat = reports.get(g.number);
-      return heat && (heat.band === "cool" || heat.band === "bust" || heat.bust);
+      return heat && heat.band !== "hot" && heat.band !== "warm" && heat.band !== "new";
     }),
     true,
   );
@@ -140,18 +148,44 @@ test("Kentucky uses the same Games board sections", () => {
   assert.match(face, /game\.stateId/);
 });
 
-test("public last-good desks keep $2/$3 out of New, Hot, and Warm", () => {
+test("public last-good desks keep $2/$3 out of New, Hot, Warm, and Skip", () => {
   for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
     const snap = JSON.parse(read(`src/data/states/last-good/${id}.json`));
     const { catalog, reports } = scored(
       snap.catalog.map((g) => ({ ...g, stateId: id })),
     );
     const board = buildGamesBoard(catalog, reports, "all");
-    for (const section of [board.newGames, board.hot, board.warm]) {
+    for (const section of [board.newGames, board.hot, board.warm, board.skip]) {
       assert.equal(
         section.some((g) => g.price < 5),
         false,
         `${id} leaked under $5`,
+      );
+    }
+    for (const price of ["5", "10", "20", "25", "30", "50"]) {
+      const trip = pickTripGames(catalog, reports, price, 3);
+      const skip = pickSkipGames(
+        catalog,
+        reports,
+        price,
+        5,
+        trip.map((g) => g.number),
+      );
+      assert.equal(
+        skip.every((g) => isSkipGame(reports.get(g.number))),
+        true,
+        `${id} $${price} skip rule`,
+      );
+      assert.equal(
+        skip.every((g) => g.price >= 5),
+        true,
+        `${id} $${price} skip $5+`,
+      );
+      const tripIds = new Set(trip.map((g) => g.number));
+      assert.equal(
+        skip.some((g) => tripIds.has(g.number)),
+        false,
+        `${id} $${price} trip/skip overlap`,
       );
     }
   }
@@ -228,4 +262,102 @@ test("en and es games keys match", () => {
   const en = JSON.parse(read("src/locales/en.json"));
   const es = JSON.parse(read("src/locales/es.json"));
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
+});
+
+function report(partial) {
+  return {
+    grand: 0,
+    medium: 70,
+    vault: 70,
+    band: "hot",
+    bust: false,
+    mediumKnown: true,
+    role: "jackpot",
+    topRemaining: 0,
+    effectiveTop: 0,
+    midRemaining: 40,
+    lowRemaining: 200,
+    ...partial,
+  };
+}
+
+test("hot, warm, and new are never skip even when jackpot grand is 0", () => {
+  assert.equal(isSkipGame(report({ band: "hot", grand: 0, bust: false })), false);
+  assert.equal(isSkipGame(report({ band: "warm", grand: 0, bust: false })), false);
+  assert.equal(isSkipGame(report({ band: "new", grand: 0, bust: false })), false);
+  assert.equal(isSkipGame(report({ band: "hot", bust: true })), false);
+  assert.equal(isSkipGame(report({ band: "cool", grand: 80, bust: false })), true);
+  assert.equal(isSkipGame(report({ band: "bust", grand: 0, bust: true })), true);
+  assert.equal(skipChipBand(report({ band: "hot" })), "cool");
+  assert.equal(skipChipBand(report({ band: "cool" })), "cool");
+  assert.equal(skipChipBand(report({ band: "bust", bust: true })), "bust");
+});
+
+test("pickSkipGames never pads empty price lists with hot games", () => {
+  const games = [
+    { number: 991, name: "Wild Cash 50X", price: 5 },
+    { number: 971, name: "50X The Luck", price: 5 },
+    { number: 50, name: "Big $50", price: 50 },
+  ];
+  const reports = new Map([
+    [991, report({ band: "hot", grand: 0 })],
+    [971, report({ band: "hot", grand: 0 })],
+    [50, report({ band: "hot", grand: 80, topRemaining: 4, effectiveTop: 4 })],
+  ]);
+  assert.deepEqual(
+    pickSkipGames(games, reports, "50", 5).map((g) => g.number),
+    [],
+  );
+  const coolFive = { number: 107, name: "Merry Multiplier", price: 5 };
+  const withCool = [...games, coolFive];
+  reports.set(107, report({ band: "cool", grand: 0, vault: 10, medium: 20 }));
+  const filled = pickSkipGames(withCool, reports, "50", 5);
+  assert.deepEqual(filled.map((g) => g.number), [107]);
+  assert.equal(filled.every((g) => isSkipGame(reports.get(g.number))), true);
+});
+
+test("PA $10 Skip These has no HOT crossword chips", () => {
+  const pa = JSON.parse(read("src/data/states/last-good/pa.json"));
+  const { catalog, reports } = scored(pa.catalog.map((g) => ({ ...g, stateId: "pa" })));
+  const skip = pickSkipGames(catalog, reports, "10", 5);
+  assert.equal(skip.every((g) => isSkipGame(reports.get(g.number))), true);
+  assert.equal(
+    skip.some((g) => /Bonus Crossword|Big Cash Payout|Crossword Mania/i.test(g.name)),
+    false,
+  );
+  assert.equal(
+    skip.every((g) => {
+      const band = reports.get(g.number)?.band;
+      return band === "cool" || band === "bust";
+    }),
+    true,
+  );
+});
+
+test("KY $30 and $50 Skip These are not padded with $5 HOT games", () => {
+  const ky = JSON.parse(read("src/data/states/last-good/ky.json"));
+  const { catalog, reports } = scored(ky.catalog.map((g) => ({ ...g, stateId: "ky" })));
+  const hotFives = /Wild Cash 50X|50X The Luck|Casino Nights|Lucky Fortune/;
+  for (const price of ["30", "50"]) {
+    const skip = pickSkipGames(catalog, reports, price, 5);
+    assert.equal(skip.every((g) => isSkipGame(reports.get(g.number))), true, `ky $${price}`);
+    assert.equal(skip.some((g) => reports.get(g.number)?.band === "hot"), false, `ky $${price} hot`);
+    assert.equal(skip.some((g) => hotFives.test(g.name)), false, `ky $${price} named hots`);
+    assert.equal(
+      skip.some((g) => g.price === 5 && reports.get(g.number)?.band === "hot"),
+      false,
+      `ky $${price} $5 hot pad`,
+    );
+  }
+});
+
+test("homepage skip rows force Cold or Skip chips", () => {
+  const home = read("src/routes/index.tsx");
+  const skipBlock = home.slice(home.indexOf('id="skip"'));
+  assert.match(skipBlock, /skipChipBand/);
+  assert.doesNotMatch(skipBlock, /BandChip band=\{heat\.band\}/);
+  assert.match(home, /home\.skipEmpty/);
+  assert.match(home, /home\.skipKicker/);
+  assert.match(home, /RadarCashHero/);
+  assert.match(home, /home\.skipTitle/);
 });
