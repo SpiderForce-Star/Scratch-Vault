@@ -8,6 +8,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 test("boot splash is once per session, 4s cap, skippable", () => {
   const src = readFileSync(join(ROOT, "src/components/boot-splash.tsx"), "utf8");
+  const css = readFileSync(join(ROOT, "src/styles.css"), "utf8");
   assert.match(src, /BOOT_SHOWN_KEY = "vsv\.boot\.shown"/);
   assert.match(src, /BOOT_FORCE_MS = 4000/);
   assert.match(src, /prefers-reduced-motion/);
@@ -15,6 +16,13 @@ test("boot splash is once per session, 4s cap, skippable", () => {
   assert.match(src, /#c4a574/);
   assert.match(src, /#7c9a72/);
   assert.match(src, /Opening Scratch Vault/);
+  assert.match(src, /function DollarBill/);
+  assert.match(src, /sv-boot-stack/);
+  assert.match(src, /sv-boot-fly/);
+  assert.match(src, /r="78"/);
+  assert.match(css, /sv-boot-fly/);
+  assert.match(css, /72cqmin/);
+  assert.match(css, /is-reduced \.sv-boot-fly/);
 });
 
 test("NativeRoot mounts BootSplash above AgeGate and holds the gate", () => {

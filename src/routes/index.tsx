@@ -231,12 +231,13 @@ function VaultHome() {
               />
             </div>
             <div className="min-w-0 order-1 lg:order-2">
+              <h1 className="font-display text-2xl tracking-tight sm:text-3xl">
+                {t("hero.titleAll")}
+              </h1>
+              <p className="mt-2 max-w-xl text-sm text-muted">{t("hero.body")}</p>
               {locked ? (
                 <>
-                  <p className="font-display text-2xl tracking-tight sm:text-3xl">
-                    {t("hero.titleAll")}
-                  </p>
-                  <p className="mt-2 max-w-xl text-sm text-muted">{t("hero.body")}</p>
+                  <p className="mt-2 max-w-xl text-sm text-gold">{t("hero.priceLine")}</p>
                   <Link
                     to="/signup"
                     search={{ next: "/account?complete=1&plan=monthly" }}
@@ -247,7 +248,7 @@ function VaultHome() {
                 </>
               ) : null}
               {sold.length ? (
-                <div className="mb-4 flex flex-wrap gap-1">
+                <div className="mb-4 mt-4 flex flex-wrap gap-1">
                   {sold.map((price) => {
                     const id = String(price) as PriceFilter;
                     return (
@@ -317,12 +318,6 @@ function VaultHome() {
               ) : null}
               <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
                 {t("trip.kicker", { price: priceLabel })}
-              </p>
-              <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
-                {t("trip.title")}
-              </h1>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                {t("trip.body")}
               </p>
               {viewState === "tn" ? (
                 <aside className="mt-4 rounded-lg border border-gold/40 bg-raised/40 px-4 py-3">

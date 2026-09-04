@@ -236,18 +236,106 @@ html[data-sv-boot="pending"] #sv-boot-paint,
   border-radius: 50%;
   background: radial-gradient(circle at 50% 42%, #243028 0%, #070a08 72%);
   box-shadow: inset 0 0 34px #000;
+  container-type: size;
+}
+
+.sv-boot-stacks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sv-boot-stack {
+  position: absolute;
+  display: grid;
+  width: 28%;
+}
+
+.sv-boot-stack svg {
+  width: 100%;
+  height: auto;
+  grid-area: 1 / 1;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+}
+
+.sv-boot-stack svg:nth-child(1) {
+  transform: translate(-4px, -7px) rotate(-16deg);
+}
+
+.sv-boot-stack svg:nth-child(2) {
+  transform: translate(2px, -2px) rotate(8deg);
+}
+
+.sv-boot-stack svg:nth-child(3) {
+  transform: translate(-1px, 4px) rotate(-4deg);
+}
+
+.sv-boot-stack-a {
+  left: 12%;
+  top: 28%;
+}
+
+.sv-boot-stack-b {
+  right: 10%;
+  top: 22%;
+}
+
+.sv-boot-stack-c {
+  left: 36%;
+  bottom: 16%;
 }
 
 .sv-boot-mark {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
-  font-size: clamp(2.2rem, 7vw, 3.6rem);
-  letter-spacing: -0.06em;
-  line-height: 1;
+  font-size: clamp(4.6rem, 22vmin, 9.2rem);
+  font-size: 72cqmin;
+  letter-spacing: -0.08em;
+  line-height: 0.82;
   opacity: 0;
+  transform: scale(0.28);
+  transform-origin: center;
 }
 
 .sv-boot-stage.is-open .sv-boot-mark {
-  animation: sv-boot-mark 420ms 160ms ease both;
+  animation: sv-boot-mark 720ms 80ms cubic-bezier(0.12, 0.72, 0.18, 1) both;
+}
+
+.sv-boot-fly {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: 11%;
+  margin-left: -5.5%;
+  margin-top: -3%;
+  pointer-events: none;
+  animation-name: sv-boot-fly;
+  animation-timing-function: cubic-bezier(0.12, 0.7, 0.22, 1);
+  animation-fill-mode: both;
+}
+
+.sv-boot-fly svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5));
+}
+
+.sv-boot.is-reduced .sv-boot-fly,
+.sv-boot.is-reduced .sv-boot-word {
+  display: none !important;
+}
+
+.sv-boot.is-reduced .sv-boot-door {
+  transform: rotateY(-78deg);
+  animation: none;
+}
+
+.sv-boot.is-reduced .sv-boot-mark {
+  opacity: 1;
+  transform: scale(1);
+  animation: none;
 }
 
 .sv-boot-door {
@@ -316,11 +404,22 @@ html[data-sv-boot="pending"] #sv-boot-paint,
 @keyframes sv-boot-mark {
   from {
     opacity: 0;
-    transform: scale(0.88);
+    transform: scale(0.28);
   }
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes sv-boot-fly {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.05);
   }
 }
 
@@ -344,5 +443,20 @@ html[data-sv-boot="done"] #sv-boot-paint {
 
   .sv-marquee-static {
     display: flex !important;
+  }
+
+  .sv-boot-fly {
+    display: none !important;
+  }
+
+  .sv-boot-door {
+    transform: rotateY(-78deg);
+    animation: none !important;
+  }
+
+  .sv-boot-mark {
+    opacity: 1;
+    transform: scale(1);
+    animation: none !important;
   }
 }
