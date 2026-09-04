@@ -47,31 +47,31 @@ export function TicketCard({
         isNew && "border-gold/50",
       )}
     >
-      <div className="relative overflow-hidden">
+      <div className="overflow-hidden">
         <TicketFace game={game} />
-        <BandChip band={forceBand ?? heat.band} className="absolute top-3 right-3 z-10" />
-        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1">
-          {isNew ? <NewGameChip /> : null}
-          {unposted ? null : (
-            <span className="hidden min-h-9 items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:inline-flex sm:text-lg">
-              {t("heat.score", { score: Math.round(heat.vault) })}
-            </span>
-          )}
-        </div>
       </div>
 
       <div className="flex flex-col gap-3 p-4">
-        <div>
+        <div className="flex items-start justify-between gap-3">
           <h2 className="font-display text-lg leading-snug tracking-tight text-fg">
             {game.name}
           </h2>
-          <p className="mt-1 text-sm text-muted">
-            {t("odds.topPrinted", {
-              prize: moneyFull(game.topPrize),
-              odds: game.odds.toFixed(2),
-            })}
-          </p>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            {isNew ? <NewGameChip /> : null}
+            <BandChip band={forceBand ?? heat.band} />
+          </div>
         </div>
+        {unposted ? null : (
+          <span className="hidden min-h-9 w-fit items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:inline-flex sm:text-lg">
+            {t("heat.score", { score: Math.round(heat.vault) })}
+          </span>
+        )}
+        <p className="text-sm text-muted">
+          {t("odds.topPrinted", {
+            prize: moneyFull(game.topPrize),
+            odds: game.odds.toFixed(2),
+          })}
+        </p>
 
         <div className="grid grid-cols-2 gap-3">
           <Meter label={t("heat.grandShort")} value={heat.grand} tone="grand" />

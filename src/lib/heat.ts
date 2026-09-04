@@ -1,4 +1,5 @@
 import type { Game } from "@/data/games";
+import { isEndedGame } from "../data/ended-games.ts";
 import { isNewCatalogGame, isUnpostedNewGame } from "../data/tn-snapshot.ts";
 
 export type HeatBand = "hot" | "warm" | "cool" | "bust" | "new";
@@ -149,7 +150,7 @@ export function pickOpeningFiveDollarGames(
   games: Game[],
   reports: Map<number, HeatReport>,
 ): Game[] {
-  const fives = games.filter((g) => g.price === 5);
+  const fives = games.filter((g) => g.price === 5 && !isEndedGame(g));
   const used = new Set<number>();
   const picked: Game[] = [];
 
@@ -210,6 +211,17 @@ export function isSkipGame(heat: HeatReport | undefined): boolean {
   return heat.band === "cool" || heat.band === "bust" || heat.bust === true;
 }
 
+/** Ended / not-sold games are skips even if leftover-prize heat still looks hot. */
+export function isSkipCandidate(game: Game, heat: HeatReport | undefined): boolean {
+  if (isEndedGame(game)) return true;
+  return isSkipGame(heat);
+}
+
+export function isReviewCandidate(game: Game, heat: HeatReport | undefined): boolean {
+  if (!heat || isEndedGame(game) || heat.band === "new") return false;
+  return !isSkipGame(heat);
+}
+
 /** Homepage SKIP THESE chips: Cold or Skip only. Never Hot / Warm / NEW. */
 export function skipChipBand(heat: HeatReport): "cool" | "bust" {
   if (heat.band === "bust" || heat.bust) return "bust";
@@ -226,10 +238,7 @@ export function pickTripGames(
   const pool = games.filter((g) => isDeskPrice(g.price) && inPriceFilter(g, filter));
   const ranked = sortGames(pool, "heat", reports);
   return ranked
-    .filter((g) => {
-      const heat = reports.get(g.number);
-      return Boolean(heat && !isSkipGame(heat) && heat.band !== "new");
-    })
+    .filter((g) => isReviewCandidate(g, reports.get(g.number)))
     .slice(0, count);
 }
 
@@ -275,13 +284,13 @@ export function buildGamesBoard(
   const freshIds = new Set(fresh.map((g) => g.number));
   const rest = pool.filter((g) => !freshIds.has(g.number));
   const hot = rest
-    .filter((g) => reports.get(g.number)?.band === "hot")
+    .filter((g) => !isEndedGame(g) && reports.get(g.number)?.band === "hot")
     .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a) || a.price - b.price);
   const warm = rest
-    .filter((g) => reports.get(g.number)?.band === "warm")
+    .filter((g) => !isEndedGame(g) && reports.get(g.number)?.band === "warm")
     .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a) || a.price - b.price);
   const skip = rest
-    .filter((g) => isSkipGame(reports.get(g.number)))
+    .filter((g) => isSkipCandidate(g, reports.get(g.number)))
     .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b) || a.price - b.price);
   return { newGames: fresh, hot, warm, skip };
 }
@@ -297,6 +306,7 @@ export function pickBetterPicks(
   return games
     .filter((g) => g.price === price && g.number !== excludeNumber)
     .filter((g) => {
+      if (isEndedGame(g)) return false;
       const heat = reports.get(g.number);
       return Boolean(heat && (heat.band === "hot" || heat.band === "warm"));
     })
@@ -314,7 +324,7 @@ export function pickSkipAtPrice(
 ): Game[] {
   return games
     .filter((g) => g.price === price && g.number !== excludeNumber)
-    .filter((g) => isSkipGame(reports.get(g.number)))
+    .filter((g) => isSkipCandidate(g, reports.get(g.number)))
     .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b))
     .slice(0, max);
 }
@@ -337,7 +347,7 @@ export function pickSkipGames(
       isDeskPrice(g.price) &&
       inPriceFilter(g, filter) &&
       !blocked.has(g.number) &&
-      isSkipGame(reports.get(g.number)),
+      isSkipCandidate(g, reports.get(g.number)),
   );
   return skips.sort((a, b) => skipRank(reports, a, b)).slice(0, max);
 }

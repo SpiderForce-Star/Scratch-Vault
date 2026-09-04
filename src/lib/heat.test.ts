@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  isSkipCandidate,
   isSkipGame,
   pickSkipGames,
+  pickTripGames,
   skipChipBand,
   soldPricePoints,
   type HeatReport,
@@ -64,5 +66,20 @@ describe("skip", () => {
   });
   it("soldPricePoints is catalog intersect PRICE_POINTS", () => {
     expect(soldPricePoints([g(1, 5), g(2, 10), g(3, 50), g(4, 5)])).toEqual([5, 10, 50]);
+  });
+  it("ended KY Merry Multiplier is skip, not a review pick", () => {
+    const merry = {
+      ...g(107, 5),
+      name: "Merry Multiplier",
+      stateId: "ky",
+    };
+    expect(isSkipCandidate(merry, hot)).toBe(true);
+    const games = [merry, g(153, 5)];
+    const reports = new Map<number, HeatReport>([
+      [107, hot],
+      [153, hot],
+    ]);
+    expect(pickTripGames(games, reports, "5", 3).map((row) => row.number)).toEqual([153]);
+    expect(pickSkipGames(games, reports, "5", 5).map((row) => row.number)).toEqual([107]);
   });
 });

@@ -3,7 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { TN_MISSING_GAMES } from "../src/data/tn-missing.ts";
+import { looksLikeDateName, unionBundledGames } from "../src/data/states/parse.server.ts";
 import { hasNamedFace, ticketArt } from "../src/data/ticket-art.ts";
+import { isDeskPrice } from "../src/lib/heat.ts";
 import {
   ticketChrome,
   ticketChromeFingerprint,
@@ -139,9 +142,17 @@ test("chrome family follows ticket name vibe", () => {
   assert.equal(ticketFamily("$1,000 Frenzy", "frenzy"), "frenzy");
   assert.equal(ticketFamily("Queen of Hearts", "cash"), "hearts");
   assert.equal(ticketFamily("Lincoln", "cash"), "currency");
-  assert.equal(ticketFamily("Wild Cash 50X", "multiplier"), "multiplier");
+  assert.equal(ticketFamily("Wild Cash 50X", "multiplier"), "wild");
   assert.equal(ticketFamily("Lucky Horseshoe Crossword", "crossword"), "crossword");
-  assert.equal(ticketFamily("Jumbo Bucks Extravaganza", "jumbo"), "jumbo");
+  assert.equal(ticketFamily("Jumbo Bucks Extravaganza", "jumbo"), "gold");
+  assert.equal(ticketFamily("Merry Multiplier", "multiplier"), "holiday");
+  assert.equal(ticketFamily("Holiday Bonus", "cash"), "holiday");
+  assert.equal(ticketFamily("Jumbo Bucks Crossword", "crossword"), "crossword");
+  assert.equal(ticketFamily("Cowboys", "cash"), "sports");
+  assert.equal(ticketFamily("Houston Texans", "cash"), "sports");
+  assert.equal(ticketFamily("Loteria Azul", "cash"), "loteria");
+  assert.equal(ticketFamily("Ultimate Millions", "high"), "high");
+  assert.equal(ticketFamily("Mega Super Hot 7s", "cash"), "sevens");
 });
 
 test("same theme and price still get different chrome", () => {
@@ -149,13 +160,61 @@ test("same theme and price still get different chrome", () => {
   const b = ticketChrome(game({ number: 1391, name: "$500 Fever", theme: "frenzy", price: 10, stateId: "tn" }));
   const c = ticketChrome(game({ number: 1359, name: "$1,000 Frenzy", theme: "frenzy", price: 10, stateId: "tn" }));
   const ky = ticketChrome(game({ number: 1363, name: "$50, $100 OR $500!", theme: "frenzy", price: 10, stateId: "ky" }));
-  const visual = (s) => `${s.paletteIndex}|${s.sashIndex}|${s.pattern}|${s.rotate}|${s.phase}`;
+  const visual = (s) => `${s.family}|${s.sashAngle}|${s.extraCount}|${s.nudge}`;
   assert.notEqual(visual(a), visual(b));
   assert.notEqual(visual(a), visual(c));
   assert.notEqual(visual(b), visual(c));
   assert.notEqual(visual(a), visual(ky));
   assert.equal(a.number, 1363);
   assert.equal(ky.state, "ky");
+});
+
+test("spot-check case-match packs for public desks", () => {
+  const merry = ticketChrome(game({ number: 107, name: "Merry Multiplier", theme: "multiplier", price: 5, topPrize: 100000, stateId: "ky" }));
+  const holiday = ticketChrome(game({ number: 1346, name: "Holiday Bonus", theme: "cash", price: 20, topPrize: 500000, stateId: "tn" }));
+  const jumbo = ticketChrome(game({ number: 1699, name: "Giant Jumbo Bucks", theme: "jumbo", price: 5, topPrize: 250000, stateId: "sc" }));
+  const loteria = ticketChrome(game({ number: 2765, name: "Loteria Azul", theme: "cash", price: 5, topPrize: 100000, stateId: "tx" }));
+  const cowboys = ticketChrome(game({ number: 2754, name: "Cowboys", theme: "cash", price: 5, topPrize: 100000, stateId: "tx" }));
+  const texans = ticketChrome(game({ number: 2755, name: "Houston Texans", theme: "cash", price: 5, topPrize: 100000, stateId: "tx" }));
+  const ultimate = ticketChrome(game({ number: 637, name: "Ultimate Millions", theme: "high", price: 50, topPrize: 3000000, stateId: "ok" }));
+  assert.equal(merry.family, "holiday");
+  assert.equal(holiday.family, "holiday");
+  assert.notEqual(
+    `${merry.sashAngle}|${merry.extraCount}|${merry.nudge}`,
+    `${holiday.sashAngle}|${holiday.extraCount}|${holiday.nudge}`,
+  );
+  assert.equal(jumbo.family, "gold");
+  assert.equal(loteria.family, "loteria");
+  assert.equal(cowboys.family, "sports");
+  assert.equal(cowboys.sportsKind, "cowboys");
+  assert.equal(texans.family, "sports");
+  assert.equal(texans.sportsKind, "texans");
+  assert.notEqual(cowboys.palette.bg, texans.palette.bg);
+  assert.equal(ultimate.family, "high");
+  assert.equal(merry.winUpTo.includes("100,000") || merry.winUpTo.includes("100000"), true);
+});
+
+test("every public-state $5+ game gets a unique chrome fingerprint", () => {
+  const desks = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"];
+  const seen = new Set();
+  let count = 0;
+  for (const id of desks) {
+    const snap = JSON.parse(readFileSync(join(root, `src/data/states/last-good/${id}.json`), "utf8"));
+    const bundled = id === "tn" ? TN_MISSING_GAMES.map((g) => ({ ...g, stateId: "tn" })) : [];
+    const catalog = unionBundledGames(
+      snap.catalog.map((g) => ({ ...g, stateId: id })),
+      bundled,
+    );
+    for (const row of catalog) {
+      if (!isDeskPrice(row.price)) continue;
+      const key = ticketChromeFingerprint(row);
+      assert.equal(seen.has(key), false, `duplicate chrome ${key}`);
+      seen.add(key);
+      count += 1;
+      assert.equal(looksLikeDateName(row.name), false, `${id} #${row.number} date name`);
+    }
+  }
+  assert.ok(count > 80);
 });
 
 test("guest skip teaser shows two names and locks the rest", () => {
@@ -180,10 +239,17 @@ test("homepage skip rows send locked names to pricing", () => {
 test("ticket faces caption independent reconstructions", () => {
   const face = readFileSync(join(root, "src/components/ticket-face.tsx"), "utf8");
   const chrome = readFileSync(join(root, "src/components/ticket-chrome.tsx"), "utf8");
+  const card = readFileSync(join(root, "src/components/ticket-card.tsx"), "utf8");
   const en = JSON.parse(readFileSync(join(root, "src/locales/en.json"), "utf8"));
   assert.equal(en["card.reconstruction"], "Independent reconstruction — not official ticket art.");
   assert.equal(face.includes("card.reconstruction"), true);
   assert.equal(chrome.includes("Independent reconstruction — not official ticket art."), true);
+  assert.equal(chrome.includes('viewBox="0 0 360 480"'), true);
+  assert.equal(chrome.includes("WIN UP TO"), true);
+  assert.equal(face.includes("aspect-[3/4]"), true);
+  assert.equal(face.includes("aspect-[360/216]"), true);
+  assert.equal(card.includes("absolute top-3"), false);
+  assert.equal(/Kentucky Lottery|Lottery Tennessee|ScratchSmarter|LottoEdge/i.test(chrome), false);
   assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1396.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1401.jpg")), true);
