@@ -5,7 +5,9 @@
 import type { Game, GameSource, TicketTheme } from "../games";
 import type { StateId } from "../../config/states";
 
-const PRICES = new Set([1, 2, 3, 5, 10, 20, 25, 30, 50]);
+/** Desk prices. Under $5 may appear on the same remaining page; they are not a $1 scrape. */
+const DESK_PRICES = new Set([5, 10, 20, 25, 30, 50]);
+const PRICES = new Set([1, 2, 3, ...DESK_PRICES]);
 
 export type ParsedPrize = { amount: number; remaining: number | null };
 export type ParsedGame = {
@@ -633,4 +635,122 @@ export function gamesFromParse(stateId: StateId, parsed: ParsedGame[], bundled: 
       stateId,
     })),
   );
+}
+
+function rememberListing(
+  map: Map<number, ParsedGame>,
+  row: { number: number; name?: string; price?: number; top?: number | null },
+) {
+  if (!row.number) return;
+  const prev = map.get(row.number);
+  const price = row.price && PRICES.has(row.price) ? row.price : prev?.price ?? 0;
+  const name = sanitizeGameName(row.name || prev?.name || "");
+  const prizes = [...(prev?.prizes ?? [])];
+  if (row.top && row.top > 0 && !prizes.some((p) => p.amount === row.top)) {
+    prizes.push({ amount: row.top, remaining: null });
+  }
+  map.set(row.number, { number: row.number, name, price, prizes });
+}
+
+/** New-games pages: number / name / price / top prize. Remaining stays null. */
+export function parseNewGameListings(html: string): ParsedGame[] {
+  const map = new Map<number, ParsedGame>();
+
+  for (const m of html.matchAll(/instant-games\/[a-z0-9-]+?-(\d{3,4})(?:\/|"|'|\?)/gi)) {
+    rememberListing(map, { number: Number(m[1]) });
+  }
+  for (const m of html.matchAll(/Game Number:\s*<\/b>\s*(\d{3,4})/gi)) {
+    rememberListing(map, { number: Number(m[1]) });
+  }
+  for (const m of html.matchAll(/data-game-id="(\d{3,4})"/gi)) {
+    rememberListing(map, { number: Number(m[1]) });
+  }
+  for (const m of html.matchAll(
+    /<h4 class="panel-title">[\s\S]*?([^<]+?)\s+-\s+(\d{2,4})\s*</gi,
+  )) {
+    rememberListing(map, { number: Number(m[2]), name: decodeHtml(m[1]) });
+  }
+  for (const m of html.matchAll(
+    /(?:game(?:\s*(?:no\.?|number|#))?|#)\s*[:.]?\s*(\d{3,4})[\s\S]{0,180}?\$(\d{1,2})\b/gi,
+  )) {
+    rememberListing(map, { number: Number(m[1]), price: Number(m[2]) });
+  }
+  for (const m of html.matchAll(
+    /\$(\d{1,2})\b[\s\S]{0,180}?(?:game(?:\s*(?:no\.?|number|#))?|#)\s*[:.]?\s*(\d{3,4})/gi,
+  )) {
+    rememberListing(map, { number: Number(m[2]), price: Number(m[1]) });
+  }
+  for (const m of html.matchAll(
+    /(?:game(?:\s*(?:no\.?|number|#))?|#)\s*[:.]?\s*(\d{3,4})[\s\S]{0,240}?Top Prize:\s*(?:<\/[^>]+>\s*)*\$?([\d,]+)/gi,
+  )) {
+    rememberListing(map, { number: Number(m[1]), top: money(m[2]) });
+  }
+
+  const chunks = html.split(/class="box cloudfx databox price_/i).slice(1);
+  for (const chunk of chunks) {
+    const price = Number(chunk.match(/^(\d+)/)?.[1]);
+    const number = Number(chunk.match(/Game Number:<\/b>\s*(\d+)/i)?.[1]);
+    const name = decodeHtml(chunk.match(/class="gamename"><a[^>]*>([^<]+)</i)?.[1] || "");
+    const top = cashPrizeAmount(chunk.match(/Top Prize:[\s\S]{0,80}?(\$[\d,]+)/i)?.[1] || "");
+    if (number) rememberListing(map, { number, name, price, top });
+  }
+
+  return [...map.values()].filter((g) => g.number > 0);
+}
+
+export function parseNewGames(
+  stateId: StateId,
+  body: string,
+  contentType = "",
+): ParsedGame[] {
+  const fromRemaining = parseOfficialRemaining(stateId, body, contentType).map((g) => ({
+    ...g,
+    prizes: g.prizes.map((p) => ({ amount: p.amount, remaining: null })),
+  }));
+  const fromList = parseNewGameListings(body);
+  const map = new Map<number, ParsedGame>();
+  for (const row of [...fromRemaining, ...fromList]) {
+    if (!row.number || isImportedJunkGame(row)) continue;
+    const prev = map.get(row.number);
+    if (!prev) {
+      map.set(row.number, row);
+      continue;
+    }
+    map.set(row.number, {
+      number: row.number,
+      name: prev.name || row.name,
+      price: DESK_PRICES.has(prev.price) ? prev.price : row.price,
+      prizes: prev.prizes.length ? prev.prizes : row.prizes,
+      odds: prev.odds ?? row.odds,
+    });
+  }
+  return [...map.values()];
+}
+
+/**
+ * Merge official new-game listings into a remaining catalog.
+ * Only add missing $5+ games. Never invent remaining. Never add $1 because $3 appeared.
+ * Do not stamp the whole remaining table as NEW if the listing page is the full book.
+ */
+export function mergeNewGameListings(
+  catalog: Game[],
+  listed: ParsedGame[],
+  stateId: StateId,
+): Game[] {
+  const known = trustedCatalog(catalog).map((game) => ({ ...game, stateId }));
+  const have = new Set(known.map((g) => g.number));
+  const source: GameSource = stateId === "tn" ? "tn-remaining" : "official-remaining";
+  const extras: Game[] = [];
+  for (const row of listed) {
+    if (have.has(row.number) || isImportedJunkGame(row)) continue;
+    if (!DESK_PRICES.has(row.price)) continue;
+    const stripped: ParsedGame = {
+      ...row,
+      prizes: row.prizes.map((p) => ({ amount: p.amount, remaining: null })),
+    };
+    if (!stripped.prizes.length) continue;
+    const added = toCatalog([stripped], source);
+    if (added[0]) extras.push({ ...added[0], stateId, fresh: true });
+  }
+  return trustedCatalog([...known, ...extras]);
 }

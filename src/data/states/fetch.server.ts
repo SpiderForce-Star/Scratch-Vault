@@ -3,12 +3,15 @@
  * Sequential. Does not run on page load. Does not store lottery HTML.
  */
 import { HIDDEN_RETURN_MIN_GAMES, STATE_IDS, STATES, type StateId } from "@/config/states";
+import type { Game } from "@/data/games";
 import { fullCatalog as tennesseeFullCatalog } from "@/data/games.full.server";
 import { publicCatalog } from "./index";
 import { loadBundledDesk, seedSnapshotsIfEmpty } from "./load.server";
 import {
   extractAsOf,
   gamesFromParse,
+  mergeNewGameListings,
+  parseNewGames,
   parseOfficialRemaining,
   unionBundledGames,
 } from "./parse.server";
@@ -154,6 +157,23 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
       return failState(stateId, "untrusted parse", usedUrl, games.length);
     }
 
+    let catalog: Game[] = games.map((game) => ({ ...game, stateId }));
+    const newGamesUrl = state.newGamesUrl;
+    if (newGamesUrl && newGamesUrl !== usedUrl) {
+      try {
+        const extra = await fetchText(newGamesUrl);
+        if (extra.status < 400 && extra.body.trim()) {
+          const listed = parseNewGames(stateId, extra.body, extra.type);
+          catalog = mergeNewGameListings(catalog, listed, stateId).map((game) => ({
+            ...game,
+            stateId,
+          }));
+        }
+      } catch {
+        /* remaining catalog stands — do not fail the desk */
+      }
+    }
+
     const asOf = extractAsOf(body) || fetchedAt;
     const weekLabel = formatWeekLabel(asOf, true);
     if (lastGood?.catalog?.length) {
@@ -167,10 +187,10 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
       weekLabel,
       sourceUrl: usedUrl,
       reason: "ok",
-      gameCount: games.length,
-      catalog: games.map((game) => ({ ...game, stateId })),
+      gameCount: catalog.length,
+      catalog,
     });
-    const result = { stateId, ok: true, gameCount: games.length, reason: "ok" };
+    const result = { stateId, ok: true, gameCount: catalog.length, reason: "ok" };
     logResult(result);
     return result;
   } catch (err) {

@@ -51,6 +51,19 @@ test("selector and deep-links ignore hidden desks", () => {
   assert.equal(active.includes("parsePublicStateId"), true);
 });
 
+test("every public state has remaining-prizes and new-games URLs", () => {
+  const src = read("src/config/states.ts");
+  assert.match(src, /newGamesUrl: string \| null/);
+  for (const id of PUBLIC) {
+    const blockStart = src.indexOf(`  ${id}: {`);
+    assert.ok(blockStart >= 0, id);
+    const block = src.slice(blockStart, src.indexOf("playResponsiblyUrl:", blockStart));
+    assert.match(block, /remainingPrizesUrl:/);
+    assert.match(block, /newGamesUrl: "https:\/\//);
+  }
+  assert.match(src, /HIDDEN_RETURN_MIN_GAMES = 3/);
+});
+
 test("IL and MA stay empty with no last-good JSON", () => {
   const il = read("src/data/states/il.ts");
   const ma = read("src/data/states/ma.ts");
@@ -102,7 +115,7 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   assert.equal(banner.includes("banner.lastGood"), false);
   assert.equal(
     en["banner.deskSnapshot"],
-    "Remaining counts are a compiled snapshot, not live store inventory, and do not improve odds.",
+    "The lottery’s leftover-prize list. Not what’s in one store.",
   );
   assert.match(en["banner.scanHeadline"], /keep scanning for the next official update/);
   assert.equal(banner.includes('t("banner.scanHeadline")'), true);

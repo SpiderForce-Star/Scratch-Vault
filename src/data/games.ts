@@ -33,6 +33,8 @@ export type Game = {
   theme: TicketTheme;
   /** Stamped by the state catalog loader. Tennessee games may omit this. */
   stateId?: string;
+  /** Official new-games listing (or missing from last-good). Do not invent remaining. */
+  fresh?: boolean;
 };
 
 export {

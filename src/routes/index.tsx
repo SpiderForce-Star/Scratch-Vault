@@ -8,6 +8,7 @@ import {
   isPublicStateId,
 } from "@/config/states";
 import {
+  deskGames,
   pickNewGames,
   pickSkipGames,
   pickTripGames,
@@ -182,6 +183,7 @@ function VaultHome() {
   };
 
   const catalog = snap?.games ?? publicCatalog(stateId);
+  const deskCatalog = useMemo(() => deskGames(catalog), [catalog]);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
@@ -202,14 +204,14 @@ function VaultHome() {
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = catalog.filter((g) => {
+    const filtered = deskCatalog.filter((g) => {
       if (!q) return true;
       return (
         g.name.toLowerCase().includes(q) || String(g.number).includes(q)
       );
     });
     return sortGames(filtered, sort, reports);
-  }, [catalog, sort, query, reports]);
+  }, [deskCatalog, sort, query, reports]);
 
   const priceLabel = pricePrefLabel(filter) ?? "$10";
 
@@ -333,10 +335,7 @@ function VaultHome() {
                   search={{ state: stateId }}
                   className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
                 >
-                  {t("home.catalogLine", {
-                    short: config.shortName,
-                    count: catalog.length,
-                  })}
+                  {t("games.seeAll")}
                 </Link>
               </p>
             </div>
@@ -434,8 +433,8 @@ function VaultHome() {
           </span>
           <span className="font-mono text-xs text-faint uppercase">
             {locked
-              ? t("home.gamesLocked", { count: catalog.length })
-              : t("home.games", { count: catalog.length })}
+              ? t("home.gamesLocked", { count: deskCatalog.length })
+              : t("home.games", { count: deskCatalog.length })}
           </span>
         </summary>
         <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">

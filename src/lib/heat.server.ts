@@ -413,7 +413,7 @@ export function buildDesk(
 
   const why = (g: Game, h: HeatReport): string => {
     if (h.band === "new") {
-      return "Remaining prizes not posted yet. New tickets start with a full book — we do not guess heat.";
+      return "New. Leftover prizes not posted yet.";
     }
     if (h.role === "cash-out" && h.topRemaining != null) {
       return `${h.topRemaining.toLocaleString()} cash prizes of $${g.topPrize.toLocaleString()} still posted`;
