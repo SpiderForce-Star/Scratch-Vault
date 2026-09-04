@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { isEndedGame } from "../src/data/ended-games.ts";
 import { TN_MISSING_GAMES } from "../src/data/tn-missing.ts";
 import { isNewCatalogGame } from "../src/data/tn-snapshot.ts";
 import {
@@ -14,6 +15,7 @@ import { scoreGame } from "../src/lib/heat.server.ts";
 import {
   PRICE_POINTS,
   buildGamesBoard,
+  isSkipCandidate,
   isSkipGame,
   pickBetterPicks,
   pickNewGames,
@@ -124,7 +126,7 @@ test("board order is new, then hot, then warm, then skip/cold", () => {
   const board = buildGamesBoard(catalog, reports, "all");
   assert.equal(board.hot.every((g) => reports.get(g.number)?.band === "hot"), true);
   assert.equal(board.warm.every((g) => reports.get(g.number)?.band === "warm"), true);
-  assert.equal(board.skip.every((g) => isSkipGame(reports.get(g.number))), true);
+  assert.equal(board.skip.every((g) => isSkipCandidate(g, reports.get(g.number))), true);
   assert.equal(
     board.skip.every((g) => {
       const heat = reports.get(g.number);
@@ -198,7 +200,7 @@ test("public last-good desks keep $2/$3 out of New, Hot, Warm, and Skip", () => 
         trip.map((g) => g.number),
       );
       assert.equal(
-        skip.every((g) => isSkipGame(reports.get(g.number))),
+        skip.every((g) => isSkipCandidate(g, reports.get(g.number))),
         true,
         `${id} $${price} skip rule`,
       );
@@ -550,4 +552,22 @@ test("unknown remaining is not skip", () => {
     ),
     false,
   );
+});
+
+test("KY Merry Multiplier is ended — not Review these 3 or tonight hot", () => {
+  assert.equal(isEndedGame({ stateId: "ky", number: 107, name: "Merry Multiplier" }), true);
+  assert.equal(isEndedGame({ stateId: "tn", number: 107, name: "Merry Multiplier" }), false);
+  const ky = JSON.parse(read("src/data/states/last-good/ky.json"));
+  const { catalog, reports } = scored(
+    ky.catalog.map((g) => ({ ...g, stateId: "ky" })),
+  );
+  const merry = catalog.find((g) => g.number === 107);
+  assert.ok(merry);
+  assert.match(merry.name, /Merry Multiplier/);
+  const trip = pickTripGames(catalog, reports, "5", 3);
+  assert.equal(trip.some((g) => g.number === 107), false);
+  const board = buildGamesBoard(catalog, reports, "all");
+  assert.equal(board.hot.some((g) => g.number === 107), false);
+  assert.equal(board.warm.some((g) => g.number === 107), false);
+  assert.equal(board.skip.some((g) => g.number === 107), true);
 });

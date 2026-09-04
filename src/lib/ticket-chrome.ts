@@ -1,18 +1,5 @@
 import type { Game, TicketTheme } from "../data/games";
 
-export const TICKET_PATTERNS = [
-  "stripes",
-  "diamonds",
-  "burst",
-  "dots",
-  "chevrons",
-  "bands",
-  "hex",
-  "arcs",
-] as const;
-
-export type TicketPattern = (typeof TICKET_PATTERNS)[number];
-
 export type TicketPalette = {
   bg: string;
   bg2: string;
@@ -21,56 +8,48 @@ export type TicketPalette = {
   ink: string;
 };
 
-/** Original Scratch Vault stock — not lottery art. Distinct jewel/foil sets. */
-export const TICKET_PALETTES: readonly TicketPalette[] = [
-  { bg: "#0d3b2c", bg2: "#1f8a58", foil: "#f0d27a", accent: "#e8b84a", ink: "#f6ead4" },
-  { bg: "#6b1020", bg2: "#d4223c", foil: "#f4d48a", accent: "#f0b020", ink: "#fff0d8" },
-  { bg: "#0f2a62", bg2: "#2f6fe0", foil: "#d8e6ff", accent: "#7eb4ff", ink: "#eef4ff" },
-  { bg: "#3a1468", bg2: "#7a38d4", foil: "#ead8ff", accent: "#c090ff", ink: "#f6ecff" },
-  { bg: "#5a2a0c", bg2: "#d46a18", foil: "#ffd8a0", accent: "#f0a040", ink: "#fff0dc" },
-  { bg: "#0a3c3c", bg2: "#18a090", foil: "#c8fff0", accent: "#40e0c8", ink: "#e8fff8" },
-  { bg: "#5c1028", bg2: "#d43068", foil: "#ffd0dc", accent: "#ff6a98", ink: "#ffe8ee" },
-  { bg: "#1c3a0c", bg2: "#5aa018", foil: "#e8ff9c", accent: "#b4e038", ink: "#f4ffd4" },
-  { bg: "#142848", bg2: "#3a68b0", foil: "#d0e4ff", accent: "#68a0e8", ink: "#e8f0ff" },
-  { bg: "#0c4a28", bg2: "#1cb868", foil: "#d4ffc0", accent: "#48e888", ink: "#e8ffe8" },
-  { bg: "#5a1038", bg2: "#e03890", foil: "#ffd0e8", accent: "#ff68b8", ink: "#ffe8f4" },
-  { bg: "#4a3c08", bg2: "#c8a010", foil: "#ffe89a", accent: "#f0c430", ink: "#fff6d0" },
-  { bg: "#0c3848", bg2: "#1890b8", foil: "#c8f0ff", accent: "#40c8e8", ink: "#e4f8ff" },
-  { bg: "#6a2010", bg2: "#e05020", foil: "#ffd0b0", accent: "#ff7840", ink: "#ffece0" },
-  { bg: "#2c1460", bg2: "#6830c8", foil: "#e0c8ff", accent: "#a068ff", ink: "#f4e8ff" },
-  { bg: "#2c4010", bg2: "#78a018", foil: "#e8f0a0", accent: "#c0d040", ink: "#f4f8d8" },
-  { bg: "#2a2418", bg2: "#8a7040", foil: "#f0e0b0", accent: "#d4b06a", ink: "#f8f0dc" },
-  { bg: "#6a0814", bg2: "#e01830", foil: "#ffc8c0", accent: "#ff4058", ink: "#ffe8e4" },
-  { bg: "#0c4038", bg2: "#20a888", foil: "#c0ffe8", accent: "#38d4b0", ink: "#e4fff4" },
-  { bg: "#6a3008", bg2: "#e87810", foil: "#ffd890", accent: "#ff9c20", ink: "#fff0d0" },
-  { bg: "#1c2838", bg2: "#4a6888", foil: "#d8e4f0", accent: "#88a8c8", ink: "#eef4f8" },
-  { bg: "#501018", bg2: "#b82840", foil: "#ffc8d0", accent: "#e85068", ink: "#ffe8ec" },
-  { bg: "#081848", bg2: "#2048c8", foil: "#c8d8ff", accent: "#5080ff", ink: "#e8eeff" },
-  { bg: "#143028", bg2: "#2a8860", foil: "#c8f0d8", accent: "#48c890", ink: "#e4f8ec" },
-];
-
 export type TicketFamily =
-  | "frenzy"
-  | "jumbo"
+  | "holiday"
+  | "sevens"
+  | "gold"
   | "crossword"
-  | "multiplier"
+  | "loteria"
+  | "wild"
+  | "slots"
+  | "sports"
   | "cash"
+  | "multiplier"
+  | "frenzy"
   | "high"
-  | "ice"
   | "hearts"
   | "currency";
 
-/** Palette indices that recall a ticket's vibe without copying official art. */
-const FAMILY_PALETTES: Record<TicketFamily, readonly number[]> = {
-  frenzy: [1, 6, 17, 21],
-  jumbo: [11, 16, 19, 4],
-  crossword: [2, 5, 8, 12],
-  multiplier: [3, 10, 14, 22],
-  cash: [0, 9, 7, 23],
-  high: [16, 11, 20, 22],
-  ice: [2, 8, 12, 20],
-  hearts: [1, 6, 10, 21],
-  currency: [0, 9, 23, 16],
+export type SportsKind = "cowboys" | "texans" | "nascar" | "football";
+
+/** One palette per pack — case-match color, not a photocopy. */
+export const FAMILY_PALETTES: Record<TicketFamily, TicketPalette> = {
+  holiday: { bg: "#6b1020", bg2: "#9a1c2c", foil: "#e8c872", accent: "#f0d48a", ink: "#fff4dc" },
+  sevens: { bg: "#5a0810", bg2: "#c41428", foil: "#f4d48a", accent: "#ffcc44", ink: "#fff0d8" },
+  gold: { bg: "#3a2a08", bg2: "#c8a010", foil: "#ffe89a", accent: "#f0c430", ink: "#fff6d0" },
+  crossword: { bg: "#0f2a62", bg2: "#2f6fe0", foil: "#d8e6ff", accent: "#7eb4ff", ink: "#eef4ff" },
+  loteria: { bg: "#7a1028", bg2: "#e8a020", foil: "#ffe8a0", accent: "#2ec4b6", ink: "#fff8e8" },
+  wild: { bg: "#1c3a0c", bg2: "#5a7a18", foil: "#e8d48a", accent: "#c4a040", ink: "#f4ecd0" },
+  slots: { bg: "#1a0818", bg2: "#6a1038", foil: "#f0d27a", accent: "#e8b020", ink: "#fff0d4" },
+  sports: { bg: "#143018", bg2: "#2a6a28", foil: "#e8e0c8", accent: "#c4b48a", ink: "#f4f0e0" },
+  cash: { bg: "#0d3b2c", bg2: "#1f8a58", foil: "#f0d27a", accent: "#e8b84a", ink: "#f6ead4" },
+  multiplier: { bg: "#3a1468", bg2: "#7a38d4", foil: "#ead8ff", accent: "#c090ff", ink: "#f6ecff" },
+  frenzy: { bg: "#7a1414", bg2: "#e02828", foil: "#ffd070", accent: "#ff9c20", ink: "#fff0d8" },
+  high: { bg: "#1a1408", bg2: "#8a7040", foil: "#f0e0b0", accent: "#d4b06a", ink: "#f8f0dc" },
+  hearts: { bg: "#5c1028", bg2: "#d43068", foil: "#ffd0dc", accent: "#ff6a98", ink: "#ffe8ee" },
+  currency: { bg: "#1c2838", bg2: "#4a6888", foil: "#d8e4f0", accent: "#88a8c8", ink: "#eef4f8" },
+};
+
+/** Sports colors only — no team marks. */
+export const SPORTS_PALETTES: Record<SportsKind, TicketPalette> = {
+  cowboys: { bg: "#041e42", bg2: "#003594", foil: "#c8c8c8", accent: "#869397", ink: "#f4f6fa" },
+  texans: { bg: "#03202f", bg2: "#a71930", foil: "#e8e8e8", accent: "#c45c4a", ink: "#f8f0ec" },
+  nascar: { bg: "#101010", bg2: "#d4a017", foil: "#f0e0a0", accent: "#e8c040", ink: "#fff8e0" },
+  football: { bg: "#143018", bg2: "#2a6a28", foil: "#e8e0c8", accent: "#c4b48a", ink: "#f4f0e0" },
 };
 
 export type TicketChrome = {
@@ -78,15 +57,15 @@ export type TicketChrome = {
   number: number;
   name: string;
   price: number;
+  topPrize: number;
+  winUpTo: string;
   theme: TicketTheme;
   family: TicketFamily;
   palette: TicketPalette;
-  paletteIndex: number;
-  sash: TicketPalette;
-  sashIndex: number;
-  pattern: TicketPattern;
-  rotate: number;
-  phase: number;
+  sportsKind: SportsKind | null;
+  sashAngle: number;
+  extraCount: number;
+  nudge: number;
   mark: string;
 };
 
@@ -109,58 +88,78 @@ function nameMark(name: string): string {
   return letters || "SV";
 }
 
-/** Color family from the game name, then theme. Original palettes only. */
+export function formatWinUpTo(n: number): string {
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    return m % 1 === 0 ? `$${m} MILLION` : `$${m.toFixed(1)} MILLION`;
+  }
+  return `$${n.toLocaleString("en-US")}`;
+}
+
+export function sportsKind(name: string): SportsKind | null {
+  const n = name.toLowerCase();
+  if (/cowboys/.test(n)) return "cowboys";
+  if (/texans/.test(n)) return "texans";
+  if (/nascar/.test(n)) return "nascar";
+  if (/football/.test(n)) return "football";
+  return null;
+}
+
+/**
+ * Keyword packs beat generic multiplier/cash. First match wins.
+ * Crossword/loteria beat gold so a jumbo crossword still reads as a grid.
+ * Holiday beats multiplier (Merry Multiplier is crimson/gold, not a purple X).
+ */
 export function ticketFamily(name: string, theme: TicketTheme): TicketFamily {
   const n = name.toLowerCase();
-  if (/lincoln|hamilton|jackson|washington|franklin|grant/.test(n)) return "currency";
-  if (/ice|winter|frost|bluegrass/.test(n)) return "ice";
-  if (/heart|queen|love|valentine/.test(n)) return "hearts";
-  if (/frenzy|fever|hot|fire|fiery|blowout/.test(n)) return "frenzy";
-  if (/crossword|cashword|bingo/.test(n)) return "crossword";
-  if (/\d+\s*x\b|multiplier|times\s+\d/.test(n)) return "multiplier";
-  if (/jumbo|gold|24k|platinum/.test(n)) return "jumbo";
-  if (theme === "high" || /million|max-a-million|high roller/.test(n)) return "high";
-  if (theme === "frenzy") return "frenzy";
+  if (/\b(merry|holiday|christmas|jingle|santa|wreath|tree|snow|festive)\b/.test(n)) {
+    return "holiday";
+  }
+  if (/7'?s\b|\bsevens?\b|lucky\s*7/.test(n)) return "sevens";
+  if (/\b(crossword|cashword|bingo|slingo)\b/.test(n)) return "crossword";
+  if (/\bloteria\b/.test(n)) return "loteria";
+  if (/\b(jumbo|gold|24k|platinum|riches)\b/.test(n)) return "gold";
+  if (/\b(wild|safari|animal|lion)\b/.test(n)) return "wild";
+  if (/\b(slot|casino|poker|blackjack)s?\b/.test(n)) return "slots";
+  if (/\b(cowboys|texans|football|nascar)\b/.test(n)) return "sports";
+  if (/\b(50|100|200)\s*x\b|\bmultiplier\b|\btimes\b|\d+\s*x\b/.test(n)) return "multiplier";
+  if (/\b(cash|money|payday|bank|wallet|dollar)\b/.test(n)) return "cash";
+  if (/\b(frenzy|fever|blowout)\b|hit\s*\$/.test(n)) return "frenzy";
+  if (/\b(million|mega|ultimate|max)\b/.test(n)) return "high";
+  if (/\b(heart|queen|love|valentine)\b/.test(n)) return "hearts";
+  if (/\b(lincoln|hamilton|jackson|washington|franklin|grant)\b/.test(n)) return "currency";
   if (theme === "crossword") return "crossword";
+  if (theme === "jumbo") return "gold";
+  if (theme === "frenzy") return "frenzy";
   if (theme === "multiplier") return "multiplier";
-  if (theme === "jumbo") return "jumbo";
+  if (theme === "high") return "high";
   return "cash";
 }
 
-function pickFamilyIndex(family: TicketFamily, offset: number): number {
-  const list = FAMILY_PALETTES[family];
-  return list[((offset % list.length) + list.length) % list.length]!;
-}
-
-/** Deterministic original chrome for one game. Keyed by state + number. */
+/** Deterministic original chrome. Palette/motif from the pack; hash only nudges. */
 export function ticketChrome(game: Game): TicketChrome {
   const state = stateCode(game);
-  const seed = fnv1a(`${state}:${game.number}:${game.theme}:${game.price}:${game.name}`);
-  const n = TICKET_PALETTES.length;
   const family = ticketFamily(game.name, game.theme);
-  const paletteIndex = pickFamilyIndex(
-    family,
-    game.number * 7 + (seed % 13) + state.charCodeAt(0),
-  );
-  const sashIndex =
-    (paletteIndex + 7 + (seed % 5) + game.price + state.charCodeAt(0)) % n;
-  const patternIndex = (game.number * 3 + (seed >>> 8) + state.length * 5) % TICKET_PATTERNS.length;
-  const rotate = ((seed >>> 16) % 21) - 10;
-  const phase = (game.number * 11 + (seed >>> 4)) % 48;
+  const kind = family === "sports" ? sportsKind(game.name) ?? "football" : null;
+  const palette = kind ? SPORTS_PALETTES[kind] : FAMILY_PALETTES[family];
+  const seed = fnv1a(`${state}:${game.number}`);
+  const sashAngle = (seed % 21) - 10;
+  const extraCount = 3 + (seed % 4);
+  const nudge = seed % 17;
   return {
     state,
     number: game.number,
     name: game.name,
     price: game.price,
+    topPrize: game.topPrize,
+    winUpTo: formatWinUpTo(game.topPrize),
     theme: game.theme,
     family,
-    palette: TICKET_PALETTES[paletteIndex]!,
-    paletteIndex,
-    sash: TICKET_PALETTES[sashIndex]!,
-    sashIndex,
-    pattern: TICKET_PATTERNS[patternIndex]!,
-    rotate,
-    phase,
+    palette,
+    sportsKind: kind,
+    sashAngle,
+    extraCount,
+    nudge,
     mark: nameMark(game.name),
   };
 }
@@ -172,11 +171,10 @@ export function ticketChromeFingerprint(game: Game): string {
     c.state,
     c.number,
     c.family,
-    c.paletteIndex,
-    c.sashIndex,
-    c.pattern,
-    c.rotate,
-    c.phase,
+    c.sportsKind ?? "",
+    c.sashAngle,
+    c.extraCount,
+    c.nudge,
     c.theme,
     c.price,
     c.mark,

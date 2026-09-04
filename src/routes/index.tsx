@@ -289,21 +289,22 @@ function VaultHome() {
                           search={deskSearch(game.stateId ?? viewState)}
                           className="w-56 shrink-0 overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold"
                         >
-                          <div className="relative">
+                          <div className="overflow-hidden">
                             <TicketFace game={game} />
-                            <NewGameChip className="absolute top-2 left-2 z-10" />
-                            <BandChip
-                              band={heat.band}
-                              className="absolute top-2 right-2 z-10"
-                            />
                           </div>
                           <div className="p-3">
-                            <p className="font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
-                              ${game.price}
-                            </p>
-                            <p className="mt-1 truncate font-display text-base leading-snug">
-                              {game.name}
-                            </p>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="truncate font-display text-base leading-snug">
+                                {game.name}
+                              </p>
+                              <BandChip band={heat.band} className="shrink-0" />
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                              <NewGameChip />
+                              <p className="font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
+                                ${game.price}
+                              </p>
+                            </div>
                             <p className="mt-1 font-mono text-[10px] text-faint uppercase">
                               #{game.number}
                             </p>

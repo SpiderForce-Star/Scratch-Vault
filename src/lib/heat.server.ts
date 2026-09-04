@@ -1,4 +1,5 @@
 import type { Game, PrizeTier } from "@/data/games";
+import { isEndedGame } from "../data/ended-games.ts";
 import { isUnpostedNewGame } from "../data/tn-snapshot.ts";
 import type {
   CashBlip,
@@ -273,6 +274,7 @@ export function pickTonightHeat(
 ): { cards: TonightCard[]; depleted: boolean } {
   if (!games.length) return { cards: [], depleted: true };
   const rows = games.flatMap((game) => {
+    if (isEndedGame(game)) return [];
     const heat = reports.get(game.number);
     if (!heat) return [];
     return [
