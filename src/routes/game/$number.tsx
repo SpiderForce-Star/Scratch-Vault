@@ -10,6 +10,7 @@ import {
   type StateId,
 } from "@/config/states";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
+import { deskPageSearch, deskSearch } from "@/lib/active-state";
 import {
   pickBetterPicks,
   pickSkipAtPrice,
@@ -32,6 +33,15 @@ export const Route = createFileRoute("/game/$number")({
   validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
     if (isPublicStateId(search.state)) return { state: search.state };
     return {};
+  },
+  loaderDeps: ({ search }) => ({
+    stateId: search.state ?? DEFAULT_STATE_ID,
+  }),
+  loader: async ({ deps }): Promise<{ desk: DeskSnapshot | null }> => {
+    const desk = await getDeskSnapshot({ data: { stateId: deps.stateId } }).catch(
+      () => null,
+    );
+    return { desk };
   },
   head: ({ params, match }) => {
     const searchState = match.search?.state;
@@ -84,22 +94,44 @@ const EMPTY_HEAT: HeatReport = {
 function GameDetail() {
   const { number } = Route.useParams();
   const search = Route.useSearch();
+  const loaded = Route.useLoaderData();
   const { stateId: activeStateId, setStateId } = useActiveState();
   const { t } = useI18n();
   const preferred = search.state ?? activeStateId;
   const listed = findPublicGame(number, preferred);
   if (!listed) throw notFound();
   const state = getState(listed.stateId);
-  const [game, setGame] = useState(listed.game);
-  const [heat, setHeat] = useState<HeatReport>(EMPTY_HEAT);
-  const [locked, setLocked] = useState(true);
-  const [ready, setReady] = useState(false);
-  const [dataMode, setDataMode] = useState<DataMode>(state.dataMode);
-  const [desk, setDesk] = useState<DeskSnapshot | null>(null);
+  const loadedDesk =
+    loaded?.desk && loaded.desk.stateId === listed.stateId ? loaded.desk : null;
+  const loadedGame =
+    loadedDesk?.games.find((row) => String(row.number) === number) ?? listed.game;
+  const [game, setGame] = useState(loadedGame);
+  const [heat, setHeat] = useState<HeatReport>(
+    loadedDesk?.reports[String(loadedGame.number)] ?? EMPTY_HEAT,
+  );
+  const [locked, setLocked] = useState(!(loadedDesk?.paid ?? false));
+  const [ready, setReady] = useState(Boolean(loadedDesk));
+  const [dataMode, setDataMode] = useState<DataMode>(loadedDesk?.dataMode ?? state.dataMode);
+  const [desk, setDesk] = useState<DeskSnapshot | null>(loadedDesk);
 
   useEffect(() => {
     if (listed.stateId !== activeStateId) setStateId(listed.stateId);
   }, [listed.stateId, activeStateId, setStateId]);
+
+  useEffect(() => {
+    const nextDesk =
+      loaded?.desk && loaded.desk.stateId === listed.stateId ? loaded.desk : null;
+    const nextGame =
+      nextDesk?.games.find((row) => String(row.number) === number) ?? listed.game;
+    setGame(nextGame);
+    setHeat(nextDesk?.reports[String(nextGame.number)] ?? EMPTY_HEAT);
+    setDesk(nextDesk);
+    setLocked(!(nextDesk?.paid ?? false));
+    setReady(Boolean(nextDesk));
+    setDataMode(nextDesk?.dataMode ?? state.dataMode);
+    // listed.game is rebuilt each render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [number, listed.stateId, loaded?.desk, state.dataMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,7 +182,7 @@ function GameDetail() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/"
-          search={state.id === DEFAULT_STATE_ID ? {} : { state: state.id }}
+          search={deskPageSearch(state.id)}
           className="inline-flex min-h-11 items-center gap-2 text-sm text-muted hover:text-fg"
         >
           <ArrowLeft className="size-4" />
@@ -287,7 +319,7 @@ function GameDetail() {
                     <Link
                       to="/game/$number"
                       params={{ number: String(row.number) }}
-                      search={state.id === DEFAULT_STATE_ID ? {} : { state: state.id }}
+                      search={deskSearch(row.stateId ?? state.id)}
                       className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
                     >
                       <span className="truncate text-sm">
@@ -305,7 +337,7 @@ function GameDetail() {
         <p className="mt-8">
           <Link
             to="/games"
-            search={state.id === DEFAULT_STATE_ID ? {} : { state: state.id }}
+            search={deskPageSearch(state.id)}
             className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
           >
             {t("games.seeAll")}

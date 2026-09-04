@@ -8,7 +8,7 @@ import {
 } from "@/data/games";
 import { type HeatReport } from "@/lib/heat";
 import { TicketFace } from "@/components/ticket-face";
-import { useActiveState } from "@/lib/active-state";
+import { deskSearch, useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { heatBandKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export function TicketCard({
   locked?: boolean;
 }) {
   const { stateId } = useActiveState();
+  const deskId = game.stateId ?? stateId;
   const { t } = useI18n();
   const topLeft = heat.effectiveTop ?? heat.topRemaining;
   const midLeft = heat.midRemaining;
@@ -34,7 +35,7 @@ export function TicketCard({
     <Link
       to="/game/$number"
       params={{ number: String(game.number) }}
-      search={{ state: stateId }}
+      search={deskSearch(deskId)}
       className={cn(
         "group block overflow-hidden border bg-surface",
         "rounded-xl transition-transform duration-200",

@@ -1,6 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
+import { DEFAULT_STATE_ID } from "@/config/states";
+import { deskPageSearch, useActiveState } from "@/lib/active-state";
 import { authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useDeskAlert } from "@/lib/use-desk-alert";
@@ -124,6 +126,11 @@ function NavLinks({
   stacked?: boolean;
 }) {
   const { t } = useI18n();
+  const { stateId } = useActiveState();
+  const deskHref =
+    stateId === DEFAULT_STATE_ID
+      ? `${NAV[0].to}#${NAV[0].hash}`
+      : `${NAV[0].to}?state=${stateId}#${NAV[0].hash}`;
   return (
     <>
       {NAV.map((item) => {
@@ -142,7 +149,7 @@ function NavLinks({
         return item.hash ? (
           <a
             key={item.key}
-            href={`${item.to}#${item.hash}`}
+            href={isDesk ? deskHref : `${item.to}#${item.hash}`}
             className={className}
             onClick={() => {
               if (isDesk && unseen) markSeen();
@@ -152,6 +159,17 @@ function NavLinks({
             {label}
             {pip}
           </a>
+        ) : item.to === "/games" ? (
+          <Link
+            key={item.key}
+            to="/games"
+            search={deskPageSearch(stateId)}
+            className={className}
+            onClick={onNavigate}
+          >
+            {label}
+            {pip}
+          </Link>
         ) : (
           <Link key={item.key} to={item.to} className={className} onClick={onNavigate}>
             {label}
