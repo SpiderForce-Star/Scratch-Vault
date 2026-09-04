@@ -13,8 +13,10 @@ import {
   pickTripGames,
   reportMap,
   skipChipBand,
+  soldPricePoints,
   type HeatReport,
   type PriceFilter,
+  type PricePoint,
 } from "@/lib/heat";
 import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
@@ -58,15 +60,6 @@ export const Route = createFileRoute("/")({
     }),
 });
 
-const FILTERS: { id: PriceFilter; label: string }[] = [
-  { id: "5", label: "$5" },
-  { id: "10", label: "$10" },
-  { id: "20", label: "$20" },
-  { id: "25", label: "$25" },
-  { id: "30", label: "$30" },
-  { id: "50", label: "$50" },
-];
-
 const FALLBACK_HEAT: HeatReport = {
   grand: 0,
   medium: 0,
@@ -79,6 +72,7 @@ const FALLBACK_HEAT: HeatReport = {
   effectiveTop: null,
   midRemaining: null,
   lowRemaining: null,
+  remainingUnknown: true,
 };
 
 function VaultHome() {
@@ -170,6 +164,17 @@ function VaultHome() {
   };
 
   const catalog = snap?.games ?? publicCatalog(viewState);
+  const sold = useMemo(() => soldPricePoints(catalog), [catalog]);
+  const deskState = snap ? getState(snap.stateId) : getState(viewState);
+  const noSnapshot = catalog.length === 0;
+  const sellsFilter = sold.includes(Number(filter) as PricePoint);
+
+  useEffect(() => {
+    if (!sold.length) return;
+    if (sold.includes(Number(filter) as PricePoint)) return;
+    setPrice((sold.includes(10) ? "10" : String(sold[0])) as PriceFilter);
+  }, [sold, filter]);
+
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
@@ -196,6 +201,11 @@ function VaultHome() {
   );
 
   const priceLabel = pricePrefLabel(filter) ?? "$10";
+  const tripEmptyCopy = noSnapshot
+    ? t("home.noSnapshot")
+    : !sellsFilter
+      ? t("home.noPrice", { state: deskState.name, price: filter })
+      : t("home.allSkip", { price: filter });
 
   return (
     <div>
@@ -236,23 +246,28 @@ function VaultHome() {
                   </Link>
                 </>
               ) : null}
-              <div className="mb-4 flex flex-wrap gap-1">
-                {FILTERS.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setPrice(f.id)}
-                    className={cn(
-                      "min-h-11 min-w-11 rounded-md px-3 text-sm",
-                      filter === f.id
-                        ? "bg-gold text-accent-fg"
-                        : "bg-surface text-muted hover:text-fg",
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
+              {sold.length ? (
+                <div className="mb-4 flex flex-wrap gap-1">
+                  {sold.map((price) => {
+                    const id = String(price) as PriceFilter;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setPrice(id)}
+                        className={cn(
+                          "min-h-11 min-w-11 rounded-md px-3 text-sm",
+                          filter === id
+                            ? "bg-gold text-accent-fg"
+                            : "bg-surface text-muted hover:text-fg",
+                        )}
+                      >
+                        ${price}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
               {newGames.length > 0 ? (
                 <div className="mb-6">
                   <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
@@ -308,10 +323,16 @@ function VaultHome() {
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
                 {t("trip.body")}
               </p>
+              {viewState === "tn" ? (
+                <aside className="mt-4 rounded-lg border border-gold/40 bg-raised/40 px-4 py-3">
+                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                    {t("pia.title")}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
+                </aside>
+              ) : null}
               {tripGames.length === 0 ? (
-                <p className="mt-4 text-muted">
-                  {t("home.nothingPosted", { price: priceLabel })}
-                </p>
+                <p className="mt-4 text-muted">{tripEmptyCopy}</p>
               ) : (
                 <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {tripGames.map((game) => {

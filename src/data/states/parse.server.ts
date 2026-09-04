@@ -82,6 +82,11 @@ export function sanitizeGameName(name: string): string {
     .trim();
 }
 
+/** Texas start-date cells (MM/DD/YY) are not game names. */
+export function looksLikeDateName(name: string): boolean {
+  return /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(String(name ?? "").trim());
+}
+
 function typicalOdds(price: number): number {
   if (price >= 50) return 2.7;
   if (price >= 30) return 2.9;
@@ -119,6 +124,7 @@ function cashPrizeAmount(label: string): number | null {
 export function isImportedJunkGame(game: { number: number; name: string }): boolean {
   const name = String(game.name ?? "").trim();
   if (!name) return true;
+  if (looksLikeDateName(name)) return true;
   if (/no longer available/i.test(name)) return true;
   if (/\(#\s*\d+\s*\)/.test(name)) return true;
   if (PRICES.has(Number(name))) return true;
@@ -149,7 +155,14 @@ export function unionBundledGames<T extends { number: number; name: string }>(
 ): T[] {
   const byNumber = new Map(snapshot.map((game) => [game.number, game]));
   for (const game of bundled) {
-    if (!byNumber.has(game.number)) byNumber.set(game.number, game);
+    const existing = byNumber.get(game.number);
+    if (!existing) {
+      byNumber.set(game.number, game);
+      continue;
+    }
+    if (looksLikeDateName(existing.name) && game.name && !looksLikeDateName(game.name)) {
+      byNumber.set(game.number, { ...existing, name: game.name });
+    }
   }
   return trustedCatalog([...byNumber.values()]);
 }
@@ -272,6 +285,25 @@ function parsePa(html: string): ParsedGame[] {
   return games;
 }
 
+function txPrintedMinusClaimed(printed: string, claimed: string): number | null {
+  const p = remainingCount(printed);
+  const c = remainingCount(claimed);
+  if (p == null || c == null) return null;
+  return Math.max(0, p - c);
+}
+
+function txRowName(cells: string[]): string {
+  // Game# | Start Date | Price | Game Name | Prize | Printed | Claimed
+  // Live table inserts a closing-soon column before the name.
+  for (const candidate of [cells[3], cells[4]]) {
+    const name = sanitizeGameName(candidate || "");
+    if (!name || name === "*" || looksLikeDateName(name)) continue;
+    if (/^\$?[\d,]+(?:\.\d+)?$/.test(name.replace(/\s/g, ""))) continue;
+    return name;
+  }
+  return "";
+}
+
 function parseTx(html: string): ParsedGame[] {
   const map = new Map<number, ParsedGame>();
   let current: ParsedGame | null = null;
@@ -282,20 +314,23 @@ function parseTx(html: string): ParsedGame[] {
     if (cells.length < 3) continue;
     const number = Number(cells[0].replace(/[^\d]/g, ""));
     if (Number.isFinite(number) && number > 0 && cells[1]) {
-      const price = money(cells[2]) ?? money(cells[1]);
+      const dateHeader = looksLikeDateName(cells[1]);
+      const name = dateHeader ? txRowName(cells) : sanitizeGameName(cells[1]);
+      const price = dateHeader ? money(cells[2]) : money(cells[2]) ?? money(cells[1]);
       current = {
         number,
-        name: cells[1],
+        name,
         price: price ?? 0,
         prizes: [],
       };
       map.set(number, current);
     }
     if (!current) continue;
-    const amount = cashPrizeAmount(cells.find((c) => /\$/.test(c)) || "");
-    const remaining =
-      remainingCount(cells[cells.length - 1]) ??
-      remainingCount(cells[cells.length - 2]);
+    const amount = cashPrizeAmount(cells[cells.length - 3] || "");
+    const remaining = txPrintedMinusClaimed(
+      cells[cells.length - 2] || "",
+      cells[cells.length - 1] || "",
+    );
     if (amount != null) current.prizes.push({ amount, remaining });
   }
   return [...map.values()].filter((g) => PRICES.has(g.price) && g.prizes.length);
@@ -404,14 +439,27 @@ function parseMa(html: string): ParsedGame[] {
 
 function parseId(html: string): ParsedGame[] {
   const games: ParsedGame[] = [];
-  for (const chunk of html.split(/class="print-game"/i).slice(1)) {
-    const number = Number(chunk.match(/data-game-id="(\d+)"/)?.[1]);
-    const name = decodeHtml(chunk.match(/print_game__title">\s*([^<]+)/i)?.[1] || "");
-    const price = money(chunk.match(/print_game__info-price">\s*([^<]+)/i)?.[1] || "");
+  const chunks = /data-game-id="/i.test(html)
+    ? html.split(/data-game-id="/i).slice(1)
+    : html.split(/class="print-game"/i).slice(1);
+  for (const chunk of chunks) {
+    const number = Number(
+      chunk.match(/^(\d+)/)?.[1] || chunk.match(/data-game-id="(\d+)"/)?.[1],
+    );
+    const name = decodeHtml(
+      chunk.match(/game__title">\s*([^<]+)/i)?.[1] ||
+        chunk.match(/print_game__title">\s*([^<]+)/i)?.[1] ||
+        "",
+    );
+    const price = money(
+      chunk.match(/game__info-price">\s*([^<]+)/i)?.[1] ||
+        chunk.match(/print_game__info-price">\s*([^<]+)/i)?.[1] ||
+        "",
+    );
     if (!number || !name || !PRICES.has(price ?? -1)) continue;
     const prizes: ParsedPrize[] = [];
     const rowRe =
-      /class="prizes-prize">([^<]+)<\/span>[\s\S]*?class="prizes-remaining">([^<]+)<\/t/gi;
+      /class="prizes-prize">([^<]+)<\/span>[\s\S]*?class="prizes-remaining">([^<]+)</gi;
     let m: RegExpExecArray | null;
     while ((m = rowRe.exec(chunk))) {
       const amount = cashPrizeAmount(m[1]);
@@ -586,7 +634,10 @@ function applyParsedRemaining(game: Game, next: ParsedGame, stateId: StateId): G
   tiers.sort((a, b) => b.amount - a.amount);
   return {
     ...game,
-    name: next.name || game.name,
+    name:
+      next.name && !looksLikeDateName(next.name)
+        ? sanitizeGameName(next.name)
+        : game.name,
     stateId,
     source: stateId === "tn" ? "tn-remaining" : "official-remaining",
     topPrize: tiers[0]?.amount ?? game.topPrize,

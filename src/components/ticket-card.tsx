@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import {
   isNewCatalogGame,
-  money,
   moneyFull,
-  postedBook,
   type Game,
 } from "@/data/games";
 import { type HeatReport } from "@/lib/heat";
+import { getState } from "@/config/states";
 import { TicketFace } from "@/components/ticket-face";
 import { deskSearch, useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
@@ -27,9 +26,11 @@ export function TicketCard({
   const { stateId } = useActiveState();
   const deskId = game.stateId ?? stateId;
   const { t } = useI18n();
-  const topLeft = heat.effectiveTop ?? heat.topRemaining;
+  const state = getState(deskId);
+  const showStoreJackpot = Boolean(state.holdback && state.holdback.subtractTop > 0);
+  const listed = heat.topRemaining;
+  const store = heat.effectiveTop;
   const midLeft = heat.midRemaining;
-  const book = postedBook(game);
   const isNew = isNewCatalogGame(game);
   const unposted = heat.band === "new";
 
@@ -81,19 +82,26 @@ export function TicketCard({
           />
         </div>
 
-        <dl className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
+        <dl
+          className={cn(
+            "grid gap-2 border-t border-line pt-3 text-xs",
+            showStoreJackpot ? "grid-cols-3" : "grid-cols-2",
+          )}
+        >
           <div>
             <dt className="text-faint">{t("card.topListed")}</dt>
             <dd className="font-mono text-sm text-fg">
-              {locked || book.topPool == null ? "—" : money(book.topPool)}
+              {locked || listed == null ? "—" : listed.toLocaleString()}
             </dd>
           </div>
-          <div>
-            <dt className="text-faint">{t("card.retailTops")}</dt>
-            <dd className="font-mono text-sm text-fg">
-              {locked || topLeft == null ? "—" : topLeft.toLocaleString()}
-            </dd>
-          </div>
+          {showStoreJackpot ? (
+            <div>
+              <dt className="text-faint">{t("card.retailTops")}</dt>
+              <dd className="font-mono text-sm text-fg">
+                {locked || store == null ? "—" : store.toLocaleString()}
+              </dd>
+            </div>
+          ) : null}
           <div>
             <dt className="text-faint">{t("card.midBook")}</dt>
             <dd className="font-mono text-sm text-fg">
