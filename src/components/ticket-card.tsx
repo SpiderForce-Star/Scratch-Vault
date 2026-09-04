@@ -12,6 +12,11 @@ import { useI18n } from "@/lib/locale";
 import { heatBandKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
+function remainingText(locked: boolean, value: number | null): string {
+  if (locked || value == null) return "—";
+  return value.toLocaleString();
+}
+
 export function TicketCard({
   game,
   heat,
@@ -28,11 +33,12 @@ export function TicketCard({
   const { t } = useI18n();
   const state = getState(deskId);
   const showStoreJackpot = Boolean(state.holdback && state.holdback.subtractTop > 0);
-  const listed = heat.topRemaining;
-  const store = heat.effectiveTop;
-  const midLeft = heat.midRemaining;
   const isNew = isNewCatalogGame(game);
   const unposted = heat.band === "new";
+  const topTier = game.tiers[1];
+  const midTier = game.tiers[2];
+  const midLeft = midTier?.remaining ?? heat.midRemaining;
+  const middleNone = !locked && midLeft == null;
 
   return (
     <Link
@@ -47,111 +53,85 @@ export function TicketCard({
         isNew && "border-gold/50",
       )}
     >
-      <div className="overflow-hidden">
-        <TicketFace game={game} />
+      <div className="px-4 pt-4 pb-2">
+        <h2 className="font-display text-lg leading-snug tracking-tight text-fg">
+          {game.name}
+        </h2>
+        <p className="mt-1 font-mono text-xs tracking-wide text-muted">
+          #{game.number} · ${game.price}
+        </p>
       </div>
 
+      <TicketFace game={game} />
+
       <div className="flex flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-lg leading-snug tracking-tight text-fg">
-            {game.name}
-          </h2>
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            {isNew ? <NewGameChip /> : null}
-            <BandChip band={forceBand ?? heat.band} />
-          </div>
-        </div>
-        {unposted ? null : (
-          <span className="hidden min-h-9 w-fit items-center rounded-sm border border-gold/50 bg-bg/80 px-3 py-1.5 font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:inline-flex sm:text-lg">
-            {t("heat.score", { score: Math.round(heat.vault) })}
-          </span>
-        )}
-        <p className="text-sm text-muted">
-          {t("odds.topPrinted", {
-            prize: moneyFull(game.topPrize),
-            odds: game.odds.toFixed(2),
-          })}
-        </p>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Meter label={t("heat.grandShort")} value={heat.grand} tone="grand" />
-          <Meter
-            label={heat.mediumKnown ? t("heat.mediumShort") : t("heat.mediumEst")}
-            value={heat.medium}
-            tone="medium"
-          />
-        </div>
-
-        <dl
-          className={cn(
-            "grid gap-2 border-t border-line pt-3 text-xs",
-            showStoreJackpot ? "grid-cols-3" : "grid-cols-2",
+        <div className="flex flex-wrap items-center gap-2">
+          {unposted ? (
+            <NewGameChip />
+          ) : (
+            <>
+              <span className="inline-flex min-h-9 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
+                {t("heat.score", { score: Math.round(heat.vault) })}
+              </span>
+              <BandChip band={forceBand ?? heat.band} />
+              {isNew ? <NewGameChip /> : null}
+            </>
           )}
-        >
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
           <div>
-            <dt className="text-faint">{t("card.topListed")}</dt>
-            <dd className="font-mono text-sm text-fg">
-              {locked || listed == null ? "—" : listed.toLocaleString()}
-            </dd>
+            <p className="text-faint">{t("card.grandPrize")}</p>
+            <p className="mt-1 font-mono text-sm text-fg">{moneyFull(game.topPrize)}</p>
+            <p className="mt-0.5 font-mono text-sm text-fg">
+              {remainingText(locked, heat.topRemaining)}
+            </p>
+            {showStoreJackpot && !locked ? (
+              <p className="mt-1 text-[11px] leading-snug text-muted">
+                {t("card.inStore", {
+                  count: heat.effectiveTop == null ? "—" : heat.effectiveTop.toLocaleString(),
+                })}
+              </p>
+            ) : null}
           </div>
-          {showStoreJackpot ? (
-            <div>
-              <dt className="text-faint">{t("card.retailTops")}</dt>
-              <dd className="font-mono text-sm text-fg">
-                {locked || store == null ? "—" : store.toLocaleString()}
-              </dd>
-            </div>
-          ) : null}
           <div>
-            <dt className="text-faint">{t("card.midBook")}</dt>
-            <dd className="font-mono text-sm text-fg">
-              {locked
-                ? t("card.vault")
-                : midLeft == null
-                  ? "—"
-                  : midLeft.toLocaleString()}
-            </dd>
+            <p className="text-faint">{t("card.topTier")}</p>
+            {topTier ? (
+              <>
+                <p className="mt-1 font-mono text-sm text-fg">{moneyFull(topTier.amount)}</p>
+                <p className="mt-0.5 font-mono text-sm text-fg">
+                  {remainingText(locked, topTier.remaining)}
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 font-mono text-sm text-muted">{t("card.none")}</p>
+            )}
           </div>
-        </dl>
+          <div>
+            {middleNone ? (
+              <p className="font-mono text-sm leading-snug text-muted">{t("card.middleNone")}</p>
+            ) : (
+              <>
+                <p className="text-faint">{t("card.middleTier")}</p>
+                {midTier ? (
+                  <p className="mt-1 font-mono text-sm text-fg">{moneyFull(midTier.amount)}</p>
+                ) : null}
+                <p className="mt-0.5 font-mono text-sm text-fg">
+                  {remainingText(locked, midLeft)}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
 
         <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
           {t("card.updated")}
         </p>
         {unposted ? (
           <p className="text-xs text-gold">{t("card.unposted")}</p>
-        ) : heat.bust ? (
-          <p className="text-xs text-bust">
-            {t("card.skip")}
-          </p>
         ) : null}
       </div>
     </Link>
-  );
-}
-
-function Meter({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: "grand" | "medium";
-}) {
-  const color = tone === "grand" ? "bg-hot" : "bg-warm";
-  return (
-    <div>
-      <div className="mb-1 flex justify-between text-xs text-faint">
-        <span>{label}</span>
-        <span className="font-mono text-muted">{Math.round(value)}</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-raised">
-        <div
-          className={cn("h-full rounded-full", color)}
-          style={{ width: `${Math.max(4, value)}%` }}
-        />
-      </div>
-    </div>
   );
 }
 

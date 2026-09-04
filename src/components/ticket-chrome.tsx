@@ -35,35 +35,41 @@ function HolidayMotif({
   extra: number;
   nudge: number;
 }) {
-  const cx = 180;
-  const cy = 186;
+  const wreathX = 112 + nudge * 0.2;
+  const wreathY = 176;
+  const treeX = 248 - nudge * 0.15;
+  const treeY = 168;
   const ornaments = extra;
   return (
     <g>
-      <circle cx={cx} cy={cy} r="46" fill="none" stroke={palette.foil} strokeWidth="11" />
-      <circle cx={cx} cy={cy} r="34" fill="none" stroke={palette.accent} strokeWidth="3" />
+      <circle cx={wreathX} cy={wreathY} r="42" fill="none" stroke={palette.foil} strokeWidth="10" />
+      <circle cx={wreathX} cy={wreathY} r="30" fill="none" stroke={palette.accent} strokeWidth="2.4" />
       {Array.from({ length: ornaments }, (_, i) => {
         const a = (i / ornaments) * Math.PI * 2 - Math.PI / 2;
         return (
           <circle
             key={i}
-            cx={cx + Math.cos(a) * 46}
-            cy={cy + Math.sin(a) * 46}
-            r={i % 2 ? 5.5 : 7.5}
+            cx={wreathX + Math.cos(a) * 42}
+            cy={wreathY + Math.sin(a) * 42}
+            r={i % 2 ? 5 : 7}
             fill={i % 2 ? palette.foil : palette.accent}
           />
         );
       })}
+      <rect x={wreathX - 6} y={wreathY - 48} width="12" height="10" rx="2" fill={palette.accent} />
       <polygon
-        points={`${cx - 78 + nudge * 0.4},${cy + 18} ${cx - 98 + nudge * 0.4},${cy - 38} ${cx - 118 + nudge * 0.4},${cy + 18}`}
-        fill={palette.accent}
-      />
-      <rect x={cx - 102 + nudge * 0.4} y={cy + 18} width="16" height="8" fill={palette.bg} />
-      <polygon
-        points={`${cx + 78 - nudge * 0.3},${cy + 22} ${cx + 100 - nudge * 0.3},${cy - 30} ${cx + 122 - nudge * 0.3},${cy + 22}`}
+        points={`${treeX},${treeY - 22} ${treeX + 28},${treeY + 18} ${treeX - 28},${treeY + 18}`}
         fill={palette.foil}
       />
-      <rect x={cx + 92 - nudge * 0.3} y={cy + 22} width="16" height="8" fill={palette.bg} />
+      <polygon
+        points={`${treeX},${treeY - 4} ${treeX + 34},${treeY + 40} ${treeX - 34},${treeY + 40}`}
+        fill={palette.accent}
+      />
+      <polygon
+        points={`${treeX},${treeY + 16} ${treeX + 40},${treeY + 62} ${treeX - 40},${treeY + 62}`}
+        fill={palette.foil}
+      />
+      <rect x={treeX - 7} y={treeY + 62} width="14" height="12" fill={palette.bg} />
     </g>
   );
 }

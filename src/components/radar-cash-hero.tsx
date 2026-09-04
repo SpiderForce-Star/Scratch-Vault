@@ -130,9 +130,11 @@ export function RadarCashHero({
 
   return (
     <div className="min-w-0">
-      <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-        {fresh ? t("hero.contact") : t("hero.radarKicker")}
-      </p>
+      {fresh ? (
+        <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+          {t("hero.contact")}
+        </p>
+      ) : null}
       <div className="mx-auto mt-3 w-full max-w-[320px] min-w-0">
         {scopeReady ? (
           <RadarScope

@@ -65,7 +65,10 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   assert.doesNotMatch(home, /home\.allGames/);
   assert.doesNotMatch(home, /home\.sortHeat/);
   assert.match(home, /games\.seeAll/);
-  assert.match(home, /trip\.title/);
+  assert.match(home, /hero\.titleAll/);
+  assert.match(home, /hero\.priceLine/);
+  assert.match(home, /cta\.trial/);
+  assert.doesNotMatch(home, /trip\.title/);
   assert.match(home, /home\.skipKicker/);
   assert.match(games, /games\.underFive/);
   assert.match(board, /games\.newKicker/);
@@ -88,6 +91,15 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   );
   assert.equal(en["cta.trial"], "Try 7 days free");
   assert.equal(en["hero.titleAll"], "Three tickets to look at. A list to walk past.");
+  assert.equal(
+    en["hero.body"],
+    "We read the lottery’s leftover-prize list. You get tonight’s three — and what to skip.",
+  );
+  assert.equal(en["hero.priceLine"], "$4.99/mo after 7 days. Less than one $5 ticket.");
+  assert.equal(en["marquee.dead"], "Three tickets to look at. A list to walk past.");
+  assert.equal(en["card.middleNone"], "Middle Tier — None");
+  assert.doesNotMatch(en["marquee.dead"], /Stop wasting/);
+  assert.doesNotMatch(en["story.title"], /See what is still left before you spend/);
   assert.equal(en["games.hotTitle"], "Hot — better leftover prizes.");
   assert.equal(en["games.warmTitle"], "Warm — okay, not first pick.");
   assert.equal(en["home.skipTitle"], "Don't waste money on a drained game.");
@@ -408,6 +420,10 @@ test("homepage skip rows force Cold or Skip chips", () => {
   const card = read("src/components/ticket-card.tsx");
   assert.match(card, /showStoreJackpot/);
   assert.match(card, /state\.holdback/);
+  assert.match(card, /card\.inStore/);
+  assert.match(card, /card\.middleNone/);
+  assert.doesNotMatch(card, /function Meter/);
+  assert.doesNotMatch(card, /card\.reconstruction/);
   const en = JSON.parse(read("src/locales/en.json"));
   assert.equal(en["pia.title"], "Play It Again (Tennessee)");
   assert.match(en["pia.body"], /Tennessee Lottery holds one top prize/);

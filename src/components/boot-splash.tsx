@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 export const BOOT_SHOWN_KEY = "vsv.boot.shown";
 export const BOOT_FORCE_MS = 4000;
@@ -13,10 +13,21 @@ const REDUCED_HOLD_MS = 720;
 const SPOKES = [0, 60, 120, 180, 240, 300];
 const BOLTS = Array.from({ length: 16 }, (_, i) => i * 22.5);
 
+const FLYERS = [
+  { dx: "-42%", dy: "-38%", rot: "-18deg", delay: "40ms", dur: "0.85s" },
+  { dx: "46%", dy: "-34%", rot: "22deg", delay: "80ms", dur: "0.95s" },
+  { dx: "-50%", dy: "8%", rot: "-28deg", delay: "120ms", dur: "1.05s" },
+  { dx: "52%", dy: "12%", rot: "16deg", delay: "60ms", dur: "0.9s" },
+  { dx: "-18%", dy: "-48%", rot: "8deg", delay: "160ms", dur: "1.1s" },
+  { dx: "22%", dy: "44%", rot: "-12deg", delay: "100ms", dur: "1s" },
+  { dx: "-36%", dy: "36%", rot: "24deg", delay: "200ms", dur: "1.15s" },
+  { dx: "40%", dy: "-8%", rot: "-20deg", delay: "140ms", dur: "1.2s" },
+];
+
 type Phase = "in" | "spin" | "open" | "fade";
 
 /**
- * First-visit vault: door appears, wheel turns, door opens to $V, then the desk.
+ * First-visit vault: door appears, wheel turns, door opens to cash + $V, then the desk.
  * Once per sessionStorage. Tap/click skips. Hard-hide at 4s even if CSS fails.
  */
 export function BootSplash({ onFinished }: { onFinished?: () => void }) {
@@ -142,14 +153,7 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
       data-phase={phase}
       onClick={() => skipRef.current()}
     >
-      {reduced ? (
-        <p className="sv-boot-word">
-          <span style={{ color: "#c4a574" }}>$</span>
-          <span style={{ color: "#7c9a72" }}>V</span>
-        </p>
-      ) : (
-        <VaultGlyph phase={phase} />
-      )}
+      <VaultGlyph phase={phase} reduced={reduced} />
     </div>
   );
 }
@@ -160,7 +164,52 @@ function stageClass(phase: Phase) {
   return "sv-boot-stage is-in is-spin is-open";
 }
 
-function VaultGlyph({ phase }: { phase: Phase }) {
+function DollarBill({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 48 28"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect width="48" height="28" rx="3" fill="#1a3d28" stroke="#c4a574" strokeWidth="1.6" />
+      <rect
+        x="2.6"
+        y="2.4"
+        width="42.8"
+        height="23.2"
+        rx="2"
+        fill="none"
+        stroke="#7c9a72"
+        strokeOpacity="0.55"
+        strokeWidth="0.9"
+      />
+      <text
+        x="18"
+        y="19"
+        textAnchor="middle"
+        fill="#c4a574"
+        fontSize="13"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+      >
+        $
+      </text>
+      <text
+        x="30"
+        y="19"
+        textAnchor="middle"
+        fill="#7c9a72"
+        fontSize="13"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+      >
+        V
+      </text>
+    </svg>
+  );
+}
+
+function VaultGlyph({ phase, reduced }: { phase: Phase; reduced: boolean }) {
+  const fly = !reduced && (phase === "open" || phase === "fade");
   return (
     <div className={stageClass(phase)}>
       <div className="sv-boot-frame">
@@ -218,11 +267,47 @@ function VaultGlyph({ phase }: { phase: Phase }) {
         </svg>
 
         <div className="sv-boot-chamber" aria-hidden="true">
+          <div className="sv-boot-stacks">
+            <span className="sv-boot-stack sv-boot-stack-a">
+              <DollarBill />
+              <DollarBill />
+              <DollarBill />
+            </span>
+            <span className="sv-boot-stack sv-boot-stack-b">
+              <DollarBill />
+              <DollarBill />
+            </span>
+            <span className="sv-boot-stack sv-boot-stack-c">
+              <DollarBill />
+              <DollarBill />
+              <DollarBill />
+            </span>
+          </div>
           <span className="sv-boot-mark">
             <span style={{ color: "#c4a574" }}>$</span>
             <span style={{ color: "#7c9a72" }}>V</span>
           </span>
         </div>
+
+        {fly
+          ? FLYERS.map((bill, i) => (
+              <span
+                key={i}
+                className="sv-boot-fly"
+                style={
+                  {
+                    "--dx": bill.dx,
+                    "--dy": bill.dy,
+                    "--rot": bill.rot,
+                    animationDelay: bill.delay,
+                    animationDuration: bill.dur,
+                  } as CSSProperties
+                }
+              >
+                <DollarBill />
+              </span>
+            ))
+          : null}
 
         <div className="sv-boot-door">
           <svg viewBox="0 0 200 200" aria-hidden="true">

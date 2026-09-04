@@ -106,9 +106,9 @@ export function sportsKind(name: string): SportsKind | null {
 }
 
 /**
- * Keyword packs beat generic multiplier/cash. First match wins.
+ * Keyword packs beat generic theme. First match wins.
+ * Holiday beats multiplier (Merry Multiplier / Holiday Bonus = crimson + gold).
  * Crossword/loteria beat gold so a jumbo crossword still reads as a grid.
- * Holiday beats multiplier (Merry Multiplier is crimson/gold, not a purple X).
  */
 export function ticketFamily(name: string, theme: TicketTheme): TicketFamily {
   const n = name.toLowerCase();
@@ -118,16 +118,16 @@ export function ticketFamily(name: string, theme: TicketTheme): TicketFamily {
   if (/7'?s\b|\bsevens?\b|lucky\s*7/.test(n)) return "sevens";
   if (/\b(crossword|cashword|bingo|slingo)\b/.test(n)) return "crossword";
   if (/\bloteria\b/.test(n)) return "loteria";
-  if (/\b(jumbo|gold|24k|platinum|riches)\b/.test(n)) return "gold";
   if (/\b(wild|safari|animal|lion)\b/.test(n)) return "wild";
   if (/\b(slot|casino|poker|blackjack)s?\b/.test(n)) return "slots";
   if (/\b(cowboys|texans|football|nascar)\b/.test(n)) return "sports";
-  if (/\b(50|100|200)\s*x\b|\bmultiplier\b|\btimes\b|\d+\s*x\b/.test(n)) return "multiplier";
+  if (/\b(jumbo|gold|24k|platinum|riches)\b/.test(n)) return "gold";
   if (/\b(cash|money|payday|bank|wallet|dollar)\b/.test(n)) return "cash";
   if (/\b(frenzy|fever|blowout)\b|hit\s*\$/.test(n)) return "frenzy";
   if (/\b(million|mega|ultimate|max)\b/.test(n)) return "high";
   if (/\b(heart|queen|love|valentine)\b/.test(n)) return "hearts";
   if (/\b(lincoln|hamilton|jackson|washington|franklin|grant)\b/.test(n)) return "currency";
+  if (/\b(50|100|200)\s*x\b|\bmultiplier\b|\btimes\b|\d+\s*x\b/.test(n)) return "multiplier";
   if (theme === "crossword") return "crossword";
   if (theme === "jumbo") return "gold";
   if (theme === "frenzy") return "frenzy";

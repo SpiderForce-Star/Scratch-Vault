@@ -8,6 +8,7 @@ import { looksLikeDateName, unionBundledGames } from "../src/data/states/parse.s
 import { hasNamedFace, ticketArt } from "../src/data/ticket-art.ts";
 import { isDeskPrice } from "../src/lib/heat.ts";
 import {
+  FAMILY_PALETTES,
   ticketChrome,
   ticketChromeFingerprint,
   ticketFamily,
@@ -179,6 +180,10 @@ test("spot-check case-match packs for public desks", () => {
   const ultimate = ticketChrome(game({ number: 637, name: "Ultimate Millions", theme: "high", price: 50, topPrize: 3000000, stateId: "ok" }));
   assert.equal(merry.family, "holiday");
   assert.equal(holiday.family, "holiday");
+  assert.equal(merry.palette.bg, FAMILY_PALETTES.holiday.bg);
+  assert.equal(holiday.palette.bg, FAMILY_PALETTES.holiday.bg);
+  assert.notEqual(merry.palette.bg, FAMILY_PALETTES.multiplier.bg);
+  assert.notEqual(holiday.palette.bg, FAMILY_PALETTES.cash.bg);
   assert.notEqual(
     `${merry.sashAngle}|${merry.extraCount}|${merry.nudge}`,
     `${holiday.sashAngle}|${holiday.extraCount}|${holiday.nudge}`,
@@ -243,13 +248,22 @@ test("ticket faces caption independent reconstructions", () => {
   const en = JSON.parse(readFileSync(join(root, "src/locales/en.json"), "utf8"));
   assert.equal(en["card.reconstruction"], "Independent reconstruction — not official ticket art.");
   assert.equal(face.includes("card.reconstruction"), true);
+  assert.equal(card.includes("card.reconstruction"), false);
+  assert.equal(card.includes("function Meter"), false);
+  assert.equal(card.includes("card.grandPrize"), true);
+  assert.equal(card.includes("card.middleNone"), true);
   assert.equal(chrome.includes("Independent reconstruction — not official ticket art."), true);
   assert.equal(chrome.includes('viewBox="0 0 360 480"'), true);
   assert.equal(chrome.includes("WIN UP TO"), true);
   assert.equal(face.includes("aspect-[3/4]"), true);
-  assert.equal(face.includes("aspect-[360/216]"), true);
+  assert.equal(face.includes("aspect-[3/2]"), true);
+  assert.equal(face.includes("object-center"), true);
   assert.equal(card.includes("absolute top-3"), false);
+  assert.equal(card.includes("card.reconstruction"), false);
   assert.equal(/Kentucky Lottery|Lottery Tennessee|ScratchSmarter|LottoEdge/i.test(chrome), false);
+  const radar = readFileSync(join(root, "src/components/radar-cash-hero.tsx"), "utf8");
+  assert.equal(radar.includes("hero.radarKicker"), false);
+  assert.equal(chrome.toLowerCase().includes("chevron"), false);
   assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1396.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1401.jpg")), true);
