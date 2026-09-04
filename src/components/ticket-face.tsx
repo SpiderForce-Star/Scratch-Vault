@@ -1,5 +1,6 @@
 import { ticketArt, type Game } from "@/data/games";
 import { TicketChromeFace } from "@/components/ticket-chrome";
+import { getState, parsePublicStateId } from "@/config/states";
 import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,8 @@ export function TicketFace({
   const { config } = useActiveState();
   const { t } = useI18n();
   const art = ticketArt(game);
-  const href = officialUrl ?? config.remainingPrizesUrl;
+  const desk = getState(parsePublicStateId(game.stateId ?? config.id));
+  const href = officialUrl ?? desk.remainingPrizesUrl;
 
   return (
     <div

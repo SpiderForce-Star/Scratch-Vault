@@ -37,12 +37,18 @@ function tnCatalog() {
 test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   const games = read("src/routes/games.tsx");
   const board = read("src/components/games-board.tsx");
+  const home = read("src/routes/index.tsx");
   const en = JSON.parse(read("src/locales/en.json"));
   const es = JSON.parse(read("src/locales/es.json"));
   assert.match(games, /buildGamesBoard/);
   assert.match(games, /GamesBoardView/);
   assert.doesNotMatch(games, /catalog-sort/);
   assert.doesNotMatch(games, /home\.sortHeat/);
+  assert.doesNotMatch(home, /home\.allGames/);
+  assert.doesNotMatch(home, /home\.sortHeat/);
+  assert.match(home, /games\.seeAll/);
+  assert.match(home, /trip\.title/);
+  assert.match(home, /home\.skipKicker/);
   assert.match(games, /games\.underFive/);
   assert.match(board, /games\.newKicker/);
   assert.match(board, /games\.hotTitle/);
@@ -109,6 +115,8 @@ test("Giant Jumbo Bucks #1996 has better $5 picks and skip $5", () => {
   assert.match(detail, /games\.betterPicks/);
   assert.match(detail, /games\.skipAtPrice/);
   assert.match(detail, /games\.seeAll/);
+  assert.match(detail, /loader:/);
+  assert.match(detail, /getDeskSnapshot/);
 });
 
 test("Kentucky uses the same Games board sections", () => {
@@ -122,8 +130,31 @@ test("Kentucky uses the same Games board sections", () => {
   assert.equal(board.warm.some((g) => g.price < 5), false);
   assert.ok(board.hot.length + board.warm.length + board.skip.length > 0);
   const games = read("src/routes/games.tsx");
+  const card = read("src/components/ticket-card.tsx");
+  const face = read("src/components/ticket-face.tsx");
   assert.match(games, /isPublicStateId/);
   assert.doesNotMatch(games, /stateId === "tn"/);
+  assert.match(games, /viewState/);
+  assert.match(card, /game\.stateId/);
+  assert.match(card, /deskSearch\(deskId\)/);
+  assert.match(face, /game\.stateId/);
+});
+
+test("public last-good desks keep $2/$3 out of New, Hot, and Warm", () => {
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+    const snap = JSON.parse(read(`src/data/states/last-good/${id}.json`));
+    const { catalog, reports } = scored(
+      snap.catalog.map((g) => ({ ...g, stateId: id })),
+    );
+    const board = buildGamesBoard(catalog, reports, "all");
+    for (const section of [board.newGames, board.hot, board.warm]) {
+      assert.equal(
+        section.some((g) => g.price < 5),
+        false,
+        `${id} leaked under $5`,
+      );
+    }
+  }
 });
 
 test("unposted new games are not fake HOT", () => {

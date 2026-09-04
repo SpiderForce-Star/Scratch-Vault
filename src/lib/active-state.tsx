@@ -90,6 +90,19 @@ export function useActiveState() {
   return useContext(ActiveStateContext);
 }
 
+/** Always stamp the desk on game/catalog links so KY never opens as TN. */
+export function deskSearch(stateId: StateId | string | null | undefined): { state: StateId } {
+  return { state: parsePublicStateId(stateId) };
+}
+
+/** Home / Games URL search. Tennessee stays the bare path. */
+export function deskPageSearch(
+  stateId: StateId | string | null | undefined,
+): { state?: StateId } {
+  const id = parsePublicStateId(stateId);
+  return id === DEFAULT_STATE_ID ? {} : { state: id };
+}
+
 export function gameStateSearch(stateId: StateId): { state: StateId } {
-  return { state: stateId };
+  return deskSearch(stateId);
 }

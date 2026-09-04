@@ -8,15 +8,12 @@ import {
   isPublicStateId,
 } from "@/config/states";
 import {
-  deskGames,
   pickNewGames,
   pickSkipGames,
   pickTripGames,
   reportMap,
-  sortGames,
   type HeatReport,
   type PriceFilter,
-  type SortKey,
 } from "@/lib/heat";
 import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
@@ -26,13 +23,12 @@ import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { useAccess } from "@/lib/use-access";
-import { useActiveState } from "@/lib/active-state";
+import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
 import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { skipNameLocked } from "@/lib/skip-teaser";
 import { useI18n } from "@/lib/locale";
-import type { MessageKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   component: VaultHome,
@@ -84,26 +80,16 @@ const FALLBACK_HEAT: HeatReport = {
   lowRemaining: null,
 };
 
-const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
-  { id: "heat", labelKey: "home.sortHeat" },
-  { id: "medium", labelKey: "home.sortMedium" },
-  { id: "safest", labelKey: "home.sortSafest" },
-  { id: "grand", labelKey: "home.sortGrand" },
-  { id: "price", labelKey: "home.sortPrice" },
-  { id: "name", labelKey: "home.sortName" },
-];
-
 function VaultHome() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
   const loaded = Route.useLoaderData();
   const loadedSnap = loaded?.desk ?? null;
   const loadedRadar = loaded?.radar ?? EMPTY_RADAR;
-  const { stateId, setStateId, config, setDeskMode } = useActiveState();
+  const { stateId, setStateId, setDeskMode } = useActiveState();
+  const viewState = search.state ?? stateId;
   const { t } = useI18n();
   const [filter, setFilter] = useState<PriceFilter>("10");
-  const [sort, setSort] = useState<SortKey>("safest");
-  const [query, setQuery] = useState("");
   const { paid } = useAccess();
   const [snap, setSnap] = useState<DeskSnapshot | null>(loadedSnap);
   const [radar, setRadar] = useState<RadarScopePayload>(loadedRadar);
@@ -135,7 +121,7 @@ function VaultHome() {
 
   useEffect(() => {
     let cancelled = false;
-    void getDeskSnapshot({ data: { stateId } })
+    void getDeskSnapshot({ data: { stateId: viewState } })
       .then((next) => {
         if (cancelled) return;
         setSnap(next);
@@ -147,11 +133,11 @@ function VaultHome() {
     return () => {
       cancelled = true;
     };
-  }, [paid, stateId, setDeskMode]);
+  }, [paid, viewState, setDeskMode]);
 
   useEffect(() => {
     let cancelled = false;
-    void getRadarScope({ data: { stateId } })
+    void getRadarScope({ data: { stateId: viewState } })
       .then((next) => {
         if (!cancelled) setRadar(next);
       })
@@ -161,13 +147,13 @@ function VaultHome() {
     return () => {
       cancelled = true;
     };
-  }, [stateId]);
+  }, [viewState]);
 
   const selectState = (id: StateId) => {
     setStateId(id);
     void navigate({
       to: "/",
-      search: id === DEFAULT_STATE_ID ? {} : { state: id },
+      search: deskPageSearch(id),
       replace: true,
     });
   };
@@ -182,8 +168,7 @@ function VaultHome() {
     writePricePref(next);
   };
 
-  const catalog = snap?.games ?? publicCatalog(stateId);
-  const deskCatalog = useMemo(() => deskGames(catalog), [catalog]);
+  const catalog = snap?.games ?? publicCatalog(viewState);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
@@ -202,24 +187,13 @@ function VaultHome() {
     [catalog, reports],
   );
 
-  const list = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const filtered = deskCatalog.filter((g) => {
-      if (!q) return true;
-      return (
-        g.name.toLowerCase().includes(q) || String(g.number).includes(q)
-      );
-    });
-    return sortGames(filtered, sort, reports);
-  }, [deskCatalog, sort, query, reports]);
-
   const priceLabel = pricePrefLabel(filter) ?? "$10";
 
   return (
     <div>
-      <StateSelector value={stateId} onChange={selectState} />
+      <StateSelector value={viewState} onChange={selectState} />
       <DataModeBanner
-        state={snap ? getState(snap.stateId) : config}
+        state={snap ? getState(snap.stateId) : getState(viewState)}
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
@@ -229,8 +203,8 @@ function VaultHome() {
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
             <RadarCashHero
-              key={stateId}
-              stateId={stateId}
+              key={viewState}
+              stateId={viewState}
               captures={radar.captures}
               contacts={radar.contacts}
               cycleId={radar.cycleId}
@@ -272,7 +246,7 @@ function VaultHome() {
                           key={`new-${game.number}`}
                           to="/game/$number"
                           params={{ number: String(game.number) }}
-                          search={{ state: stateId }}
+                          search={deskSearch(game.stateId ?? viewState)}
                           className="w-56 shrink-0 overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold"
                         >
                           <div className="relative">
@@ -332,7 +306,7 @@ function VaultHome() {
               <p className="mt-5">
                 <Link
                   to="/games"
-                  search={{ state: stateId }}
+                  search={deskPageSearch(viewState)}
                   className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
                 >
                   {t("games.seeAll")}
@@ -395,7 +369,7 @@ function VaultHome() {
                       <Link
                         to="/game/$number"
                         params={{ number: String(game.number) }}
-                        search={{ state: stateId }}
+                        search={deskSearch(game.stateId ?? viewState)}
                         className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
                       >
                         {label}
@@ -417,6 +391,15 @@ function VaultHome() {
           </p>
           <p className="mt-3">
             <Link
+              to="/games"
+              search={deskPageSearch(viewState)}
+              className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
+            >
+              {t("games.seeAll")}
+            </Link>
+          </p>
+          <p className="mt-3">
+            <Link
               to="/disclaimer"
               className="text-sm text-muted underline underline-offset-2 hover:text-fg"
             >
@@ -425,69 +408,6 @@ function VaultHome() {
           </p>
         </div>
       </section>
-
-      <details id="games" className="border-b border-line">
-        <summary className="mx-auto flex max-w-6xl min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-left sm:px-6 [&::-webkit-details-marker]:hidden">
-          <span className="font-display text-xl tracking-tight">
-            {t("home.allGames")}
-          </span>
-          <span className="font-mono text-xs text-faint uppercase">
-            {locked
-              ? t("home.gamesLocked", { count: deskCatalog.length })
-              : t("home.games", { count: deskCatalog.length })}
-          </span>
-        </summary>
-        <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <label className="sr-only" htmlFor="q">
-              {t("home.search")}
-            </label>
-            <input
-              id="q"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("home.searchPh")}
-              className="min-h-11 w-full rounded-md border border-line bg-surface px-3 text-sm text-fg placeholder:text-faint sm:max-w-56"
-            />
-            <label className="sr-only" htmlFor="sort">
-              {t("home.sort")}
-            </label>
-            <select
-              id="sort"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className="min-h-11 rounded-md border border-line bg-surface px-3 text-sm text-fg"
-            >
-              {SORTS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {t(s.labelKey)}
-                </option>
-              ))}
-            </select>
-          </div>
-          {list.length === 0 ? (
-            <p className="text-muted">{t("home.none")}</p>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((game) => {
-                const heat = reports.get(game.number);
-                if (!heat) return null;
-                return (
-                  <TicketCard
-                    key={game.number}
-                    game={game}
-                    heat={heat}
-                    locked={locked}
-                  />
-                );
-              })}
-            </div>
-          )}
-          {locked ? (
-            <p className="mt-6 text-sm text-muted">{t("home.vaultTeaser")}</p>
-          ) : null}
-        </div>
-      </details>
     </div>
   );
 }

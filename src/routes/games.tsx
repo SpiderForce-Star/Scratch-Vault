@@ -19,7 +19,7 @@ import { GAMES_PRICE_FILTERS, GamesBoardView } from "@/components/games-board";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { useAccess } from "@/lib/use-access";
-import { useActiveState } from "@/lib/active-state";
+import { deskPageSearch, useActiveState } from "@/lib/active-state";
 import { pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/locale";
@@ -67,7 +67,8 @@ function GamesCatalog() {
   const search = Route.useSearch();
   const loaded = Route.useLoaderData();
   const loadedSnap = loaded?.desk ?? null;
-  const { stateId, setStateId, config, setDeskMode } = useActiveState();
+  const { stateId, setStateId, setDeskMode } = useActiveState();
+  const viewState = search.state ?? stateId;
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [price, setPrice] = useState<number | "all">("all");
@@ -89,7 +90,7 @@ function GamesCatalog() {
 
   useEffect(() => {
     let cancelled = false;
-    void getDeskSnapshot({ data: { stateId } })
+    void getDeskSnapshot({ data: { stateId: viewState } })
       .then((next) => {
         if (cancelled) return;
         setSnap(next);
@@ -101,18 +102,18 @@ function GamesCatalog() {
     return () => {
       cancelled = true;
     };
-  }, [paid, stateId, setDeskMode]);
+  }, [paid, viewState, setDeskMode]);
 
   const selectState = (id: StateId) => {
     setStateId(id);
     void navigate({
       to: "/games",
-      search: id === DEFAULT_STATE_ID ? {} : { state: id },
+      search: deskPageSearch(id),
       replace: true,
     });
   };
 
-  const catalog = snap?.games ?? publicCatalog(stateId);
+  const catalog = snap?.games ?? publicCatalog(viewState);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
     return new Map(catalog.map((game) => [game.number, FALLBACK_HEAT]));
@@ -132,9 +133,9 @@ function GamesCatalog() {
 
   return (
     <div>
-      <StateSelector value={stateId} onChange={selectState} />
+      <StateSelector value={viewState} onChange={selectState} />
       <DataModeBanner
-        state={snap ? getState(snap.stateId) : config}
+        state={snap ? getState(snap.stateId) : getState(viewState)}
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
@@ -151,7 +152,7 @@ function GamesCatalog() {
           <p className="mt-3">
             <Link
               to="/"
-              search={stateId === DEFAULT_STATE_ID ? {} : { state: stateId }}
+              search={deskPageSearch(viewState)}
               className="text-sm text-muted underline underline-offset-2 hover:text-fg"
             >
               {t("nav.desk")}
