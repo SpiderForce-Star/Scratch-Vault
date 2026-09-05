@@ -18,11 +18,14 @@ import {
   type HeatReport,
 } from "@/lib/heat";
 import { BandChip, TicketCard } from "@/components/ticket-card";
+import { FullCatalogLink } from "@/components/full-catalog-link";
+import { LockedPanel } from "@/components/locked-panel";
 import { TicketFace } from "@/components/ticket-face";
 import { PostedBookPanel } from "@/components/posted-book";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { StateRulesCompact } from "@/components/state-rules";
+import { isHomepageTeaseGame } from "@/lib/catalog-lock";
 import { pageHead } from "@/lib/site";
 import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
@@ -159,10 +162,11 @@ function GameDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [number, listed.stateId]);
 
-  const catalog = useMemo(
-    () => desk?.games ?? publicCatalog(listed.stateId),
-    [desk, listed.stateId],
-  );
+  const catalog = useMemo(() => {
+    if (desk) return desk.games;
+    if (locked) return [];
+    return publicCatalog(listed.stateId);
+  }, [desk, locked, listed.stateId]);
   const reports = useMemo(() => {
     if (desk) return reportMap(desk.reports);
     return new Map(catalog.map((row) => [row.number, EMPTY_HEAT]));
@@ -175,6 +179,36 @@ function GameDetail() {
     () => pickSkipAtPrice(catalog, reports, game.price, game.number, 4),
     [catalog, reports, game.price, game.number],
   );
+  const tease = useMemo(
+    () => isHomepageTeaseGame(catalog, reports, game.number),
+    [catalog, reports, game.number],
+  );
+  const pageLocked = locked && !tease;
+
+  if (pageLocked) {
+    return (
+      <div>
+        <DeskAlertBanner />
+        <DataModeBanner state={state} dataMode={dataMode} />
+        <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+          <Link
+            to="/"
+            search={deskPageSearch(state.id)}
+            className="inline-flex min-h-11 items-center gap-2 text-sm text-muted hover:text-fg"
+          >
+            <ArrowLeft className="size-4" />
+            {t("game.back")}
+          </Link>
+          <div className="mt-6">
+            <LockedPanel
+              title={t("game.lockedTitle")}
+              teaser={t("game.lockedTeaser")}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -285,7 +319,7 @@ function GameDetail() {
 
         <PostedBookPanel game={game} heat={heat} locked={locked || !ready} />
 
-        {better.length ? (
+        {!locked && better.length ? (
           <section className="mt-10">
             <h2 className="font-display text-2xl tracking-tight">
               {t("games.betterPicks", { price: game.price })}
@@ -307,7 +341,7 @@ function GameDetail() {
           </section>
         ) : null}
 
-        {skipAt.length ? (
+        {!locked && skipAt.length ? (
           <section className="mt-10">
             <h2 className="font-display text-2xl tracking-tight">
               {t("games.skipAtPrice", { price: game.price })}
@@ -336,13 +370,12 @@ function GameDetail() {
         ) : null}
 
         <p className="mt-8">
-          <Link
-            to="/games"
-            search={deskPageSearch(state.id)}
+          <FullCatalogLink
+            locked={locked}
             className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
           >
             {t("games.seeAll")}
-          </Link>
+          </FullCatalogLink>
         </p>
 
         <StateRulesCompact state={state} />

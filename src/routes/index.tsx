@@ -21,6 +21,7 @@ import {
 import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
 import { BandChip, NewGameChip, TicketCard } from "@/components/ticket-card";
+import { FullCatalogLink } from "@/components/full-catalog-link";
 import { TicketFace } from "@/components/ticket-face";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
@@ -294,15 +295,14 @@ function VaultHome() {
                 </aside>
               ) : null}
               <p className="mt-5">
-                <Link
-                  to="/games"
-                  search={deskPageSearch(viewState)}
+                <FullCatalogLink
+                  locked={locked}
                   className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
                 >
                   {t("games.seeAll")}
-                </Link>
+                </FullCatalogLink>
               </p>
-              {newGames.length > 0 ? (
+              {!locked && newGames.length > 0 ? (
                 <div className="mt-6 mb-2">
                   <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
                     {t("home.newKicker")}
@@ -424,13 +424,12 @@ function VaultHome() {
             {t("home.done")}
           </p>
           <p className="mt-3">
-            <Link
-              to="/games"
-              search={deskPageSearch(viewState)}
+            <FullCatalogLink
+              locked={locked}
               className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
             >
               {t("games.seeAll")}
-            </Link>
+            </FullCatalogLink>
           </p>
           <p className="mt-3">
             <Link

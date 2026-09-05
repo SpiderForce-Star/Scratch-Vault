@@ -325,6 +325,8 @@
   "posted.lockedTitle": "Mid-tier book is in the Vault",
   "posted.lockedTeaser": "See remaining counts and dollar totals for every published prize tier on this ticket.",
   "game.back": "Back to vault",
+  "game.lockedTitle": "This ticket is Full Access",
+  "game.lockedTeaser": "Tonight’s three are on the desk. The rest of the board unlocks with Full Access.",
   "card.officialTable": "Official table",
   "game.art": "Ticket face is an independent reconstruction, not official {{lottery}} artwork, and may not match a ticket in your hand. Official remaining-prizes page has the real ticket.",
   "game.bust": "Skip this one. The posted counts no longer support a useful retail top. That is not a guarantee — remaining counts change as tickets sell.",
@@ -465,5 +467,7 @@
   "games.underFiveHint": "Cheap tickets. Closed unless you open it.",
   "games.priceGroup": "${{price}}",
   "games.seeAll": "See all games",
+  "games.lockedTitle": "The full board is Full Access",
+  "games.lockedTeaser": "Three tickets to look at. A list to walk past. Sign up to open every $5+ game.",
   "games.empty": "No $5+ games match that filter."
 }

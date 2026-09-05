@@ -140,7 +140,7 @@ test("skip copy and Franklin reconstruction are on the desk", () => {
   assert.equal(es["home.skipKicker"], "SÁLTATE ESTOS");
   assert.equal(es["home.skipTitle"], "No desperdicies dinero en un juego agotado.");
   assert.match(home, /font-display text-4xl tracking-\[0\.16em\] text-gold/);
-  assert.match(home, /to="\/games"/);
+  assert.match(home, /FullCatalogLink/);
   assert.match(home, /games\.seeAll/);
   assert.equal(existsSync(join(root, "public/tickets/1397.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);

@@ -17,6 +17,7 @@ import {
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { TicketCard } from "@/components/ticket-card";
 import { gamesPriceFilters, GamesBoardView } from "@/components/games-board";
+import { LockedPanel } from "@/components/locked-panel";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { useAccess } from "@/lib/use-access";
@@ -115,7 +116,8 @@ function GamesCatalog() {
     });
   };
 
-  const catalog = snap?.games ?? publicCatalog(viewState);
+  // Unpaid: empty list — never fill /games from publicCatalog().
+  const catalog = locked ? [] : (snap?.games ?? publicCatalog(viewState));
   const priceFilters = useMemo(() => gamesPriceFilters(catalog), [catalog]);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
@@ -140,6 +142,38 @@ function GamesCatalog() {
       return g.name.toLowerCase().includes(q) || String(g.number).includes(q);
     });
   }, [catalog, query]);
+
+  if (locked) {
+    return (
+      <div>
+        <section className="border-b border-line">
+          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+            <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+              {t("games.kicker")}
+            </p>
+            <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+              {t("games.title")}
+            </h1>
+            <p className="mt-3">
+              <Link
+                to="/"
+                search={deskPageSearch(viewState)}
+                className="text-sm text-muted underline underline-offset-2 hover:text-fg"
+              >
+                {t("nav.desk")}
+              </Link>
+            </p>
+            <div className="mt-6">
+              <LockedPanel
+                title={t("games.lockedTitle")}
+                teaser={t("games.lockedTeaser")}
+              />
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div>
