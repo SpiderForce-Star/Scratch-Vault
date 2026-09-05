@@ -219,7 +219,7 @@ function VaultHome() {
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
             <div className="min-w-0 order-2 lg:order-1">
               <RadarCashHero
                 key={viewState}

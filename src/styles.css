@@ -82,6 +82,47 @@
   }
 }
 
+/* Sweep paints a quiet remaining jackpot as the beam crosses it. */
+@keyframes vsv-paint {
+  0%,
+  100% {
+    opacity: 0.38;
+    filter: none;
+  }
+  2% {
+    opacity: 1;
+    filter: drop-shadow(0 0 7px #c4a574);
+  }
+  11% {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 2px #c4a574);
+  }
+  22% {
+    opacity: 0.4;
+    filter: none;
+  }
+}
+
+@keyframes vsv-hub-glow {
+  0%,
+  100% {
+    stroke-opacity: 0.55;
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+@keyframes vsv-ring-breathe {
+  0%,
+  100% {
+    stroke-opacity: 0.16;
+  }
+  50% {
+    stroke-opacity: 0.42;
+  }
+}
+
 @keyframes vsv-gauge-in {
   from {
     stroke-dashoffset: 120;

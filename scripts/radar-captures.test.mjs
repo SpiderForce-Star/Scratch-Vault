@@ -205,6 +205,8 @@ test("radar server builds one selected public desk and the hub is cash", () => {
   assert.equal(server.includes("PUBLIC_STATE_IDS.map"), false);
   assert.equal(hero.includes("CashHub"), true);
   assert.equal(hero.includes("CashStack"), true);
+  assert.equal(hero.includes("vsv-paint"), true);
+  assert.equal(hero.includes("vsv-hub-glow"), true);
   assert.equal(hero.includes('width="16"'), false);
   assert.equal(hero.includes("v-4 a4 4 0 0 1 8 0 v4"), false);
 });
