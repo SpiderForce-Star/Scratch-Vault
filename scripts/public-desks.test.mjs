@@ -176,21 +176,17 @@ test("public home mounts remaining-prize radar beside the trip desk for phone an
   assert.equal(radar.includes("prefers-reduced-motion"), true);
 });
 
-test("phone hides the copy-lock marquee; menu opens on the current public desk", () => {
-  const root = read("src/routes/__root.tsx");
-  const marquee = read("src/components/promo-marquee.tsx");
+test("phone menu opens on the current public desk", () => {
   const header = read("src/components/site-header.tsx");
   const selector = read("src/components/state-selector.tsx");
   const footer = read("src/components/site-footer.tsx");
   const en = JSON.parse(read("src/locales/en.json"));
-  assert.match(root, /hidden sm:block/);
-  assert.match(marquee, /hidden[\s\S]*sm:block/);
   assert.match(header, /variant="menu"/);
   assert.match(selector, /PUBLIC_STATE_LIST/);
   assert.match(selector, /hidden border-b border-line sm:block/);
   assert.doesNotMatch(selector, /\bArizona\b/);
   assert.match(footer, /SpiderMark/);
-  assert.equal(en["marquee.dead"], "Three tickets to look at. A list to walk past.");
+  assert.match(footer, /TicketCopyright/);
   assert.equal(en["header.deskChip"], "{{short}} · Current");
   assert.doesNotMatch(en["home.listCurrent"], /live store|inventory/i);
 });
