@@ -257,7 +257,12 @@ test("ticket faces caption independent reconstructions", () => {
   assert.equal(chrome.includes("WIN UP TO"), true);
   assert.equal(face.includes("aspect-[3/4]"), true);
   assert.equal(face.includes("aspect-[3/2]"), true);
-  assert.equal(face.includes("object-center"), true);
+  assert.equal(face.includes("aspect-[5/2]"), true);
+  assert.equal(face.includes("object-contain object-left"), true);
+  assert.equal(face.includes("object-cover"), false);
+  assert.equal(face.includes("object-center"), false);
+  assert.equal(face.includes("absolute bottom-1.5 left-1.5"), false);
+  assert.equal(card.includes("OfficialTableControl"), true);
   assert.equal(card.includes("absolute top-3"), false);
   assert.equal(card.includes("card.reconstruction"), false);
   assert.equal(/Kentucky Lottery|Lottery Tennessee|ScratchSmarter|LottoEdge/i.test(chrome), false);
@@ -266,6 +271,39 @@ test("ticket faces caption independent reconstructions", () => {
   assert.equal(chrome.toLowerCase().includes("chevron"), false);
   assert.equal(existsSync(join(root, "public/tickets/1395.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1396.jpg")), true);
+  assert.equal(existsSync(join(root, "public/tickets/1397.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1401.jpg")), true);
   assert.equal(existsSync(join(root, "public/tickets/1388.jpg")), true);
+});
+
+test("store-rack named bills contain left and phone desk stays one column", () => {
+  const face = readFileSync(join(root, "src/components/ticket-face.tsx"), "utf8");
+  const card = readFileSync(join(root, "src/components/ticket-card.tsx"), "utf8");
+  const home = readFileSync(join(root, "src/routes/index.tsx"), "utf8");
+  const header = readFileSync(join(root, "src/components/site-header.tsx"), "utf8");
+  const board = readFileSync(join(root, "src/components/games-board.tsx"), "utf8");
+  const chrome = readFileSync(join(root, "src/lib/ticket-chrome.ts"), "utf8");
+  const en = JSON.parse(readFileSync(join(root, "src/locales/en.json"), "utf8"));
+
+  assert.match(face, /aspect-\[5\/2\]/);
+  assert.match(face, /object-contain object-left/);
+  assert.doesNotMatch(face, /object-cover/);
+  assert.doesNotMatch(face, /absolute bottom-1\.5 left-1\.5/);
+  assert.match(card, /OfficialTableControl/);
+  assert.match(card, /min-h-10/);
+  assert.match(card, /line-clamp-2/);
+  assert.match(card, /break-normal/);
+  assert.match(home, /sticky top-14/);
+  assert.match(home, /grid-cols-1/);
+  assert.doesNotMatch(home, /w-56 shrink-0/);
+  assert.doesNotMatch(home, /sm:grid-cols-2 lg:grid-cols-3[\s\S]{0,80}newGames/);
+  assert.match(board, /sm:grid-cols-2 lg:grid-cols-3/);
+  assert.doesNotMatch(board, /(?<!sm:)(?<!lg:)grid-cols-2/);
+  assert.match(header, /hidden sm:inline-flex/);
+  assert.match(header, /sm:hidden/);
+  assert.match(header, /cta\.trialCompact|HeaderTrial/);
+  assert.equal(en["home.skipTitle"], "Don't waste money on a drained game.");
+  assert.equal(en["hero.titleAll"], "Three tickets to look at. A list to walk past.");
+  assert.match(chrome, /holiday/);
+  assert.doesNotMatch(chrome, /lottery seal|official jpeg|tnlottery\.com\/.*\.jpg/i);
 });

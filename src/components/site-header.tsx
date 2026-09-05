@@ -53,9 +53,9 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex shrink-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
-          <LanguageToggle />
+          <LanguageToggle className="hidden sm:inline-flex" />
           <HeaderTrial />
-          <HeaderAuth />
+          <HeaderAuth className="hidden sm:inline-flex" />
           <button
             type="button"
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-fg md:hidden"
@@ -82,6 +82,10 @@ export function SiteHeader() {
           className="border-t border-line bg-bg px-3 py-3 md:hidden"
         >
           <nav aria-label={t("nav.mobile")} className="flex flex-col">
+            <div className="mb-1 flex flex-col border-b border-line pb-2 sm:hidden">
+              <LanguageToggle className="justify-start px-2" />
+              <HeaderAuth className="px-2" onNavigate={() => setOpen(false)} />
+            </div>
             <NavLinks
               unseen={unseen}
               markSeen={markSeen}
@@ -192,7 +196,13 @@ function HeaderTrial() {
   );
 }
 
-function HeaderAuth() {
+function HeaderAuth({
+  className,
+  onNavigate,
+}: {
+  className?: string;
+  onNavigate?: () => void;
+}) {
   const { user, isPending } = useCurrentUserState();
   const { t } = useI18n();
 
@@ -201,7 +211,7 @@ function HeaderAuth() {
   if (isPending) {
     return (
       <span
-        className="inline-flex min-h-11 w-14 shrink-0 items-center"
+        className={cn("inline-flex min-h-11 w-14 shrink-0 items-center", className)}
         aria-hidden="true"
       />
     );
@@ -212,7 +222,11 @@ function HeaderAuth() {
       <Link
         to="/login"
         search={{ next: "/" }}
-        className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-2 sm:text-sm"
+        onClick={onNavigate}
+        className={cn(
+          "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-2 sm:text-sm",
+          className,
+        )}
       >
         {t("nav.signIn")}
       </Link>
@@ -222,7 +236,11 @@ function HeaderAuth() {
   return (
     <Link
       to="/account"
-      className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-2 sm:text-sm"
+      onClick={onNavigate}
+      className={cn(
+        "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap px-1.5 text-xs text-fg sm:px-2 sm:text-sm",
+        className,
+      )}
     >
       {t("nav.account")}
     </Link>

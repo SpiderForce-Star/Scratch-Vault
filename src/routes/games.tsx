@@ -169,7 +169,13 @@ function GamesCatalog() {
             </Link>
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-1">
+          <div
+            className={cn(
+              "mt-5 flex flex-wrap gap-1",
+              "sticky top-14 z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
+              "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
+            )}
+          >
             {priceFilters.map((f) => (
               <button
                 key={String(f.id)}

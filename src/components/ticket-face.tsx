@@ -5,6 +5,33 @@ import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
+/** Opens the lottery remaining-prize table without following a wrapping card link. */
+export function OfficialTableControl({
+  href,
+  className,
+}: {
+  href: string;
+  className?: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        window.open(href, "_blank", "noopener,noreferrer");
+      }}
+      className={cn(
+        "inline-flex min-h-8 items-center font-mono text-[10px] tracking-[0.12em] text-gold uppercase underline underline-offset-4 hover:text-paper",
+        className,
+      )}
+    >
+      {t("card.officialTable")}
+    </button>
+  );
+}
+
 /** Named TN reconstruction, or original chrome unique to this game. */
 export function TicketFace({
   game,
@@ -22,19 +49,24 @@ export function TicketFace({
   const art = ticketArt(game);
   const desk = getState(parsePublicStateId(game.stateId ?? config.id));
   const href = officialUrl ?? desk.remainingPrizesUrl;
+  const named = Boolean(art);
 
   const inner = art ? (
     <img
       src={art}
       alt={`Independent reconstruction of ${game.name} #${game.number}`}
-      className="absolute inset-0 h-full w-full object-cover object-center"
+      className={
+        full
+          ? "h-auto w-full object-contain"
+          : "absolute inset-0 h-full w-full object-contain object-left"
+      }
     />
   ) : (
     <TicketChromeFace game={game} />
   );
 
-  const officialLink = href ? (
-    full ? (
+  const officialLink =
+    href && full ? (
       <a
         href={href}
         target="_blank"
@@ -44,29 +76,21 @@ export function TicketFace({
       >
         {t("card.officialTable")}
       </a>
-    ) : (
-      <button
-        type="button"
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          window.open(href, "_blank", "noopener,noreferrer");
-        }}
-        className="absolute bottom-1.5 left-1.5 z-10 inline-flex min-h-7 items-center rounded-sm bg-bg/70 px-1.5 font-mono text-[9px] tracking-[0.12em] text-gold uppercase underline underline-offset-2 hover:text-paper"
-      >
-        {t("card.officialTable")}
-      </button>
-    )
-  ) : null;
+    ) : null;
 
   return (
-    <div className={cn("relative w-full overflow-hidden bg-raised", className)}>
+    <div className={cn("relative w-full overflow-hidden bg-bg", className)}>
       {full ? (
-        <div className="relative aspect-[3/4] w-full">{inner}</div>
+        named ? (
+          <div className="relative w-full bg-bg">{inner}</div>
+        ) : (
+          <div className="relative aspect-[3/4] w-full">{inner}</div>
+        )
+      ) : named ? (
+        <div className="relative aspect-[5/2] w-full overflow-hidden bg-bg">{inner}</div>
       ) : (
         <div className="relative aspect-[3/2] w-full overflow-hidden">
           <div className="absolute inset-x-0 top-0 aspect-[3/4] w-full">{inner}</div>
-          {officialLink}
         </div>
       )}
       {full ? (
