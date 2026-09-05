@@ -135,7 +135,7 @@ export function RadarCashHero({
           {t("hero.contact")}
         </p>
       ) : null}
-      <div className="mx-auto mt-3 w-full max-w-[360px] min-w-0 lg:max-w-none">
+      <div className="mx-auto mt-3 w-full max-w-[380px] min-w-0 lg:max-w-none">
         {scopeReady ? (
           <RadarScope
             stateId={stateId}
@@ -208,7 +208,7 @@ function RadarScope({
       className="block h-auto w-full overflow-visible"
       data-radar-state={stateId}
       data-radar-cycle={cycleId}
-      data-radar-hub="cash"
+      data-radar-hub="cash-gold"
       role="img"
       aria-label={
         alert
@@ -232,9 +232,14 @@ function RadarScope({
           <stop offset="100%" stopColor="#e8d5b0" stopOpacity="0.55" />
         </linearGradient>
         <linearGradient id={`${uid}-bill`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#355a44" />
+          <stop offset="0%" stopColor="#3d6a4e" />
           <stop offset="48%" stopColor="#1e3328" />
           <stop offset="100%" stopColor="#13221a" />
+        </linearGradient>
+        <linearGradient id={`${uid}-gold`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e8d5b0" />
+          <stop offset="45%" stopColor="#c4a574" />
+          <stop offset="100%" stopColor="#8a6a2e" />
         </linearGradient>
         <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="2.4" result="b" />
@@ -397,7 +402,7 @@ function RadarScope({
         />
       ))}
 
-      <CashHub fillId={`${uid}-bill`} reduce={reduce} />
+      <CashHub fillId={`${uid}-bill`} goldId={`${uid}-gold`} reduce={reduce} />
     </svg>
   );
 }
@@ -461,7 +466,7 @@ function ScopeMark({
       {dim ? null : (
         <>
           <text
-            y={bills >= 3 ? 20 : 17}
+            y={bills >= 3 ? 22 : 18}
             textAnchor="middle"
             fill="#c4a574"
             fontSize="6.5"
@@ -470,7 +475,7 @@ function ScopeMark({
             {money(amount)}
           </text>
           <text
-            y={bills >= 3 ? 29 : 26}
+            y={bills >= 3 ? 31 : 27}
             textAnchor="middle"
             fill="#7c9a72"
             fontSize="5.5"
@@ -488,30 +493,38 @@ function CashStack({ bills, fillId }: { bills: 1 | 2 | 3; fillId: string }) {
   if (bills === 3) {
     return (
       <>
-        <DollarBill x={-18} y={-16} rotate={-14} fillId={fillId} />
-        <DollarBill x={-12} y={-10} rotate={8} fillId={fillId} />
-        <DollarBill x={-14} y={-3} rotate={-3} fillId={fillId} />
+        <DollarBill x={-18} y={-18} rotate={-16} fillId={fillId} />
+        <DollarBill x={-13} y={-11} rotate={7} fillId={fillId} />
+        <DollarBill x={-14} y={-3} rotate={-2} fillId={fillId} />
       </>
     );
   }
   if (bills === 2) {
     return (
       <>
-        <DollarBill x={-16} y={-13} rotate={-10} fillId={fillId} />
-        <DollarBill x={-12} y={-5} rotate={6} fillId={fillId} />
+        <DollarBill x={-16} y={-14} rotate={-11} fillId={fillId} />
+        <DollarBill x={-12} y={-5} rotate={5} fillId={fillId} />
       </>
     );
   }
   return <DollarBill x={-14} y={-8} rotate={-4} fillId={fillId} />;
 }
 
-/** Center pile of original $V chrome bills — not lottery art, not a lock. */
-function CashHub({ fillId, reduce }: { fillId: string; reduce: boolean }) {
+/** Center pile: strapped cash + one gold bar. $V stays off the scope. */
+function CashHub({
+  fillId,
+  goldId,
+  reduce,
+}: {
+  fillId: string;
+  goldId: string;
+  reduce: boolean;
+}) {
   return (
-    <g transform={`translate(${CX} ${CY})`} data-radar-hub="cash">
-      <circle r="36" fill="#0b0f0c" />
+    <g transform={`translate(${CX} ${CY})`} data-radar-hub="cash-gold">
+      <circle r="38" fill="#0b0f0c" />
       <circle
-        r="36"
+        r="38"
         fill="none"
         stroke="#c4a574"
         strokeWidth="1.6"
@@ -519,21 +532,22 @@ function CashHub({ fillId, reduce }: { fillId: string; reduce: boolean }) {
           reduce ? undefined : { animation: "vsv-hub-glow 2.8s ease-in-out infinite" }
         }
       />
-      <circle r="30" fill="none" stroke="#7c9a72" strokeOpacity="0.45" strokeWidth="0.7" />
-      <g transform="translate(-14 -20) rotate(-16)">
+      <circle r="32" fill="none" stroke="#7c9a72" strokeOpacity="0.45" strokeWidth="0.7" />
+      <g transform="translate(-15 -22) rotate(-18)">
         <DollarBill x={0} y={0} fillId={fillId} />
       </g>
-      <g transform="translate(-7 -12) rotate(11)">
+      <g transform="translate(-8 -13) rotate(10)">
         <DollarBill x={0} y={0} fillId={fillId} />
       </g>
-      <g transform="translate(-12 -5) rotate(-5)">
+      <g transform="translate(-13 -5) rotate(-6)">
         <DollarBill x={0} y={0} fillId={fillId} />
       </g>
+      <GoldBar x={-12} y={4} rotate={-8} goldId={goldId} />
     </g>
   );
 }
 
-/** Original $V chrome bills — not lottery ticket art. */
+/** Original strapped bill — reconstruction, not lottery art, no $V mark. */
 function DollarBill({
   x,
   y,
@@ -547,6 +561,7 @@ function DollarBill({
 }) {
   return (
     <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
+      <rect x="1.1" y="1.8" width="28" height="16" rx="1.8" fill="#0a140f" />
       <rect
         width="28"
         height="16"
@@ -556,37 +571,62 @@ function DollarBill({
         strokeWidth="1.15"
       />
       <rect
-        x="1.5"
-        y="1.4"
-        width="25"
-        height="13.2"
+        x="1.4"
+        y="1.3"
+        width="25.2"
+        height="13.4"
         rx="1"
         fill="none"
         stroke="#7c9a72"
-        strokeOpacity="0.55"
+        strokeOpacity="0.6"
         strokeWidth="0.55"
       />
-      <rect x="0" y="5.4" width="28" height="3.4" fill="#c4a574" opacity="0.42" />
+      <ellipse
+        cx="7.2"
+        cy="8"
+        rx="3.1"
+        ry="4.1"
+        fill="#9bb892"
+        fillOpacity="0.28"
+        stroke="#c4a574"
+        strokeWidth="0.55"
+        strokeOpacity="0.75"
+      />
+      <rect x="0" y="5.2" width="28" height="4" fill="#c4a574" opacity="0.78" />
+      <rect x="0" y="5.2" width="28" height="0.55" fill="#e8d5b0" opacity="0.7" />
+      <rect x="0" y="8.65" width="28" height="0.4" fill="#8a6a2e" opacity="0.45" />
       <text
-        x="10.5"
-        y="11.4"
+        x="22.4"
+        y="13.7"
         textAnchor="middle"
-        fill="#c4a574"
-        fontSize="8"
+        fill="#e8d5b0"
+        fontSize="5.6"
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
       >
         $
       </text>
-      <text
-        x="17.8"
-        y="11.4"
-        textAnchor="middle"
-        fill="#9bb892"
-        fontSize="8"
-        fontFamily="IBM Plex Mono, ui-monospace, monospace"
-      >
-        V
-      </text>
+    </g>
+  );
+}
+
+/** Cast gold bar for the vault hub only — not a lottery mark. */
+function GoldBar({
+  x,
+  y,
+  rotate = 0,
+  goldId,
+}: {
+  x: number;
+  y: number;
+  rotate?: number;
+  goldId: string;
+}) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
+      <polygon points="2,11 24,11 21.2,3.2 4.8,3.2" fill="#5c471c" />
+      <polygon points="4.8,3.2 21.2,3.2 24,11 2,11" fill={`url(#${goldId})`} />
+      <polygon points="4.8,3.2 21.2,3.2 20.2,5.1 5.8,5.1" fill="#e8d5b0" opacity="0.55" />
+      <line x1="7" y1="7.4" x2="19" y2="7.4" stroke="#8a6a2e" strokeWidth="0.7" opacity="0.55" />
     </g>
   );
 }
