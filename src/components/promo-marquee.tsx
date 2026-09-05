@@ -30,7 +30,7 @@ export function PromoMarquee() {
   return (
     <Link
       to="/pricing"
-      className="block border-b border-gold/35 bg-plum text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gold"
+      className="hidden border-b border-gold/35 bg-plum text-gold sm:block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gold"
       aria-label={t("marquee.aria")}
     >
       <span className="sv-marquee-static hidden min-h-22 items-center justify-center px-4 text-center text-xl font-bold sm:text-2xl">

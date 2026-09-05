@@ -218,7 +218,7 @@ function VaultHome() {
       />
 
       <section id="desk" className="border-b border-line">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
             <div className="min-w-0 order-2 lg:order-1">
               <RadarCashHero
@@ -241,7 +241,7 @@ function VaultHome() {
                   <Link
                     to="/signup"
                     search={{ next: "/account?complete=1&plan=monthly" }}
-                    className="mt-4 mb-6 inline-flex min-h-12 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg"
+                    className="mt-4 mb-6 hidden min-h-12 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg sm:inline-flex"
                   >
                     {t("cta.trial")}
                   </Link>
@@ -253,10 +253,57 @@ function VaultHome() {
                   filter={filter}
                   onSelect={setPrice}
                   sticky
+                  stateName={deskState.name}
                 />
               ) : null}
+              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                {t("trip.kicker", { price: priceLabel })}
+              </p>
+              {viewState === "tn" ? (
+                <aside className="mt-4 hidden rounded-lg border border-gold/40 bg-raised/40 px-4 py-3 sm:block">
+                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                    {t("pia.title")}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
+                </aside>
+              ) : null}
+              {tripGames.length === 0 ? (
+                <p className="mt-4 text-muted">{tripEmptyCopy}</p>
+              ) : (
+                <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {tripGames.map((game) => {
+                    const heat = reports.get(game.number);
+                    if (!heat) return null;
+                    return (
+                      <TicketCard
+                        key={game.number}
+                        game={game}
+                        heat={heat}
+                        locked={locked}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+              {viewState === "tn" ? (
+                <aside className="mt-4 rounded-lg border border-gold/40 bg-raised/40 px-4 py-3 sm:hidden">
+                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                    {t("pia.title")}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
+                </aside>
+              ) : null}
+              <p className="mt-5">
+                <Link
+                  to="/games"
+                  search={deskPageSearch(viewState)}
+                  className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
+                >
+                  {t("games.seeAll")}
+                </Link>
+              </p>
               {newGames.length > 0 ? (
-                <div className="mb-6">
+                <div className="mt-6 mb-2">
                   <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
                     {t("home.newKicker")}
                   </p>
@@ -265,7 +312,7 @@ function VaultHome() {
                   </h2>
                   <p className="mt-1 text-sm text-muted">{t("home.newSub")}</p>
                   <div className="mt-3 grid grid-cols-1 gap-3 md:flex md:gap-3 md:overflow-x-auto md:pb-2">
-                    {newGames.map((game) => {
+                    {newGames.map((game, index) => {
                       const heat = reports.get(game.number);
                       if (!heat) return null;
                       return (
@@ -274,7 +321,10 @@ function VaultHome() {
                           to="/game/$number"
                           params={{ number: String(game.number) }}
                           search={deskSearch(game.stateId ?? viewState)}
-                          className="w-full overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold md:w-72 md:shrink-0"
+                          className={cn(
+                            "w-full overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold md:w-72 md:shrink-0",
+                            index > 0 && "hidden md:block",
+                          )}
                         >
                           <div className="overflow-hidden">
                             <TicketFace game={game} />
@@ -300,44 +350,6 @@ function VaultHome() {
                   </div>
                 </div>
               ) : null}
-              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-                {t("trip.kicker", { price: priceLabel })}
-              </p>
-              {viewState === "tn" ? (
-                <aside className="mt-4 rounded-lg border border-gold/40 bg-raised/40 px-4 py-3">
-                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-                    {t("pia.title")}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
-                </aside>
-              ) : null}
-              {tripGames.length === 0 ? (
-                <p className="mt-4 text-muted">{tripEmptyCopy}</p>
-              ) : (
-                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {tripGames.map((game) => {
-                    const heat = reports.get(game.number);
-                    if (!heat) return null;
-                    return (
-                      <TicketCard
-                        key={game.number}
-                        game={game}
-                        heat={heat}
-                        locked={locked}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-              <p className="mt-5">
-                <Link
-                  to="/games"
-                  search={deskPageSearch(viewState)}
-                  className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
-                >
-                  {t("games.seeAll")}
-                </Link>
-              </p>
             </div>
           </div>
         </div>
@@ -439,12 +451,20 @@ function PriceChipBar({
   filter,
   onSelect,
   sticky = false,
+  stateName,
 }: {
   sold: PricePoint[];
   filter: PriceFilter;
   onSelect: (next: PriceFilter) => void;
   sticky?: boolean;
+  stateName: string;
 }) {
+  const { t } = useI18n();
+  const freshness = (
+    <p className="w-full font-mono text-[10px] tracking-[0.14em] text-faint uppercase">
+      {t("home.listCurrent", { state: stateName })}
+    </p>
+  );
   const chips = sold.map((price) => {
     const id = String(price) as PriceFilter;
     return (
@@ -465,7 +485,12 @@ function PriceChipBar({
   });
 
   if (!sticky) {
-    return <div className="mb-4 mt-4 flex flex-wrap gap-1">{chips}</div>;
+    return (
+      <div className="mb-4 mt-4 flex flex-wrap gap-1">
+        {freshness}
+        {chips}
+      </div>
+    );
   }
 
   return (
@@ -476,6 +501,7 @@ function PriceChipBar({
         "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
       )}
     >
+      {freshness}
       {chips}
     </div>
   );

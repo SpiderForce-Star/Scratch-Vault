@@ -124,8 +124,18 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   assert.match(en["states.body"], /Iowa 21\+/);
   assert.doesNotMatch(en["age.body"], /Arizona/);
   assert.match(en["age.body"], /Iowa Lottery tickets are 21\+/);
-  assert.equal(header.includes(">Scratch Vault<"), false);
+  assert.equal(header.includes(">Scratch Vault<"), true);
   assert.match(header, /aria-label="Scratch Vault"/);
+  assert.match(header, /header\.deskChip/);
+  assert.match(header, /hidden font-display/);
+  const desktopNav = header.slice(
+    header.indexOf('className="hidden items-center md:flex"'),
+    header.indexOf("{open ?"),
+  );
+  assert.equal(desktopNav.includes("StudioLink"), false);
+  assert.match(header, /StudioLink stacked/);
+  assert.match(header, /DeskSwitcher/);
+  assert.match(header, /states\.otherDesks|variant="menu"/);
   assert.equal(header.includes("weekLabel"), false);
   assert.equal(home.includes("weekLabel"), false);
   assert.equal(radar.includes("weekLabel"), false);
@@ -163,4 +173,23 @@ test("public home mounts remaining-prize radar beside the trip desk for phone an
   assert.match(home, /games\.seeAll/);
   assert.equal(radar.includes("deskNotifyEnabled"), true);
   assert.equal(radar.includes("prefers-reduced-motion"), true);
+});
+
+test("phone hides the copy-lock marquee; menu opens on the current public desk", () => {
+  const root = read("src/routes/__root.tsx");
+  const marquee = read("src/components/promo-marquee.tsx");
+  const header = read("src/components/site-header.tsx");
+  const selector = read("src/components/state-selector.tsx");
+  const footer = read("src/components/site-footer.tsx");
+  const en = JSON.parse(read("src/locales/en.json"));
+  assert.match(root, /hidden sm:block/);
+  assert.match(marquee, /hidden[\s\S]*sm:block/);
+  assert.match(header, /variant="menu"/);
+  assert.match(selector, /PUBLIC_STATE_LIST/);
+  assert.match(selector, /hidden border-b border-line sm:block/);
+  assert.doesNotMatch(selector, /\bArizona\b/);
+  assert.match(footer, /SpiderMark/);
+  assert.equal(en["marquee.dead"], "Three tickets to look at. A list to walk past.");
+  assert.equal(en["header.deskChip"], "{{short}} · Current");
+  assert.doesNotMatch(en["home.listCurrent"], /live store|inventory/i);
 });
