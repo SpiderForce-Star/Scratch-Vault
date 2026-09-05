@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useActiveState } from "@/lib/active-state";
+import { SpiderMark } from "@/components/mechanical-spider";
 import { SITE_NAME } from "@/lib/site";
 import { useI18n } from "@/lib/locale";
 
@@ -92,8 +93,9 @@ export function SiteFooter() {
           href="https://webbspinnervisions.net"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center font-mono text-[10px] tracking-[0.18em] text-faint uppercase hover:text-gold"
+          className="inline-flex min-h-11 items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] text-faint uppercase hover:text-gold"
         >
+          <SpiderMark className="size-4 shrink-0 text-gold" />
           {t("footer.built")}
         </a>
       </div>

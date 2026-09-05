@@ -1,13 +1,14 @@
 import { useEffect, useId, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
-import { DEFAULT_STATE_ID } from "@/config/states";
+import { DEFAULT_STATE_ID, type StateId } from "@/config/states";
 import { deskPageSearch, useActiveState } from "@/lib/active-state";
 import { authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useDeskAlert } from "@/lib/use-desk-alert";
 import { TrialCta } from "@/components/trial-cta";
 import { SpiderMark } from "@/components/mechanical-spider";
+import { DeskSwitcher } from "@/components/state-selector";
 import { useAccess } from "@/lib/use-access";
 import { useI18n } from "@/lib/locale";
 import type { MessageKey } from "@/lib/i18n";
@@ -27,6 +28,7 @@ const NAV: {
 export function SiteHeader() {
   const { unseen, markSeen } = useDeskAlert();
   const { t } = useI18n();
+  const { config } = useActiveState();
   const [open, setOpen] = useState(false);
   const menuId = useId();
 
@@ -42,15 +44,23 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-2 sm:gap-2 sm:px-6">
-        <Link
-          to="/"
-          aria-label="Scratch Vault"
-          className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm tracking-tight"
-          onClick={() => setOpen(false)}
-        >
-          <span className="text-gold">$</span>
-          <span className="text-sage">V</span>
-        </Link>
+        <div className="flex min-w-0 items-center gap-2">
+          <Link
+            to="/"
+            aria-label="Scratch Vault"
+            className="flex min-w-0 items-center gap-2"
+            onClick={() => setOpen(false)}
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-raised font-display text-sm tracking-tight">
+              <span className="text-gold">$</span>
+              <span className="text-sage">V</span>
+            </span>
+            <span className="hidden font-display text-base tracking-tight text-fg sm:inline lg:text-lg">Scratch Vault</span>
+          </Link>
+          <span className="hidden shrink-0 items-center rounded-md border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-muted uppercase sm:inline-flex">
+            {t("header.deskChip", { short: config.shortName })}
+          </span>
+        </div>
 
         <div className="flex shrink-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
           <LanguageToggle className="hidden sm:inline-flex" />
@@ -71,7 +81,6 @@ export function SiteHeader() {
             className="hidden items-center md:flex"
           >
             <NavLinks unseen={unseen} markSeen={markSeen} onNavigate={() => setOpen(false)} />
-            <StudioLink />
           </nav>
         </div>
       </div>
@@ -82,10 +91,9 @@ export function SiteHeader() {
           className="border-t border-line bg-bg px-3 py-3 md:hidden"
         >
           <nav aria-label={t("nav.mobile")} className="flex flex-col">
-            <div className="mb-1 flex flex-col border-b border-line pb-2 sm:hidden">
-              <LanguageToggle className="justify-start px-2" />
-              <HeaderAuth className="px-2" onNavigate={() => setOpen(false)} />
-            </div>
+            <MenuDesk onPicked={() => setOpen(false)} />
+            <LanguageToggle className="justify-start px-2" />
+            <HeaderAuth className="px-2" onNavigate={() => setOpen(false)} />
             <NavLinks
               unseen={unseen}
               markSeen={markSeen}
@@ -98,6 +106,24 @@ export function SiteHeader() {
       ) : null}
     </header>
   );
+}
+
+function MenuDesk({ onPicked }: { onPicked: () => void }) {
+  const { stateId, setStateId } = useActiveState();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  const pick = (id: StateId) => {
+    setStateId(id);
+    if (pathname === "/games") {
+      void navigate({ to: "/games", search: deskPageSearch(id), replace: true });
+    } else if (pathname === "/") {
+      void navigate({ to: "/", search: deskPageSearch(id), replace: true });
+    }
+    onPicked();
+  };
+
+  return <DeskSwitcher value={stateId} onChange={pick} variant="menu" />;
 }
 
 function LanguageToggle({ className }: { className?: string }) {
@@ -247,7 +273,7 @@ function HeaderAuth({
   );
 }
 
-function StudioLink({ stacked = false }: { stacked?: boolean }) {
+export function StudioLink({ stacked = false }: { stacked?: boolean }) {
   return (
     <a
       href="https://webbspinnervisions.net"

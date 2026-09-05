@@ -111,7 +111,9 @@ function NativeRoot() {
   return (
     <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">
       <SiteHeader />
-      <PromoMarquee />
+      <div className="hidden sm:block">
+        <PromoMarquee />
+      </div>
       <TicketCopyright />
       <InstallCoach />
       <Outlet />
