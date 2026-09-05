@@ -202,208 +202,226 @@ function RadarScope({
   const uid = `vsv-${stateId || "desk"}-${cycleId.slice(0, 24) || "idle"}`;
   const sweepSec = alert ? 4 : 5.5;
   return (
-    <svg
-      key={uid}
-      viewBox={`0 0 ${SIZE} ${SIZE}`}
-      className="block h-auto w-full overflow-visible"
-      data-radar-state={stateId}
-      data-radar-cycle={cycleId}
-      data-radar-hub="cash-gold"
-      role="img"
-      aria-label={
-        alert
-          ? captures
-              .slice(0, 2)
-              .map((row) => `${row.shortName} ${row.name} ${money(row.amount)}`)
-              .join("; ") || "Grand-prize capture"
-          : "Published remaining-jackpot radar. Not store inventory."
-      }
-    >
-      <defs>
-        <radialGradient id={`${uid}-scope`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#243028" />
-          <stop offset="42%" stopColor="#141a16" />
-          <stop offset="100%" stopColor="#070a08" />
-        </radialGradient>
-        <linearGradient id={`${uid}-beam`} x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#c4a574" stopOpacity="0" />
-          <stop offset="45%" stopColor="#7c9a72" stopOpacity="0.12" />
-          <stop offset="82%" stopColor="#c4a574" stopOpacity="0.32" />
-          <stop offset="100%" stopColor="#e8d5b0" stopOpacity="0.55" />
-        </linearGradient>
-        <linearGradient id={`${uid}-bill`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#3d6a4e" />
-          <stop offset="48%" stopColor="#1e3328" />
-          <stop offset="100%" stopColor="#13221a" />
-        </linearGradient>
-        <linearGradient id={`${uid}-gold`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#e8d5b0" />
-          <stop offset="45%" stopColor="#c4a574" />
-          <stop offset="100%" stopColor="#8a6a2e" />
-        </linearGradient>
-        <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="2.4" result="b" />
-          <feMerge>
-            <feMergeNode in="b" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+    <div className="relative aspect-square w-full overflow-visible">
+      <svg
+        key={uid}
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="block h-auto w-full overflow-visible"
+        data-radar-state={stateId}
+        data-radar-cycle={cycleId}
+        data-radar-hub="cash"
+        role="img"
+        aria-label={
+          alert
+            ? captures
+                .slice(0, 2)
+                .map((row) => `${row.shortName} ${row.name} ${money(row.amount)}`)
+                .join("; ") || "Grand-prize capture"
+            : "Published remaining-jackpot radar. Not store inventory."
+        }
+      >
+        <defs>
+          <radialGradient id={`${uid}-scope`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#243028" />
+            <stop offset="42%" stopColor="#141a16" />
+            <stop offset="100%" stopColor="#070a08" />
+          </radialGradient>
+          <linearGradient id={`${uid}-beam`} x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stopColor="#c4a574" stopOpacity="0" />
+            <stop offset="45%" stopColor="#7c9a72" stopOpacity="0.12" />
+            <stop offset="82%" stopColor="#c4a574" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="#e8d5b0" stopOpacity="0.55" />
+          </linearGradient>
+          <linearGradient id={`${uid}-bill`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#3d6a4e" />
+            <stop offset="48%" stopColor="#1e3328" />
+            <stop offset="100%" stopColor="#13221a" />
+          </linearGradient>
+          <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.4" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-      <circle cx={CX} cy={CY} r={176} fill={`url(#${uid}-scope)`} />
-      <circle
-        cx={CX}
-        cy={CY}
-        r={174}
-        fill="none"
-        stroke="#c4a574"
-        strokeWidth="1.7"
-        strokeOpacity="0.85"
-      />
-      <circle
-        cx={CX}
-        cy={CY}
-        r={170}
-        fill="none"
-        stroke="#7c9a72"
-        strokeWidth="0.6"
-        strokeOpacity="0.35"
-      />
-      {alert ? (
-        <>
-          <circle
-            cx={CX}
-            cy={CY}
-            r={178}
-            fill="none"
-            stroke="#c4a574"
-            style={{
-              animation: reduce ? undefined : "vsv-contact 1.6s ease-in-out infinite",
-            }}
-          />
-          <text
-            x={CX}
-            y={20}
-            textAnchor="middle"
-            fill="#c4a574"
-            fontSize="9"
-            fontFamily="IBM Plex Mono, ui-monospace, monospace"
-            letterSpacing="2.4"
-          >
-            CONTACT
-          </text>
-        </>
-      ) : null}
-      <line
-        x1={CX}
-        y1={CY - 174}
-        x2={CX}
-        y2={CY + 174}
-        stroke="#7c9a72"
-        strokeOpacity="0.14"
-        strokeWidth="0.8"
-      />
-      <line
-        x1={CX - 174}
-        y1={CY}
-        x2={CX + 174}
-        y2={CY}
-        stroke="#7c9a72"
-        strokeOpacity="0.14"
-        strokeWidth="0.8"
-      />
-      {rings.map((r, i) => (
+        <circle cx={CX} cy={CY} r={176} fill={`url(#${uid}-scope)`} />
         <circle
-          key={r}
           cx={CX}
           cy={CY}
-          r={r}
+          r={174}
           fill="none"
-          stroke={i === rings.length - 1 ? "#c4a574" : "#7c9a72"}
-          strokeOpacity={i === rings.length - 1 ? 0.28 : 0.22}
-          strokeWidth={i === rings.length - 1 ? 1 : 0.85}
+          stroke="#c4a574"
+          strokeWidth="1.7"
+          strokeOpacity="0.85"
+        />
+        <circle
+          cx={CX}
+          cy={CY}
+          r={170}
+          fill="none"
+          stroke="#7c9a72"
+          strokeWidth="0.6"
+          strokeOpacity="0.35"
+        />
+        {alert ? (
+          <>
+            <circle
+              cx={CX}
+              cy={CY}
+              r={178}
+              fill="none"
+              stroke="#c4a574"
+              style={{
+                animation: reduce ? undefined : "vsv-contact 1.6s ease-in-out infinite",
+              }}
+            />
+            <text
+              x={CX}
+              y={20}
+              textAnchor="middle"
+              fill="#c4a574"
+              fontSize="9"
+              fontFamily="IBM Plex Mono, ui-monospace, monospace"
+              letterSpacing="2.4"
+            >
+              CONTACT
+            </text>
+          </>
+        ) : null}
+        <line
+          x1={CX}
+          y1={CY - 174}
+          x2={CX}
+          y2={CY + 174}
+          stroke="#7c9a72"
+          strokeOpacity="0.14"
+          strokeWidth="0.8"
+        />
+        <line
+          x1={CX - 174}
+          y1={CY}
+          x2={CX + 174}
+          y2={CY}
+          stroke="#7c9a72"
+          strokeOpacity="0.14"
+          strokeWidth="0.8"
+        />
+        {rings.map((r, i) => (
+          <circle
+            key={r}
+            cx={CX}
+            cy={CY}
+            r={r}
+            fill="none"
+            stroke={i === rings.length - 1 ? "#c4a574" : "#7c9a72"}
+            strokeOpacity={i === rings.length - 1 ? 0.28 : 0.22}
+            strokeWidth={i === rings.length - 1 ? 1 : 0.85}
+            style={
+              reduce || i !== 1
+                ? undefined
+                : { animation: "vsv-ring-breathe 3.4s ease-in-out infinite" }
+            }
+          />
+        ))}
+        {Array.from({ length: 36 }, (_, i) => {
+          const a = (i * 10 * Math.PI) / 180;
+          const inner = i % 3 === 0 ? 160 : 170;
+          return (
+            <line
+              key={i}
+              x1={r2(CX + Math.cos(a) * inner)}
+              y1={r2(CY + Math.sin(a) * inner)}
+              x2={r2(CX + Math.cos(a) * 174)}
+              y2={r2(CY + Math.sin(a) * 174)}
+              stroke="#c4a574"
+              strokeOpacity={i % 3 === 0 ? 0.55 : 0.22}
+              strokeWidth={i % 3 === 0 ? 1.2 : 0.8}
+            />
+          );
+        })}
+
+        {reduce ? null : (
+          <g
+            style={{
+              transformOrigin: `${CX}px ${CY}px`,
+              animation: `vsv-radar-sweep ${sweepSec}s linear infinite`,
+            }}
+          >
+            <path
+              d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 128} ${CY - 112} Z`}
+              fill={`url(#${uid}-beam)`}
+            />
+            <line
+              x1={CX}
+              y1={CY}
+              x2={CX}
+              y2={CY - 172}
+              stroke="#e8d5b0"
+              strokeOpacity="0.95"
+              strokeWidth="1.8"
+              filter={`url(#${uid}-glow)`}
+            />
+          </g>
+        )}
+
+        {contacts.map((blip) => (
+          <ScopeMark
+            key={blip.id}
+            angle={blip.angle}
+            radius={blip.radius}
+            label={`${blip.shortName} ${blip.name} ${money(blip.amount)}`}
+            amount={blip.amount}
+            bills={1}
+            dim
+            ping={false}
+            reduce={reduce}
+            fillId={`${uid}-bill`}
+            sweepSec={sweepSec}
+          />
+        ))}
+
+        {captures.map((blip) => (
+          <ScopeMark
+            key={blip.id}
+            angle={blip.angle}
+            radius={blip.radius}
+            label={`${blip.shortName} ${blip.name} ${money(blip.amount)}`}
+            amount={blip.amount}
+            bills={radarBillCount("capture", blip.stack)}
+            dim={!alert}
+            ping={alert && !reduce}
+            reduce={reduce}
+            fillId={`${uid}-bill`}
+            sweepSec={sweepSec}
+          />
+        ))}
+
+        <circle cx={CX} cy={CY} r={38} fill="#0b0f0c" />
+        <circle
+          cx={CX}
+          cy={CY}
+          r={38}
+          fill="none"
+          stroke="#c4a574"
+          strokeWidth="1.6"
           style={
-            reduce || i !== 1
-              ? undefined
-              : { animation: "vsv-ring-breathe 3.4s ease-in-out infinite" }
+            reduce ? undefined : { animation: "vsv-hub-glow 2.8s ease-in-out infinite" }
           }
         />
-      ))}
-      {Array.from({ length: 36 }, (_, i) => {
-        const a = (i * 10 * Math.PI) / 180;
-        const inner = i % 3 === 0 ? 160 : 170;
-        return (
-          <line
-            key={i}
-            x1={r2(CX + Math.cos(a) * inner)}
-            y1={r2(CY + Math.sin(a) * inner)}
-            x2={r2(CX + Math.cos(a) * 174)}
-            y2={r2(CY + Math.sin(a) * 174)}
-            stroke="#c4a574"
-            strokeOpacity={i % 3 === 0 ? 0.55 : 0.22}
-            strokeWidth={i % 3 === 0 ? 1.2 : 0.8}
-          />
-        );
-      })}
-
-      {reduce ? null : (
-        <g
-          style={{
-            transformOrigin: `${CX}px ${CY}px`,
-            animation: `vsv-radar-sweep ${sweepSec}s linear infinite`,
-          }}
-        >
-          <path
-            d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 128} ${CY - 112} Z`}
-            fill={`url(#${uid}-beam)`}
-          />
-          <line
-            x1={CX}
-            y1={CY}
-            x2={CX}
-            y2={CY - 172}
-            stroke="#e8d5b0"
-            strokeOpacity="0.95"
-            strokeWidth="1.8"
-            filter={`url(#${uid}-glow)`}
-          />
-        </g>
-      )}
-
-      {contacts.map((blip) => (
-        <ScopeMark
-          key={blip.id}
-          angle={blip.angle}
-          radius={blip.radius}
-          label={`${blip.shortName} ${blip.name} ${money(blip.amount)}`}
-          amount={blip.amount}
-          bills={1}
-          dim
-          ping={false}
-          reduce={reduce}
-          fillId={`${uid}-bill`}
-          sweepSec={sweepSec}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={32}
+          fill="none"
+          stroke="#7c9a72"
+          strokeOpacity="0.45"
+          strokeWidth="0.7"
         />
-      ))}
-
-      {captures.map((blip) => (
-        <ScopeMark
-          key={blip.id}
-          angle={blip.angle}
-          radius={blip.radius}
-          label={`${blip.shortName} ${blip.name} ${money(blip.amount)}`}
-          amount={blip.amount}
-          bills={radarBillCount("capture", blip.stack)}
-          dim={!alert}
-          ping={alert && !reduce}
-          reduce={reduce}
-          fillId={`${uid}-bill`}
-          sweepSec={sweepSec}
-        />
-      ))}
-
-      <CashHub fillId={`${uid}-bill`} goldId={`${uid}-gold`} reduce={reduce} />
-    </svg>
+      </svg>
+      <CashHub reduce={reduce} />
+    </div>
   );
 }
 
@@ -510,40 +528,39 @@ function CashStack({ bills, fillId }: { bills: 1 | 2 | 3; fillId: string }) {
   return <DollarBill x={-14} y={-8} rotate={-4} fillId={fillId} />;
 }
 
-/** Center pile: strapped cash + one gold bar. $V stays off the scope. */
-function CashHub({
-  fillId,
-  goldId,
-  reduce,
-}: {
-  fillId: string;
-  goldId: string;
-  reduce: boolean;
-}) {
+/** CSS 3D hub. HTML overlay because preserve-3d inside SVG flattens. */
+function CashHub({ reduce }: { reduce: boolean }) {
   return (
-    <g transform={`translate(${CX} ${CY})`} data-radar-hub="cash-gold">
-      <circle r="38" fill="#0b0f0c" />
-      <circle
-        r="38"
-        fill="none"
-        stroke="#c4a574"
-        strokeWidth="1.6"
-        style={
-          reduce ? undefined : { animation: "vsv-hub-glow 2.8s ease-in-out infinite" }
-        }
-      />
-      <circle r="32" fill="none" stroke="#7c9a72" strokeOpacity="0.45" strokeWidth="0.7" />
-      <g transform="translate(-15 -22) rotate(-18)">
-        <DollarBill x={0} y={0} fillId={fillId} />
-      </g>
-      <g transform="translate(-8 -13) rotate(10)">
-        <DollarBill x={0} y={0} fillId={fillId} />
-      </g>
-      <g transform="translate(-13 -5) rotate(-6)">
-        <DollarBill x={0} y={0} fillId={fillId} />
-      </g>
-      <GoldBar x={-12} y={4} rotate={-8} goldId={goldId} />
-    </g>
+    <div
+      className={["vsv-hub3d", reduce ? "is-static" : "is-live"].join(" ")}
+      data-radar-hub="cash-gold"
+      aria-hidden="true"
+    >
+      <div className="vsv-hub3d-scene">
+        <div
+          className="vsv-hub3d-bill"
+          style={{ transform: "translate3d(-8px, 6px, -12px) rotateZ(-16deg)" }}
+        >
+          <span className="vsv-hub3d-mark">$</span>
+        </div>
+        <div
+          className="vsv-hub3d-bill"
+          style={{ transform: "translate3d(5px, 2px, -4px) rotateZ(10deg)" }}
+        >
+          <span className="vsv-hub3d-mark">$</span>
+        </div>
+        <div
+          className="vsv-hub3d-bill"
+          style={{ transform: "translate3d(-3px, 5px, 4px) rotateZ(-5deg)" }}
+        >
+          <span className="vsv-hub3d-mark">$</span>
+        </div>
+        <div
+          className="vsv-hub3d-bar"
+          style={{ transform: "translate3d(0px, 12px, 14px) rotateZ(-8deg)" }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -605,28 +622,6 @@ function DollarBill({
       >
         $
       </text>
-    </g>
-  );
-}
-
-/** Cast gold bar for the vault hub only — not a lottery mark. */
-function GoldBar({
-  x,
-  y,
-  rotate = 0,
-  goldId,
-}: {
-  x: number;
-  y: number;
-  rotate?: number;
-  goldId: string;
-}) {
-  return (
-    <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
-      <polygon points="2,11 24,11 21.2,3.2 4.8,3.2" fill="#5c471c" />
-      <polygon points="4.8,3.2 21.2,3.2 24,11 2,11" fill={`url(#${goldId})`} />
-      <polygon points="4.8,3.2 21.2,3.2 20.2,5.1 5.8,5.1" fill="#e8d5b0" opacity="0.55" />
-      <line x1="7" y1="7.4" x2="19" y2="7.4" stroke="#8a6a2e" strokeWidth="0.7" opacity="0.55" />
     </g>
   );
 }
