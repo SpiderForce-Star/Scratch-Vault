@@ -159,11 +159,12 @@ test("public home mounts remaining-prize radar beside the trip desk for phone an
   const radar = read("src/components/radar-cash-hero.tsx");
   assert.equal(home.includes("RadarCashHero"), true);
   assert.equal(home.includes('id="desk"'), true);
-  assert.equal(home.includes("lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]"), true);
+  assert.equal(home.includes("lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]"), true);
   assert.equal(radar.includes("hidden lg:block"), false);
   assert.equal(radar.includes("playGoldBleeps"), true);
   assert.equal(radar.includes("DollarBill"), true);
   assert.equal(radar.includes("CashHub"), true);
+  assert.equal(radar.includes("vsv-paint"), true);
   assert.equal(radar.includes('data-radar-hub="cash"'), true);
   assert.equal(radar.includes("v-4 a4 4 0 0 1 8 0 v4"), false);
   assert.equal(home.includes("key={viewState}"), true);

@@ -135,7 +135,7 @@ export function RadarCashHero({
           {t("hero.contact")}
         </p>
       ) : null}
-      <div className="mx-auto mt-3 w-full max-w-[320px] min-w-0">
+      <div className="mx-auto mt-3 w-full max-w-[360px] min-w-0 lg:max-w-none">
         {scopeReady ? (
           <RadarScope
             stateId={stateId}
@@ -200,6 +200,7 @@ function RadarScope({
 }) {
   const rings = [56, 96, 136, 168];
   const uid = `vsv-${stateId || "desk"}-${cycleId.slice(0, 24) || "idle"}`;
+  const sweepSec = alert ? 4 : 5.5;
   return (
     <svg
       key={uid}
@@ -220,28 +221,55 @@ function RadarScope({
     >
       <defs>
         <radialGradient id={`${uid}-scope`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#141a16" />
-          <stop offset="100%" stopColor="#0b0f0c" />
+          <stop offset="0%" stopColor="#243028" />
+          <stop offset="42%" stopColor="#141a16" />
+          <stop offset="100%" stopColor="#070a08" />
         </radialGradient>
-        <linearGradient id={`${uid}-beam`} x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={`${uid}-beam`} x1="0" y1="1" x2="1" y2="0">
           <stop offset="0%" stopColor="#c4a574" stopOpacity="0" />
-          <stop offset="55%" stopColor="#7c9a72" stopOpacity="0.06" />
-          <stop offset="100%" stopColor="#c4a574" stopOpacity="0.18" />
+          <stop offset="45%" stopColor="#7c9a72" stopOpacity="0.12" />
+          <stop offset="82%" stopColor="#c4a574" stopOpacity="0.32" />
+          <stop offset="100%" stopColor="#e8d5b0" stopOpacity="0.55" />
         </linearGradient>
         <linearGradient id={`${uid}-bill`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2a2418" />
-          <stop offset="55%" stopColor="#1a211c" />
-          <stop offset="100%" stopColor="#141a16" />
+          <stop offset="0%" stopColor="#355a44" />
+          <stop offset="48%" stopColor="#1e3328" />
+          <stop offset="100%" stopColor="#13221a" />
         </linearGradient>
+        <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.4" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
-      <circle cx={CX} cy={CY} r={174} fill={`url(#${uid}-scope)`} stroke="#2a332c" />
+      <circle cx={CX} cy={CY} r={176} fill={`url(#${uid}-scope)`} />
+      <circle
+        cx={CX}
+        cy={CY}
+        r={174}
+        fill="none"
+        stroke="#c4a574"
+        strokeWidth="1.7"
+        strokeOpacity="0.85"
+      />
+      <circle
+        cx={CX}
+        cy={CY}
+        r={170}
+        fill="none"
+        stroke="#7c9a72"
+        strokeWidth="0.6"
+        strokeOpacity="0.35"
+      />
       {alert ? (
         <>
           <circle
             cx={CX}
             cy={CY}
-            r={176}
+            r={178}
             fill="none"
             stroke="#c4a574"
             style={{
@@ -250,32 +278,55 @@ function RadarScope({
           />
           <text
             x={CX}
-            y={22}
+            y={20}
             textAnchor="middle"
             fill="#c4a574"
-            fontSize="8"
+            fontSize="9"
             fontFamily="IBM Plex Mono, ui-monospace, monospace"
-            letterSpacing="2"
+            letterSpacing="2.4"
           >
             CONTACT
           </text>
         </>
       ) : null}
-      {rings.map((r) => (
+      <line
+        x1={CX}
+        y1={CY - 174}
+        x2={CX}
+        y2={CY + 174}
+        stroke="#7c9a72"
+        strokeOpacity="0.14"
+        strokeWidth="0.8"
+      />
+      <line
+        x1={CX - 174}
+        y1={CY}
+        x2={CX + 174}
+        y2={CY}
+        stroke="#7c9a72"
+        strokeOpacity="0.14"
+        strokeWidth="0.8"
+      />
+      {rings.map((r, i) => (
         <circle
           key={r}
           cx={CX}
           cy={CY}
           r={r}
           fill="none"
-          stroke="#7c9a72"
-          strokeOpacity="0.22"
-          strokeWidth="0.75"
+          stroke={i === rings.length - 1 ? "#c4a574" : "#7c9a72"}
+          strokeOpacity={i === rings.length - 1 ? 0.28 : 0.22}
+          strokeWidth={i === rings.length - 1 ? 1 : 0.85}
+          style={
+            reduce || i !== 1
+              ? undefined
+              : { animation: "vsv-ring-breathe 3.4s ease-in-out infinite" }
+          }
         />
       ))}
       {Array.from({ length: 36 }, (_, i) => {
         const a = (i * 10 * Math.PI) / 180;
-        const inner = i % 3 === 0 ? 168 : 172;
+        const inner = i % 3 === 0 ? 160 : 170;
         return (
           <line
             key={i}
@@ -284,8 +335,8 @@ function RadarScope({
             x2={r2(CX + Math.cos(a) * 174)}
             y2={r2(CY + Math.sin(a) * 174)}
             stroke="#c4a574"
-            strokeOpacity={i % 3 === 0 ? 0.35 : 0.16}
-            strokeWidth="0.8"
+            strokeOpacity={i % 3 === 0 ? 0.55 : 0.22}
+            strokeWidth={i % 3 === 0 ? 1.2 : 0.8}
           />
         );
       })}
@@ -294,21 +345,22 @@ function RadarScope({
         <g
           style={{
             transformOrigin: `${CX}px ${CY}px`,
-            animation: `vsv-radar-sweep ${alert ? "4s" : "5.5s"} linear infinite`,
+            animation: `vsv-radar-sweep ${sweepSec}s linear infinite`,
           }}
         >
           <path
-            d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 92} ${CY - 143} Z`}
+            d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 128} ${CY - 112} Z`}
             fill={`url(#${uid}-beam)`}
           />
           <line
             x1={CX}
             y1={CY}
             x2={CX}
-            y2={CY - 170}
-            stroke="#c4a574"
-            strokeOpacity="0.7"
-            strokeWidth="1.2"
+            y2={CY - 172}
+            stroke="#e8d5b0"
+            strokeOpacity="0.95"
+            strokeWidth="1.8"
+            filter={`url(#${uid}-glow)`}
           />
         </g>
       )}
@@ -325,6 +377,7 @@ function RadarScope({
           ping={false}
           reduce={reduce}
           fillId={`${uid}-bill`}
+          sweepSec={sweepSec}
         />
       ))}
 
@@ -340,10 +393,11 @@ function RadarScope({
           ping={alert && !reduce}
           reduce={reduce}
           fillId={`${uid}-bill`}
+          sweepSec={sweepSec}
         />
       ))}
 
-      <CashHub fillId={`${uid}-bill`} />
+      <CashHub fillId={`${uid}-bill`} reduce={reduce} />
     </svg>
   );
 }
@@ -358,6 +412,7 @@ function ScopeMark({
   ping,
   reduce,
   fillId,
+  sweepSec,
 }: {
   angle: number;
   radius: number;
@@ -368,26 +423,34 @@ function ScopeMark({
   ping: boolean;
   reduce: boolean;
   fillId: string;
+  sweepSec: number;
 }) {
   const rad = ((angle - 90) * Math.PI) / 180;
   const r = radius * 168;
   const x = r2(CX + Math.cos(rad) * r);
   const y = r2(CY + Math.sin(rad) * r);
+  const paint =
+    dim && !reduce
+      ? {
+          animation: `vsv-paint ${sweepSec}s linear infinite`,
+          animationDelay: `-${((angle % 360) / 360) * sweepSec}s`,
+        }
+      : reduce || dim
+        ? undefined
+        : { animation: "vsv-blip-in 0.55s ease-out both" };
   return (
     <g
       transform={`translate(${x} ${y})`}
-      opacity={dim ? 0.55 : 1}
+      opacity={dim && reduce ? 0.62 : dim && !reduce ? undefined : 1}
       data-radar-bills={bills}
-      style={{
-        animation: reduce || dim ? undefined : "vsv-blip-in 0.55s ease-out both",
-      }}
+      style={paint}
     >
       {ping ? (
         <circle
-          r="14"
+          r="16"
           fill="none"
           stroke="#c4a574"
-          strokeWidth="0.9"
+          strokeWidth="1.1"
           style={{
             animation: "vsv-ping 1.1s ease-out both",
             transformOrigin: "0 0",
@@ -398,16 +461,16 @@ function ScopeMark({
       {dim ? null : (
         <>
           <text
-            y={bills >= 3 ? 18 : 15}
+            y={bills >= 3 ? 20 : 17}
             textAnchor="middle"
             fill="#c4a574"
-            fontSize="6"
+            fontSize="6.5"
             fontFamily="IBM Plex Mono, ui-monospace, monospace"
           >
             {money(amount)}
           </text>
           <text
-            y={bills >= 3 ? 27 : 24}
+            y={bills >= 3 ? 29 : 26}
             textAnchor="middle"
             fill="#7c9a72"
             fontSize="5.5"
@@ -425,35 +488,45 @@ function CashStack({ bills, fillId }: { bills: 1 | 2 | 3; fillId: string }) {
   if (bills === 3) {
     return (
       <>
-        <DollarBill x={-16} y={-15} rotate={-14} fillId={fillId} />
-        <DollarBill x={-11} y={-9} rotate={8} fillId={fillId} />
-        <DollarBill x={-12} y={-3} rotate={-3} fillId={fillId} />
+        <DollarBill x={-18} y={-16} rotate={-14} fillId={fillId} />
+        <DollarBill x={-12} y={-10} rotate={8} fillId={fillId} />
+        <DollarBill x={-14} y={-3} rotate={-3} fillId={fillId} />
       </>
     );
   }
   if (bills === 2) {
     return (
       <>
-        <DollarBill x={-14} y={-12} rotate={-10} fillId={fillId} />
-        <DollarBill x={-11} y={-5} rotate={6} fillId={fillId} />
+        <DollarBill x={-16} y={-13} rotate={-10} fillId={fillId} />
+        <DollarBill x={-12} y={-5} rotate={6} fillId={fillId} />
       </>
     );
   }
-  return <DollarBill x={-12} y={-7} rotate={-4} fillId={fillId} />;
+  return <DollarBill x={-14} y={-8} rotate={-4} fillId={fillId} />;
 }
 
 /** Center pile of original $V chrome bills — not lottery art, not a lock. */
-function CashHub({ fillId }: { fillId: string }) {
+function CashHub({ fillId, reduce }: { fillId: string; reduce: boolean }) {
   return (
     <g transform={`translate(${CX} ${CY})`} data-radar-hub="cash">
-      <circle r="30" fill="#0b0f0c" stroke="#c4a574" strokeWidth="1.15" />
-      <g transform="translate(-12 -18) rotate(-16)">
+      <circle r="36" fill="#0b0f0c" />
+      <circle
+        r="36"
+        fill="none"
+        stroke="#c4a574"
+        strokeWidth="1.6"
+        style={
+          reduce ? undefined : { animation: "vsv-hub-glow 2.8s ease-in-out infinite" }
+        }
+      />
+      <circle r="30" fill="none" stroke="#7c9a72" strokeOpacity="0.45" strokeWidth="0.7" />
+      <g transform="translate(-14 -20) rotate(-16)">
         <DollarBill x={0} y={0} fillId={fillId} />
       </g>
-      <g transform="translate(-6 -11) rotate(11)">
+      <g transform="translate(-7 -12) rotate(11)">
         <DollarBill x={0} y={0} fillId={fillId} />
       </g>
-      <g transform="translate(-10 -5) rotate(-5)">
+      <g transform="translate(-12 -5) rotate(-5)">
         <DollarBill x={0} y={0} fillId={fillId} />
       </g>
     </g>
@@ -475,40 +548,41 @@ function DollarBill({
   return (
     <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
       <rect
-        width="24"
-        height="14"
-        rx="1.6"
+        width="28"
+        height="16"
+        rx="1.8"
         fill={`url(#${fillId})`}
         stroke="#c4a574"
-        strokeWidth="0.95"
+        strokeWidth="1.15"
       />
       <rect
-        x="1.4"
-        y="1.3"
-        width="21.2"
-        height="11.4"
+        x="1.5"
+        y="1.4"
+        width="25"
+        height="13.2"
         rx="1"
         fill="none"
         stroke="#7c9a72"
-        strokeOpacity="0.45"
-        strokeWidth="0.5"
+        strokeOpacity="0.55"
+        strokeWidth="0.55"
       />
+      <rect x="0" y="5.4" width="28" height="3.4" fill="#c4a574" opacity="0.42" />
       <text
-        x="9"
-        y="10"
+        x="10.5"
+        y="11.4"
         textAnchor="middle"
         fill="#c4a574"
-        fontSize="7"
+        fontSize="8"
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
       >
         $
       </text>
       <text
-        x="15.5"
-        y="10"
+        x="17.8"
+        y="11.4"
         textAnchor="middle"
-        fill="#7c9a72"
-        fontSize="7"
+        fill="#9bb892"
+        fontSize="8"
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
       >
         V
