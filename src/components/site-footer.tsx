@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useActiveState } from "@/lib/active-state";
 import { SpiderMark } from "@/components/mechanical-spider";
+import { TicketCopyright } from "@/components/ticket-copyright";
 import { SITE_NAME } from "@/lib/site";
 import { useI18n } from "@/lib/locale";
 
@@ -12,6 +13,7 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-line bg-surface">
+      <TicketCopyright />
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr]">
           <div>
