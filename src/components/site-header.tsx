@@ -7,6 +7,7 @@ import { authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useDeskAlert } from "@/lib/use-desk-alert";
 import { TrialCta } from "@/components/trial-cta";
+import { FullCatalogLink } from "@/components/full-catalog-link";
 import { SpiderMark } from "@/components/mechanical-spider";
 import { DeskSwitcher } from "@/components/state-selector";
 import { useAccess } from "@/lib/use-access";
@@ -190,16 +191,10 @@ function NavLinks({
             {pip}
           </a>
         ) : item.to === "/games" ? (
-          <Link
-            key={item.key}
-            to="/games"
-            search={deskPageSearch(stateId)}
-            className={className}
-            onClick={onNavigate}
-          >
+          <FullCatalogLink key={item.key} className={className} onClick={onNavigate}>
             {label}
             {pip}
-          </Link>
+          </FullCatalogLink>
         ) : (
           <Link key={item.key} to={item.to} className={className} onClick={onNavigate}>
             {label}

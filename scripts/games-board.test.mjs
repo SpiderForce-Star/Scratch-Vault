@@ -60,6 +60,9 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   const es = JSON.parse(read("src/locales/es.json"));
   assert.match(games, /buildGamesBoard/);
   assert.match(games, /GamesBoardView/);
+  assert.match(games, /LockedPanel/);
+  assert.match(games, /locked \? \[\]/);
+  assert.doesNotMatch(games, /catalog = snap\?\.games \?\? publicCatalog/);
   assert.doesNotMatch(games, /catalog-sort/);
   assert.doesNotMatch(games, /home\.sortHeat/);
   assert.doesNotMatch(home, /home\.allGames/);
@@ -163,6 +166,9 @@ test("Giant Jumbo Bucks #1996 has better $5 picks and skip $5", () => {
   assert.match(detail, /games\.betterPicks/);
   assert.match(detail, /games\.skipAtPrice/);
   assert.match(detail, /games\.seeAll/);
+  assert.match(detail, /isHomepageTeaseGame/);
+  assert.match(detail, /!locked && better/);
+  assert.match(detail, /!locked && skipAt/);
   assert.match(detail, /loader:/);
   assert.match(detail, /getDeskSnapshot/);
 });

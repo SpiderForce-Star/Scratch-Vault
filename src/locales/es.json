@@ -325,6 +325,8 @@
   "posted.lockedTitle": "El libro de nivel medio está en el Vault",
   "posted.lockedTeaser": "Vea conteos restantes y totales en dólares de cada nivel de premio publicado en este boleto.",
   "game.back": "Volver a la bóveda",
+  "game.lockedTitle": "Este boleto es Full Access",
+  "game.lockedTeaser": "Los tres de esta noche están en la mesa. El resto del tablero se abre con Full Access.",
   "card.officialTable": "Tabla oficial",
   "game.art": "La cara del boleto es una reconstrucción independiente, no arte oficial de {{lottery}}, y puede no coincidir con un boleto en su mano. La página oficial de premios restantes tiene el boleto real.",
   "game.bust": "Pase este. Los conteos publicados ya no respaldan un premio mayor útil en tienda. Eso no es una garantía: los conteos cambian a medida que se venden boletos.",
@@ -465,5 +467,7 @@
   "games.underFiveHint": "Boletos baratos. Cerrado salvo que lo abras.",
   "games.priceGroup": "${{price}}",
   "games.seeAll": "Ver todos los juegos",
+  "games.lockedTitle": "El tablero completo es Full Access",
+  "games.lockedTeaser": "Tres boletos para mirar. Una lista para pasar de largo. Crea una cuenta para abrir cada juego de $5 o más.",
   "games.empty": "Ningún juego de $5 o más coincide con ese filtro."
 }
