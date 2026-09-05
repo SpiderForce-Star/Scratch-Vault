@@ -1,28 +1,29 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-test("boot splash is once per session, 4s cap, skippable", () => {
+test("boot splash is once per session, 8s cap, skippable photoreal vault", () => {
   const src = readFileSync(join(ROOT, "src/components/boot-splash.tsx"), "utf8");
   const css = readFileSync(join(ROOT, "src/styles.css"), "utf8");
   assert.match(src, /BOOT_SHOWN_KEY = "vsv\.boot\.shown"/);
-  assert.match(src, /BOOT_FORCE_MS = 4000/);
+  assert.match(src, /BOOT_FORCE_MS = 8000/);
+  assert.match(src, /BOOT_VIDEO_SRC = "\/boot-vault\.mp4"/);
+  assert.match(src, /BOOT_POSTER_SRC = "\/boot-vault\.jpg"/);
   assert.match(src, /prefers-reduced-motion/);
   assert.match(src, /onClick/);
-  assert.match(src, /#c4a574/);
-  assert.match(src, /#7c9a72/);
+  assert.match(src, /muted/);
+  assert.match(src, /playsInline/);
   assert.match(src, /Opening Scratch Vault/);
-  assert.match(src, /function DollarBill/);
-  assert.match(src, /sv-boot-stack/);
-  assert.match(src, /sv-boot-fly/);
-  assert.match(src, /r="78"/);
-  assert.match(css, /sv-boot-fly/);
-  assert.match(css, /72cqmin/);
-  assert.match(css, /is-reduced \.sv-boot-fly/);
+  assert.doesNotMatch(src, /function DollarBill/);
+  assert.doesNotMatch(src, /sv-boot-fly/);
+  assert.match(css, /sv-boot-media/);
+  assert.match(css, /object-fit: contain/);
+  assert.ok(existsSync(join(ROOT, "public/boot-vault.mp4")));
+  assert.ok(existsSync(join(ROOT, "public/boot-vault.jpg")));
 });
 
 test("NativeRoot mounts BootSplash above AgeGate and holds the gate", () => {
