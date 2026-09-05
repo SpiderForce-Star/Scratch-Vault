@@ -248,26 +248,12 @@ function VaultHome() {
                 </>
               ) : null}
               {sold.length ? (
-                <div className="mb-4 mt-4 flex flex-wrap gap-1">
-                  {sold.map((price) => {
-                    const id = String(price) as PriceFilter;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setPrice(id)}
-                        className={cn(
-                          "min-h-11 min-w-11 rounded-md px-3 text-sm",
-                          filter === id
-                            ? "bg-gold text-accent-fg"
-                            : "bg-surface text-muted hover:text-fg",
-                        )}
-                      >
-                        ${price}
-                      </button>
-                    );
-                  })}
-                </div>
+                <PriceChipBar
+                  sold={sold}
+                  filter={filter}
+                  onSelect={setPrice}
+                  sticky
+                />
               ) : null}
               {newGames.length > 0 ? (
                 <div className="mb-6">
@@ -278,7 +264,7 @@ function VaultHome() {
                     {t("home.newTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-muted">{t("home.newSub")}</p>
-                  <div className="-mx-1 mt-3 flex gap-3 overflow-x-auto pb-2">
+                  <div className="mt-3 grid grid-cols-1 gap-3 md:flex md:gap-3 md:overflow-x-auto md:pb-2">
                     {newGames.map((game) => {
                       const heat = reports.get(game.number);
                       if (!heat) return null;
@@ -288,19 +274,17 @@ function VaultHome() {
                           to="/game/$number"
                           params={{ number: String(game.number) }}
                           search={deskSearch(game.stateId ?? viewState)}
-                          className="w-56 shrink-0 overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold"
+                          className="w-full overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold md:w-72 md:shrink-0"
                         >
                           <div className="overflow-hidden">
                             <TicketFace game={game} />
                           </div>
                           <div className="p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="truncate font-display text-base leading-snug">
-                                {game.name}
-                              </p>
-                              <BandChip band={heat.band} className="shrink-0" />
-                            </div>
-                            <div className="mt-2 flex items-center gap-2">
+                            <p className="line-clamp-2 font-display text-lg leading-snug break-normal hyphens-none">
+                              {game.name}
+                            </p>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <BandChip band={heat.band} />
                               <NewGameChip />
                               <p className="font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
                                 ${game.price}
@@ -446,6 +430,53 @@ function VaultHome() {
           </p>
         </div>
       </section>
+    </div>
+  );
+}
+
+function PriceChipBar({
+  sold,
+  filter,
+  onSelect,
+  sticky = false,
+}: {
+  sold: PricePoint[];
+  filter: PriceFilter;
+  onSelect: (next: PriceFilter) => void;
+  sticky?: boolean;
+}) {
+  const chips = sold.map((price) => {
+    const id = String(price) as PriceFilter;
+    return (
+      <button
+        key={id}
+        type="button"
+        onClick={() => onSelect(id)}
+        className={cn(
+          "min-h-11 min-w-11 rounded-md px-3 text-sm",
+          filter === id
+            ? "bg-gold text-accent-fg"
+            : "bg-surface text-muted hover:text-fg",
+        )}
+      >
+        ${price}
+      </button>
+    );
+  });
+
+  if (!sticky) {
+    return <div className="mb-4 mt-4 flex flex-wrap gap-1">{chips}</div>;
+  }
+
+  return (
+    <div
+      className={cn(
+        "mb-4 mt-4 flex flex-wrap gap-1",
+        "sticky top-14 z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
+        "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
+      )}
+    >
+      {chips}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import {
 } from "@/data/games";
 import { type HeatReport } from "@/lib/heat";
 import { getState } from "@/config/states";
-import { TicketFace } from "@/components/ticket-face";
+import { OfficialTableControl, TicketFace } from "@/components/ticket-face";
 import { deskSearch, useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { heatBandKey } from "@/lib/i18n";
@@ -54,7 +54,7 @@ export function TicketCard({
       )}
     >
       <div className="px-4 pt-4 pb-2">
-        <h2 className="font-display text-lg leading-snug tracking-tight text-fg">
+        <h2 className="line-clamp-2 font-display text-lg leading-snug tracking-tight text-fg break-normal hyphens-none">
           {game.name}
         </h2>
         <p className="mt-1 font-mono text-xs tracking-wide text-muted">
@@ -70,7 +70,7 @@ export function TicketCard({
             <NewGameChip />
           ) : (
             <>
-              <span className="inline-flex min-h-9 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
+              <span className="inline-flex min-h-10 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
                 {t("heat.score", { score: Math.round(heat.vault) })}
               </span>
               <BandChip band={forceBand ?? heat.band} />
@@ -78,6 +78,9 @@ export function TicketCard({
             </>
           )}
         </div>
+        {state.remainingPrizesUrl ? (
+          <OfficialTableControl href={state.remainingPrizesUrl} />
+        ) : null}
 
         <div className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
           <div>
@@ -153,7 +156,7 @@ export function BandChip({
   return (
     <span
       className={cn(
-        "inline-flex min-h-8 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
+        "inline-flex min-h-10 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
         map[band],
         className,
       )}
@@ -168,7 +171,7 @@ export function NewGameChip({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex min-h-8 items-center rounded-md border-2 border-gold bg-[#14240c] px-3 py-1.5 text-sm font-bold tracking-[0.14em] text-[#c8e08a] uppercase",
+        "inline-flex min-h-10 items-center rounded-md border-2 border-gold bg-[#14240c] px-3 py-1.5 text-sm font-bold tracking-[0.14em] text-[#c8e08a] uppercase",
         className,
       )}
     >
