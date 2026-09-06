@@ -301,6 +301,18 @@
   animation-play-state: paused;
 }
 
+.sv-desk-ribbon-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: sv-marquee 72s linear infinite;
+}
+
+.sv-desk-ribbon:hover .sv-desk-ribbon-track,
+.sv-desk-ribbon:focus-within .sv-desk-ribbon-track {
+  animation-play-state: paused;
+}
+
 /* First-open vault. JS owns reduced-motion and the 8s hard hide. */
 html[data-sv-boot="pending"] #sv-boot-paint,
 #sv-boot-paint {
@@ -358,6 +370,14 @@ html[data-sv-boot="done"] #sv-boot-paint {
   }
 
   .sv-marquee-static {
+    display: flex !important;
+  }
+
+  .sv-desk-ribbon {
+    display: none !important;
+  }
+
+  .sv-desk-ribbon-static {
     display: flex !important;
   }
 

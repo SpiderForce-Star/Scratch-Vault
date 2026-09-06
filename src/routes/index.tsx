@@ -26,6 +26,7 @@ import { TicketFace } from "@/components/ticket-face";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
+import { DeskRibbon } from "@/components/desk-ribbon";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
@@ -212,11 +213,13 @@ function VaultHome() {
     <div>
       <StateSelector value={viewState} onChange={selectState} />
       <DataModeBanner
+        leftover
         state={snap ? getState(snap.stateId) : getState(viewState)}
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
       />
+      <DeskRibbon />
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
