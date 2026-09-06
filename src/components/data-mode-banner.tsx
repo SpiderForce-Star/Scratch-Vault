@@ -5,11 +5,13 @@ export function DataModeBanner({
   state,
   loadError = null,
   dataMode,
+  leftover = false,
 }: {
   state: StateConfig;
   loadError?: string | null;
   stale?: boolean;
   dataMode?: DataMode;
+  leftover?: boolean;
 }) {
   const { t } = useI18n();
   const mode = dataMode ?? state.dataMode;
@@ -56,7 +58,9 @@ export function DataModeBanner({
   return (
     <div role="status" className="border-b border-line bg-raised/40 px-4 py-2 sm:px-6">
       <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
-        {t("banner.deskSnapshot")} {t("banner.scanHeadline")}
+        {leftover
+          ? t("banner.leftover")
+          : `${t("banner.deskSnapshot")} ${t("banner.scanHeadline")}`}
       </p>
     </div>
   );
