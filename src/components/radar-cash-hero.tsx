@@ -233,9 +233,9 @@ function RadarScope({
             <stop offset="100%" stopColor="#e8d5b0" stopOpacity="0.55" />
           </linearGradient>
           <linearGradient id={`${uid}-bill`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#3d6a4e" />
-            <stop offset="48%" stopColor="#1e3328" />
-            <stop offset="100%" stopColor="#13221a" />
+            <stop offset="0%" stopColor="#f3e7b0" />
+            <stop offset="38%" stopColor="#c9a227" />
+            <stop offset="100%" stopColor="#7a5a1e" />
           </linearGradient>
           <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="2.4" result="b" />
@@ -510,29 +510,10 @@ function ScopeMark({
 function CashStack({ bills, fillId }: { bills: 1 | 2 | 3; fillId: string }) {
   const n = bills + 1;
   return (
-    <g data-radar-stack="teller">
+    <g data-radar-stack="ingot">
       {Array.from({ length: n }, (_, i) => (
-        <DollarBill
-          key={i}
-          x={-14}
-          y={-9 - (n - 1 - i) * 2.15}
-          rotate={0}
-          fillId={fillId}
-        />
+        <GoldBar key={i} y={-(n - 1 - i) * 4.2} fillId={fillId} />
       ))}
-      <rect x="-16.2" y="-2.4" width="32.4" height="6.2" fill="#c9a227" />
-      <rect x="-16.2" y="-2.4" width="32.4" height="0.85" fill="#f3e7b0" />
-      <rect x="-16.2" y="3" width="32.4" height="0.5" fill="#8a6a2e" />
-      <text
-        x="0"
-        y="2.15"
-        textAnchor="middle"
-        fill="#3a2a0a"
-        fontSize="4.6"
-        fontFamily="IBM Plex Mono, ui-monospace, monospace"
-      >
-        $
-      </text>
     </g>
   );
 }
@@ -542,91 +523,50 @@ function CashHub({ reduce }: { reduce: boolean }) {
   return (
     <div
       className={["vsv-hub3d", reduce ? "is-static" : "is-live"].join(" ")}
-      data-radar-hub="cash-strap"
+      data-radar-hub="gold-bar"
       aria-hidden="true"
     >
       <div className="vsv-hub3d-scene">
         <div
-          className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(0px, 10px, -12px)" }}
+          className="vsv-hub3d-ingot"
+          style={{ transform: "translate3d(0px, 12px, -10px)" }}
         />
         <div
-          className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(0px, 6px, -8px)" }}
+          className="vsv-hub3d-ingot"
+          style={{ transform: "translate3d(0px, 6px, -5px)" }}
         />
         <div
-          className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(0px, 2px, -4px)" }}
-        />
-        <div
-          className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(0px, -2px, 0px)" }}
+          className="vsv-hub3d-ingot"
+          style={{ transform: "translate3d(0px, 0px, 0px)" }}
         >
           <span className="vsv-hub3d-mark">$</span>
         </div>
-        <div
-          className="vsv-hub3d-bar"
-          style={{ transform: "translate3d(0px, 2px, 8px)" }}
-        />
       </div>
     </div>
   );
 }
 
-/** Original strapped bill — reconstruction, not lottery art, no $V mark. */
-function DollarBill({
-  x,
-  y,
-  rotate = 0,
-  fillId,
-}: {
-  x: number;
-  y: number;
-  rotate?: number;
-  fillId: string;
-}) {
+/** Vault gold ingot. Reads at radar-blip size; not lottery art. */
+function GoldBar({ y, fillId }: { y: number; fillId: string }) {
   return (
-    <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
-      <rect x="1.1" y="1.8" width="28" height="16" rx="1.8" fill="#0a140f" />
-      <rect
-        width="28"
-        height="16"
-        rx="1.8"
+    <g transform={`translate(0 ${y})`}>
+      <polygon
+        points="-15,5 15,5 11,-5 -11,-5"
         fill={`url(#${fillId})`}
-        stroke="#c4a574"
-        strokeWidth="1.15"
+        stroke="#8a6a2e"
+        strokeWidth="0.7"
       />
-      <rect
-        x="1.4"
-        y="1.3"
-        width="25.2"
-        height="13.4"
-        rx="1"
-        fill="none"
-        stroke="#7c9a72"
-        strokeOpacity="0.6"
-        strokeWidth="0.55"
+      <polygon points="-11,-5 11,-5 9.2,-7.4 -9.2,-7.4" fill="#f7edd4" />
+      <polygon
+        points="-11,-5 -9.2,-7.4 -9.2,2.6 -15,5"
+        fill="#8a6a2e"
+        opacity="0.55"
       />
-      <ellipse
-        cx="7.2"
-        cy="8"
-        rx="3.1"
-        ry="4.1"
-        fill="#9bb892"
-        fillOpacity="0.28"
-        stroke="#c4a574"
-        strokeWidth="0.55"
-        strokeOpacity="0.75"
-      />
-      <rect x="0" y="5.2" width="28" height="4" fill="#c4a574" opacity="0.78" />
-      <rect x="0" y="5.2" width="28" height="0.55" fill="#e8d5b0" opacity="0.7" />
-      <rect x="0" y="8.65" width="28" height="0.4" fill="#8a6a2e" opacity="0.45" />
       <text
-        x="22.4"
-        y="13.7"
+        y="2.2"
         textAnchor="middle"
-        fill="#e8d5b0"
-        fontSize="5.6"
+        fill="#3a2a0a"
+        fontSize="5.4"
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
       >
         $

@@ -162,7 +162,7 @@ test("public home mounts remaining-prize radar beside the trip desk for phone an
   assert.equal(home.includes("lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]"), true);
   assert.equal(radar.includes("hidden lg:block"), false);
   assert.equal(radar.includes("playGoldBleeps"), true);
-  assert.equal(radar.includes("DollarBill"), true);
+  assert.equal(radar.includes("GoldBar"), true);
   assert.equal(radar.includes("CashHub"), true);
   assert.equal(radar.includes("vsv-paint"), true);
   assert.equal(radar.includes('data-radar-hub="cash"'), true);
