@@ -34,6 +34,22 @@ export function persistAgeConfirmation(): void {
   }
 }
 
+/** Block the tap that closed splash/age-gate from hitting 7 days free / pricing. */
+export function freezeUiClicks(ms = 700): void {
+  if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-sv-freeze", "1");
+  window.setTimeout(() => {
+    document.documentElement.removeAttribute("data-sv-freeze");
+  }, ms);
+}
+
+const GUEST_HOME_PATHS = new Set(["/pricing", "/signup", "/login", "/account"]);
+
+export function guestShouldLandHome(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  return GUEST_HOME_PATHS.has(path);
+}
+
 export async function initNativeChrome(): Promise<void> {
   if (!isNativeApp()) return;
   try {

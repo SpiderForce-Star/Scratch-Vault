@@ -508,24 +508,33 @@ function ScopeMark({
 }
 
 function CashStack({ bills, fillId }: { bills: 1 | 2 | 3; fillId: string }) {
-  if (bills === 3) {
-    return (
-      <>
-        <DollarBill x={-18} y={-18} rotate={-16} fillId={fillId} />
-        <DollarBill x={-13} y={-11} rotate={7} fillId={fillId} />
-        <DollarBill x={-14} y={-3} rotate={-2} fillId={fillId} />
-      </>
-    );
-  }
-  if (bills === 2) {
-    return (
-      <>
-        <DollarBill x={-16} y={-14} rotate={-11} fillId={fillId} />
-        <DollarBill x={-12} y={-5} rotate={5} fillId={fillId} />
-      </>
-    );
-  }
-  return <DollarBill x={-14} y={-8} rotate={-4} fillId={fillId} />;
+  const n = bills + 1;
+  return (
+    <g data-radar-stack="teller">
+      {Array.from({ length: n }, (_, i) => (
+        <DollarBill
+          key={i}
+          x={-14}
+          y={-9 - (n - 1 - i) * 2.15}
+          rotate={0}
+          fillId={fillId}
+        />
+      ))}
+      <rect x="-16.2" y="-2.4" width="32.4" height="6.2" fill="#c9a227" />
+      <rect x="-16.2" y="-2.4" width="32.4" height="0.85" fill="#f3e7b0" />
+      <rect x="-16.2" y="3" width="32.4" height="0.5" fill="#8a6a2e" />
+      <text
+        x="0"
+        y="2.15"
+        textAnchor="middle"
+        fill="#3a2a0a"
+        fontSize="4.6"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+      >
+        $
+      </text>
+    </g>
+  );
 }
 
 /** CSS 3D hub. HTML overlay because preserve-3d inside SVG flattens. */
@@ -533,31 +542,31 @@ function CashHub({ reduce }: { reduce: boolean }) {
   return (
     <div
       className={["vsv-hub3d", reduce ? "is-static" : "is-live"].join(" ")}
-      data-radar-hub="cash-gold"
+      data-radar-hub="cash-strap"
       aria-hidden="true"
     >
       <div className="vsv-hub3d-scene">
         <div
           className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(-8px, 6px, -12px) rotateZ(-16deg)" }}
-        >
-          <span className="vsv-hub3d-mark">$</span>
-        </div>
+          style={{ transform: "translate3d(0px, 10px, -12px)" }}
+        />
         <div
           className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(5px, 2px, -4px) rotateZ(10deg)" }}
-        >
-          <span className="vsv-hub3d-mark">$</span>
-        </div>
+          style={{ transform: "translate3d(0px, 6px, -8px)" }}
+        />
         <div
           className="vsv-hub3d-bill"
-          style={{ transform: "translate3d(-3px, 5px, 4px) rotateZ(-5deg)" }}
+          style={{ transform: "translate3d(0px, 2px, -4px)" }}
+        />
+        <div
+          className="vsv-hub3d-bill"
+          style={{ transform: "translate3d(0px, -2px, 0px)" }}
         >
           <span className="vsv-hub3d-mark">$</span>
         </div>
         <div
           className="vsv-hub3d-bar"
-          style={{ transform: "translate3d(0px, 12px, 14px) rotateZ(-8deg)" }}
+          style={{ transform: "translate3d(0px, 2px, 8px)" }}
         />
       </div>
     </div>
