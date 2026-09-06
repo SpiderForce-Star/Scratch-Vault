@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useActiveState } from "@/lib/active-state";
-import { SpiderMark } from "@/components/mechanical-spider";
 import { TicketCopyright } from "@/components/ticket-copyright";
 import { SITE_NAME } from "@/lib/site";
 import { useI18n } from "@/lib/locale";
@@ -95,10 +94,19 @@ export function SiteFooter() {
           href="https://webbspinnervisions.net"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] text-faint uppercase hover:text-gold"
+          className="group mx-auto flex max-w-xs flex-col items-center gap-3 pt-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+          aria-label={t("footer.built")}
         >
-          <SpiderMark className="size-4 shrink-0 text-gold" />
-          {t("footer.built")}
+          <img
+            src="/studio/wsv-spider.jpg"
+            alt=""
+            width={800}
+            height={528}
+            className="h-auto w-44 mix-blend-lighten sm:w-56"
+          />
+          <span className="font-mono text-[10px] tracking-[0.18em] text-faint uppercase group-hover:text-gold">
+            {t("footer.built")}
+          </span>
         </a>
       </div>
     </footer>

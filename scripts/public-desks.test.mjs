@@ -185,7 +185,10 @@ test("phone menu opens on the current public desk", () => {
   assert.match(selector, /PUBLIC_STATE_LIST/);
   assert.match(selector, /hidden border-b border-line sm:block/);
   assert.doesNotMatch(selector, /\bArizona\b/);
-  assert.match(footer, /SpiderMark/);
+  assert.match(footer, /studio\/wsv-spider\.jpg/);
+  assert.match(footer, /webbspinnervisions\.net/);
+  assert.match(footer, /footer\.built/);
+  assert.doesNotMatch(footer, /SpiderMark/);
   assert.match(footer, /TicketCopyright/);
   assert.equal(en["header.deskChip"], "{{short}} · Current");
   assert.doesNotMatch(en["home.listCurrent"], /live store|inventory/i);
