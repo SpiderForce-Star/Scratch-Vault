@@ -194,10 +194,10 @@
 @keyframes vsv-hub3d-yaw {
   0%,
   100% {
-    transform: rotateX(22deg) rotateZ(-4deg) rotateY(-12deg);
+    transform: rotateX(28deg) rotateZ(-6deg) rotateY(-12deg);
   }
   50% {
-    transform: rotateX(22deg) rotateZ(-4deg) rotateY(12deg);
+    transform: rotateX(28deg) rotateZ(-6deg) rotateY(12deg);
   }
 }
 
@@ -213,10 +213,10 @@
 }
 
 .vsv-hub3d-scene {
-  width: 68px;
-  height: 40px;
+  width: 72px;
+  height: 42px;
   transform-style: preserve-3d;
-  transform: rotateX(22deg) rotateZ(-4deg);
+  transform: rotateX(28deg) rotateZ(-6deg);
 }
 
 .vsv-hub3d.is-live .vsv-hub3d-scene {
@@ -227,67 +227,41 @@
   transform-style: preserve-3d;
 }
 
-.vsv-hub3d-bill {
+.vsv-hub3d-ingot {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 54px;
-  height: 24px;
-  margin: -12px 0 0 -27px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #4a7d5a 0%, #2a4a36 42%, #163024 100%);
-  border: 1px solid #9bb892;
+  width: 58px;
+  height: 20px;
+  margin: -10px 0 0 -29px;
+  background: linear-gradient(180deg, #f3e7b0 0%, #c9a227 42%, #8a6a2e 100%);
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
   box-shadow:
-    0 1px 0 #0a140f,
-    0 2px 0 #0a140f;
+    0 2px 0 #5c471c,
+    0 4px 8px rgb(0 0 0 / 0.45);
 }
 
-.vsv-hub3d-bill::before {
+.vsv-hub3d-ingot::before {
   content: "";
   position: absolute;
-  left: 6px;
-  top: 5px;
-  width: 9px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid rgb(196 165 116 / 0.55);
-  background: rgb(155 184 146 / 0.22);
-}
-
-.vsv-hub3d-bill::after {
-  display: none;
+  left: 10%;
+  right: 10%;
+  top: 0;
+  height: 5px;
+  background: rgb(247 237 212 / 0.7);
 }
 
 .vsv-hub3d-mark {
   position: absolute;
-  right: 6px;
-  bottom: 3px;
+  left: 0;
+  right: 0;
+  top: 4px;
   z-index: 1;
-  color: #d7e6d4;
+  color: #3a2a0a;
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 9px;
   line-height: 1;
-}
-
-.vsv-hub3d-bar {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 60px;
-  height: 11px;
-  margin: -5px 0 0 -30px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      #c9a227 0 6px,
-      #e6c85a 6px 7px,
-      #c9a227 7px 12px
-    );
-  border-top: 1px solid #f3e7b0;
-  border-bottom: 1px solid #8a6a2e;
-  box-shadow:
-    0 2px 0 #5c471c,
-    0 4px 8px rgb(0 0 0 / 0.4);
+  text-align: center;
 }
 
 .sv-marquee-track {

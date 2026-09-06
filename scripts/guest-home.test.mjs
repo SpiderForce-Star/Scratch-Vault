@@ -36,10 +36,12 @@ test("guests bounce home from pricing after the age gate, not while shopping lat
   assert.match(css, /pointer-events: none/);
 });
 
-test("radar markers are teller-strapped cash stacks", () => {
+test("radar markers and hub are gold ingots", () => {
   const hero = read("src/components/radar-cash-hero.tsx");
-  assert.match(hero, /data-radar-stack="teller"/);
-  assert.match(hero, /data-radar-hub="cash-strap"/);
-  assert.match(hero, /function DollarBill/);
-  assert.match(hero, /<DollarBill/);
+  const css = read("src/styles.css");
+  assert.match(hero, /data-radar-stack="ingot"/);
+  assert.match(hero, /data-radar-hub="gold-bar"/);
+  assert.match(hero, /function GoldBar/);
+  assert.match(hero, /<GoldBar/);
+  assert.match(css, /vsv-hub3d-ingot/);
 });

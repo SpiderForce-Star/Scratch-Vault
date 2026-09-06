@@ -104,6 +104,8 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   assert.match(ribbon, /sv-desk-ribbon-static/);
   assert.match(ribbon, /sv-desk-ribbon-track/);
   assert.doesNotMatch(ribbon, /bg-plum/);
+  assert.doesNotMatch(ribbon, /via-\[#243d28\]/);
+  assert.match(ribbon, /via-\[#c45c18\]/);
   assert.doesNotMatch(ribbon, /HIDDEN_STATE/);
   assert.match(css, /sv-desk-ribbon-track/);
   assert.match(css, /animation: sv-marquee 72s linear infinite/);
