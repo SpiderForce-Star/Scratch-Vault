@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   exitNativeApp,
+  freezeUiClicks,
+  guestShouldLandHome,
   hasConfirmedAge,
   isNativeApp,
   persistAgeConfirmation,
 } from "@/lib/native";
+import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { useI18n } from "@/lib/locale";
 
 /** First-visit 18+ confirmation on web and in the native shells. */
 export function AgeGate() {
   const { t } = useI18n();
+  const navigate = useNavigate();
+  const user = useCurrentUser();
   const [open, setOpen] = useState(
     () => typeof window !== "undefined" && !hasConfirmedAge(),
   );
@@ -53,7 +59,11 @@ export function AgeGate() {
             className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
             onClick={() => {
               persistAgeConfirmation();
+              freezeUiClicks();
               setOpen(false);
+              if (!user && guestShouldLandHome(window.location.pathname)) {
+                void navigate({ to: "/", replace: true });
+              }
             }}
           >
             {t("age.continue")}

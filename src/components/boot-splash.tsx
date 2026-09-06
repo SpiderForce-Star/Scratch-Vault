@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { freezeUiClicks } from "@/lib/native";
 
 export const BOOT_SHOWN_KEY = "vsv.boot.shown";
 /** 6s vault clip + fade + slow-net slack. Hard-hide even if the video stalls. */
@@ -48,6 +49,7 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
     const finish = (immediate: boolean) => {
       if (finished.current || cancelled) return;
       finished.current = true;
+      freezeUiClicks();
       markShown();
       const clip = videoRef.current;
       if (clip) {

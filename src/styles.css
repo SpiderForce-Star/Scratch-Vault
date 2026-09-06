@@ -194,10 +194,10 @@
 @keyframes vsv-hub3d-yaw {
   0%,
   100% {
-    transform: rotateX(18deg) rotateZ(-8deg) rotateY(-16deg);
+    transform: rotateX(22deg) rotateZ(-4deg) rotateY(-12deg);
   }
   50% {
-    transform: rotateX(18deg) rotateZ(-8deg) rotateY(16deg);
+    transform: rotateX(22deg) rotateZ(-4deg) rotateY(12deg);
   }
 }
 
@@ -213,10 +213,10 @@
 }
 
 .vsv-hub3d-scene {
-  width: 78px;
-  height: 78px;
+  width: 68px;
+  height: 40px;
   transform-style: preserve-3d;
-  transform: rotateX(18deg) rotateZ(-8deg);
+  transform: rotateX(22deg) rotateZ(-4deg);
 }
 
 .vsv-hub3d.is-live .vsv-hub3d-scene {
@@ -231,47 +231,41 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 52px;
-  height: 28px;
-  margin: -14px 0 0 -26px;
-  border-radius: 3px;
-  background: linear-gradient(135deg, #3d6a4e 0%, #1e3328 48%, #13221a 100%);
-  border: 1px solid #c4a574;
+  width: 54px;
+  height: 24px;
+  margin: -12px 0 0 -27px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #4a7d5a 0%, #2a4a36 42%, #163024 100%);
+  border: 1px solid #9bb892;
   box-shadow:
-    1px 2px 0 #0a140f,
-    2px 4px 0 #0a140f;
+    0 1px 0 #0a140f,
+    0 2px 0 #0a140f;
 }
 
 .vsv-hub3d-bill::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 6px;
-  width: 10px;
-  height: 15px;
+  left: 6px;
+  top: 5px;
+  width: 9px;
+  height: 14px;
   border-radius: 50%;
-  border: 1px solid rgb(196 165 116 / 0.7);
-  background: rgb(155 184 146 / 0.28);
+  border: 1px solid rgb(196 165 116 / 0.55);
+  background: rgb(155 184 146 / 0.22);
 }
 
 .vsv-hub3d-bill::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 10px;
-  height: 7px;
-  background: linear-gradient(#e8d5b0, #c4a574 50%, #8a6a2e);
+  display: none;
 }
 
 .vsv-hub3d-mark {
   position: absolute;
-  right: 5px;
-  bottom: 2px;
+  right: 6px;
+  bottom: 3px;
   z-index: 1;
-  color: #e8d5b0;
+  color: #d7e6d4;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 8px;
   line-height: 1;
 }
 
@@ -279,14 +273,21 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 44px;
-  height: 16px;
-  margin: -4px 0 0 -22px;
-  background: linear-gradient(#e8d5b0 0%, #c4a574 42%, #8a6a2e 100%);
-  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+  width: 60px;
+  height: 11px;
+  margin: -5px 0 0 -30px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #c9a227 0 6px,
+      #e6c85a 6px 7px,
+      #c9a227 7px 12px
+    );
+  border-top: 1px solid #f3e7b0;
+  border-bottom: 1px solid #8a6a2e;
   box-shadow:
-    0 3px 0 #5c471c,
-    0 6px 10px rgb(0 0 0 / 0.45);
+    0 2px 0 #5c471c,
+    0 4px 8px rgb(0 0 0 / 0.4);
 }
 
 .sv-marquee-track {
@@ -311,6 +312,11 @@
 .sv-desk-ribbon:hover .sv-desk-ribbon-track,
 .sv-desk-ribbon:focus-within .sv-desk-ribbon-track {
   animation-play-state: paused;
+}
+
+html[data-sv-freeze] a,
+html[data-sv-freeze] button {
+  pointer-events: none !important;
 }
 
 /* First-open vault. JS owns reduced-motion and the 8s hard hide. */
