@@ -5,11 +5,12 @@ import {
   type Game,
 } from "@/data/games";
 import { type HeatReport } from "@/lib/heat";
+import { displayedHeat } from "@/lib/pace";
 import { getState } from "@/config/states";
 import { OfficialTableControl, TicketFace } from "@/components/ticket-face";
 import { deskSearch, useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
-import { heatBandKey } from "@/lib/i18n";
+import { heatBandKey, paceBandKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 function remainingText(locked: boolean, value: number | null): string {
@@ -71,9 +72,10 @@ export function TicketCard({
           ) : (
             <>
               <span className="inline-flex min-h-10 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
-                {t("heat.score", { score: Math.round(heat.vault) })}
+                {t("heat.score", { score: displayedHeat(heat) })}
               </span>
               <BandChip band={forceBand ?? heat.band} />
+              <PaceChip band={heat.paceBand} leftoverNow={locked ? null : heat.leftoverNow} />
               {isNew ? <NewGameChip /> : null}
             </>
           )}
@@ -162,6 +164,38 @@ export function BandChip({
       )}
     >
       {t(heatBandKey(band))}
+    </span>
+  );
+}
+
+export function PaceChip({
+  band,
+  leftoverNow,
+  className,
+}: {
+  band?: HeatReport["paceBand"];
+  leftoverNow?: number | null;
+  className?: string;
+}) {
+  const { t } = useI18n();
+  if (!band || band === "unknown") return null;
+  const map = {
+    still: "border-cool bg-cool-ink text-cool",
+    quiet: "border-line bg-surface text-muted",
+    moving: "border-warm bg-warm-ink text-warm",
+    fast: "border-hot bg-hot-ink text-hot",
+  };
+  return (
+    <span
+      className={cn(
+        "inline-flex min-h-10 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
+        map[band],
+        className,
+      )}
+      title={t("pace.hint")}
+    >
+      {t(paceBandKey(band))}
+      {leftoverNow != null ? ` · ${leftoverNow.toLocaleString()}` : ""}
     </span>
   );
 }

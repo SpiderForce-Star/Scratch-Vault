@@ -7,6 +7,7 @@ import {
   type StateId,
 } from "@/config/states";
 import { loadDeskCatalog, type LoadedDesk } from "@/data/states/load.server";
+import { readPriorDesk } from "@/data/states/snapshots.server";
 import {
   buildDesk,
   cashBlips,
@@ -22,6 +23,7 @@ import {
 import type { DeskPick, DeskReview, HeatReport, TonightCard } from "./heat";
 import type { DeskSnapshot } from "./desk";
 import { accessFromRow, loadUserBilling } from "./subscription.server";
+import { daysBetween, scoreCatalogPace } from "./pace";
 
 function reportRecord(reports: Map<number, HeatReport>): Record<string, HeatReport> {
   return Object.fromEntries([...reports.entries()].map(([k, v]) => [String(k), v]));
@@ -128,7 +130,10 @@ export async function buildDeskSnapshot(
   const dataMode = honestDataMode(state, loaded);
 
   if (paid) {
-    const reports = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
+    const scored = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
+    const prior = await readPriorDesk(state.id, loaded.fetchedAt);
+    const days = daysBetween(prior?.fetchedAt, loaded.fetchedAt);
+    const reports = scoreCatalogPace(prior?.catalog, games, days, scored);
     const tonight = games.length ? pickTonightHeat(games, reports) : emptyTonight();
     return {
       paid: true,
@@ -154,9 +159,13 @@ export async function buildDeskSnapshot(
   const scoredReports = new Map(
     scoredGames.map((game) => [game.number, scoreGamePublic(game, ctx)]),
   );
-  const desk = buildDesk(scoredGames, scoredReports, ctx);
+  const prior = await readPriorDesk(state.id, loaded.fetchedAt);
+  const days = daysBetween(prior?.fetchedAt, loaded.fetchedAt);
+  // Overlap the full leftover book, not publicGame (which strips $50+ remaining).
+  const pacedReports = scoreCatalogPace(prior?.catalog, games, days, scoredReports);
+  const desk = buildDesk(scoredGames, pacedReports, ctx);
   const tonight = games.length
-    ? pickTonightHeat(scoredGames, scoredReports)
+    ? pickTonightHeat(scoredGames, pacedReports)
     : emptyTonight();
 
   return {
@@ -167,7 +176,7 @@ export async function buildDeskSnapshot(
     holdback: ctx,
     gameCount: games.length,
     games: games.map(guestFacingGame),
-    reports: reportRecord(guestReports(scoredReports)),
+    reports: reportRecord(guestReports(pacedReports)),
     desk: guestDesk(desk),
     blips: cashBlips(scoredGames, 12).map((blip) => ({ ...blip, remaining: null })),
     stats: catalogHeat(scoredGames, (game) => scoreGamePublic(game, ctx)),

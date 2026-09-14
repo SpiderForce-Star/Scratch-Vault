@@ -23,13 +23,17 @@ operation.
    Game names identify publicly offered games only.
 3. **Public remaining counts are facts.** Rankings compile numbers the lottery
    already publishes. They are not live store inventory.
-4. **No “system to win.”** Printed odds do not change. Remaining counts do not
+4. **Leftover pace is claims, not tickets sold.** Comparing two official
+   remaining-prize snapshots estimates how fast listed prizes are being claimed.
+   That pace is aisle context and a small Heat ranking factor. It is **not**
+   unit sales, store inventory, or a change in printed odds.
+5. **No “system to win.”** Printed odds do not change. Remaining counts do not
    improve the odds of any individual ticket. Copy must keep saying so.
-5. **Age.** App use is 18+. Ticket purchase / redeem: **21+ Arizona**,
+6. **Age.** App use is 18+. Ticket purchase / redeem: **21+ Arizona**,
    **21+ Iowa (Iowa Code § 99G.30)**, **18+** in TN KY SC OK MI NC PA TX MO
    OH IL MA ID CT.
-6. **Responsible play.** 1-800-GAMBLER plus the state helpline when it differs.
-7. **Subscriptions.** ROSCA still requires (a) clear material terms before
+7. **Responsible play.** 1-800-GAMBLER plus the state helpline when it differs.
+8. **Subscriptions.** ROSCA still requires (a) clear material terms before
    collecting a card, (b) express consent, (c) a simple same-medium cancel.
    Illinois 815 ILCS 601 also requires a 30–60 day notice before a 12-month
    plan auto-renews for more than one month, and online-only cancel when the

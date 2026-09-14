@@ -193,6 +193,9 @@ function GamesCatalog() {
           <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
             {t("games.title")}
           </h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+            {t("games.paceLine")}
+          </p>
           <p className="mt-3">
             <Link
               to="/"

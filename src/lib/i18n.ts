@@ -79,4 +79,13 @@ export function heatBandKey(
   return "heat.pass";
 }
 
+export function paceBandKey(
+  band: "still" | "quiet" | "moving" | "fast",
+): MessageKey {
+  if (band === "still") return "pace.still";
+  if (band === "quiet") return "pace.quiet";
+  if (band === "moving") return "pace.moving";
+  return "pace.fast";
+}
+
 export default i18n;

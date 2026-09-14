@@ -6,6 +6,7 @@ import { TrialCta } from "@/components/trial-cta";
 import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { heatBandKey } from "@/lib/i18n";
+import { displayedHeat } from "@/lib/pace";
 
 export function TripCard({
   games,
@@ -91,7 +92,7 @@ function TripRow({ game, heat }: { game: Game; heat: HeatReport }) {
         </p>
       </div>
       <span className="shrink-0 font-mono text-xs text-gold">
-        {t("heat.score", { score: Math.round(heat.vault) })}
+        {t("heat.score", { score: displayedHeat(heat) })}
       </span>
     </div>
   );

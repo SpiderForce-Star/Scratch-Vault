@@ -30,6 +30,10 @@ function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   return game.price === Number(filter);
 }
 
+function deskOf(heat: HeatReport): number {
+  return heat.deskScore ?? heat.vault;
+}
+
 function clamp(n: number, lo = 0, hi = 100) {
   return Math.max(lo, Math.min(hi, n));
 }
@@ -113,6 +117,12 @@ export function scoreGame(
       midRemaining: null,
       lowRemaining: null,
       remainingUnknown: true,
+      paceBand: "unknown",
+      leftoverPct: null,
+      leftoverDaily: null,
+      leftoverNow: null,
+      leftoverDays: null,
+      deskScore: 0,
     };
   }
 
@@ -203,6 +213,12 @@ export function scoreGame(
     midRemaining,
     lowRemaining,
     remainingUnknown: topRemaining == null && midRemaining == null,
+    paceBand: "unknown",
+    leftoverPct: null,
+    leftoverDaily: null,
+    leftoverNow: null,
+    leftoverDays: null,
+    deskScore: vault,
   };
 }
 
@@ -238,6 +254,9 @@ export function redactHeatReport(heat: HeatReport): HeatReport {
     lowRemaining: null,
     mediumKnown: false,
     remainingUnknown: heat.remainingUnknown,
+    leftoverPct: null,
+    leftoverDaily: null,
+    leftoverNow: null,
   };
 }
 
@@ -298,7 +317,7 @@ export function pickTonightHeat(
     const aSec = a.secondary ?? -1;
     const bSec = b.secondary ?? -1;
     if (bSec !== aSec) return bSec - aSec;
-    return b.heat.vault - a.heat.vault;
+    return deskOf(b.heat) - deskOf(a.heat);
   });
 
   const cards: TonightCard[] = pool.slice(0, Math.min(limit, pool.length)).map((row) => ({
@@ -438,7 +457,7 @@ export function buildDesk(
   const pick = (list: typeof rows): DeskPick | null => {
     const live = list.filter((r) => !r.heat.bust);
     if (!live.length) return null;
-    live.sort((a, b) => b.heat.vault - a.heat.vault);
+    live.sort((a, b) => deskOf(b.heat) - deskOf(a.heat));
     const best = live[0];
     return { ...best, why: why(best.game, best.heat) };
   };
@@ -465,7 +484,7 @@ export function buildDesk(
         r.heat.band !== "new" &&
         (r.heat.bust || (r.heat.effectiveTop === 0 && r.heat.role === "jackpot")),
     )
-    .sort((a, b) => a.heat.vault - b.heat.vault)
+    .sort((a, b) => deskOf(a.heat) - deskOf(b.heat))
     .slice(0, 8)
     .map((r) => ({
       ...r,
@@ -479,7 +498,7 @@ export function buildDesk(
 
   const official = rows
     .filter((r) => isOfficialSource(r.game.source))
-    .sort((a, b) => b.heat.vault - a.heat.vault)
+    .sort((a, b) => deskOf(b.heat) - deskOf(a.heat))
     .map((r) => ({ ...r, why: why(r.game, r.heat) }));
 
   return {

@@ -6,6 +6,7 @@ import {
   pickTripGames,
   skipChipBand,
   soldPricePoints,
+  sortGames,
   type HeatReport,
 } from "./heat";
 import type { Game } from "@/data/games";
@@ -81,5 +82,17 @@ describe("skip", () => {
     ]);
     expect(pickTripGames(games, reports, "5", 3).map((row) => row.number)).toEqual([153]);
     expect(pickSkipGames(games, reports, "5", 5).map((row) => row.number)).toEqual([107]);
+  });
+});
+
+describe("game list ranking", () => {
+  it("heat sort uses leftover-pace deskScore, not vault alone", () => {
+    const a = g(1, 10);
+    const b = g(2, 10);
+    const reports = new Map<number, HeatReport>([
+      [1, { ...hot, vault: 50, deskScore: 47 }],
+      [2, { ...hot, vault: 50, deskScore: 60 }],
+    ]);
+    expect(sortGames([a, b], "heat", reports).map((row) => row.number)).toEqual([2, 1]);
   });
 });

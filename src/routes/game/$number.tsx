@@ -17,7 +17,7 @@ import {
   reportMap,
   type HeatReport,
 } from "@/lib/heat";
-import { BandChip, TicketCard } from "@/components/ticket-card";
+import { BandChip, PaceChip, TicketCard } from "@/components/ticket-card";
 import { FullCatalogLink } from "@/components/full-catalog-link";
 import { LockedPanel } from "@/components/locked-panel";
 import { TicketFace } from "@/components/ticket-face";
@@ -246,7 +246,10 @@ function GameDetail() {
                     : ""}
               </p>
             </div>
-            <BandChip band={heat.band} />
+            <div className="flex flex-wrap items-center gap-2">
+              <BandChip band={heat.band} />
+              <PaceChip band={heat.paceBand} leftoverNow={heat.leftoverNow} />
+            </div>
           </div>
         </div>
         <p className="mt-2 text-xs leading-relaxed text-faint">
@@ -256,9 +259,11 @@ function GameDetail() {
         <section className="mt-8 grid gap-4 sm:grid-cols-3">
           <HeatPanel
             title={t("heat.vaultScore")}
-            value={heat.vault}
+            value={heat.deskScore ?? heat.vault}
             note={
-              heat.role === "cash-out"
+              heat.paceBand && heat.paceBand !== "unknown"
+                ? t("pace.heatNote")
+                : heat.role === "cash-out"
                 ? t("heat.cashOut")
                 : t("heat.combined")
             }

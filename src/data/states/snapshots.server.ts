@@ -309,10 +309,15 @@ export async function archivePriorSnapshot(row: DeskSnapshotRow): Promise<void> 
  * Prior trusted catalog for a capture cycle: archived snapshot, then bundled last-good.
  * Same snapshot as current → null (do not invent a drop).
  */
-export async function readPriorCatalog(
+export type PriorDesk = {
+  catalog: Game[];
+  fetchedAt: string;
+};
+
+export async function readPriorDesk(
   stateId: StateId,
   currentFetchedAt: string | null,
-): Promise<Game[] | null> {
+): Promise<PriorDesk | null> {
   if (hasPostgres() && currentFetchedAt) {
     try {
       const sql = await getSqlOrThrow();
@@ -326,7 +331,9 @@ export async function readPriorCatalog(
         [stateId, currentFetchedAt],
       );
       const catalog = rows[0] ? asGames(rows[0].games) : null;
-      if (catalog?.length) return catalog;
+      if (catalog?.length) {
+        return { catalog, fetchedAt: asIso(rows[0].fetched_at) };
+      }
     } catch {
       /* table missing — fall through */
     }
@@ -334,11 +341,19 @@ export async function readPriorCatalog(
 
   const mem = priorMemory.get(stateId);
   if (mem?.catalog?.length && mem.fetchedAt !== currentFetchedAt) {
-    return mem.catalog;
+    return { catalog: mem.catalog, fetchedAt: mem.fetchedAt };
   }
 
   const bundled = readBundledLastGood(stateId);
   if (!bundled?.catalog?.length) return null;
   if (currentFetchedAt && bundled.fetchedAt === currentFetchedAt) return null;
-  return bundled.catalog;
+  return { catalog: bundled.catalog, fetchedAt: bundled.fetchedAt };
+}
+
+export async function readPriorCatalog(
+  stateId: StateId,
+  currentFetchedAt: string | null,
+): Promise<Game[] | null> {
+  const row = await readPriorDesk(stateId, currentFetchedAt);
+  return row?.catalog ?? null;
 }

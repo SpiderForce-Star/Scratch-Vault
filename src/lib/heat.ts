@@ -37,6 +37,14 @@ export type HeatReport = {
   lowRemaining: number | null;
   /** True when top and mid remaining were both unpublished at score time. Survives guest redaction. */
   remainingUnknown?: boolean;
+  /** Leftover-prize claim pace. Unknown until two snapshots overlap. */
+  paceBand?: "unknown" | "still" | "quiet" | "moving" | "fast";
+  leftoverPct?: number | null;
+  leftoverDaily?: number | null;
+  leftoverNow?: number | null;
+  leftoverDays?: number | null;
+  /** Ranking score: remaining heat plus leftover pace. Printed odds never change. */
+  deskScore?: number;
 };
 
 /** Compact remaining-heat card for the top-of-desk strip. */
@@ -161,10 +169,8 @@ export function pickOpeningFiveDollarGames(
       return heat ? openingBand(heat) === band : false;
     });
     candidates.sort((a, b) => {
-      const ha = reports.get(a.number)!;
-      const hb = reports.get(b.number)!;
-      if (band === "bust") return ha.vault - hb.vault;
-      return hb.vault - ha.vault;
+      if (band === "bust") return vaultOf(reports, a) - vaultOf(reports, b);
+      return vaultOf(reports, b) - vaultOf(reports, a);
     });
     const next = candidates[0];
     if (next) {
@@ -176,7 +182,7 @@ export function pickOpeningFiveDollarGames(
   if (picked.length < 4) {
     const rest = fives
       .filter((g) => !used.has(g.number) && reports.has(g.number))
-      .sort((a, b) => (reports.get(b.number)?.vault ?? 0) - (reports.get(a.number)?.vault ?? 0));
+      .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a));
     for (const game of rest) {
       if (picked.length >= 4) break;
       used.add(game.number);
@@ -259,7 +265,8 @@ export function pickNewGames(
 }
 
 function vaultOf(reports: Map<number, HeatReport>, game: Game): number {
-  return reports.get(game.number)?.vault ?? 0;
+  const heat = reports.get(game.number);
+  return heat?.deskScore ?? heat?.vault ?? 0;
 }
 
 function matchesBoardQuery(game: Game, query: string): boolean {
@@ -362,12 +369,12 @@ export function sortGames(
     const ra = reports.get(a.number);
     const rb = reports.get(b.number);
     if (!ra || !rb) return a.number - b.number;
-    if (key === "heat") return rb.vault - ra.vault;
+    if (key === "heat") return (rb.deskScore ?? rb.vault) - (ra.deskScore ?? ra.vault);
     if (key === "grand") return rb.grand - ra.grand;
     if (key === "medium") return rb.medium - ra.medium;
     if (key === "safest") {
       if (ra.bust !== rb.bust) return Number(ra.bust) - Number(rb.bust);
-      return rb.vault - ra.vault;
+      return (rb.deskScore ?? rb.vault) - (ra.deskScore ?? ra.vault);
     }
     if (key === "price") return a.price - b.price || a.number - b.number;
     return a.name.localeCompare(b.name);
