@@ -75,6 +75,8 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   assert.match(home, /home\.skipKicker/);
   assert.match(games, /games\.underFive/);
   assert.match(board, /games\.newKicker/);
+  assert.match(board, /games\.endingKicker/);
+  assert.match(board, /games\.endingTitle/);
   assert.match(board, /games\.hotTitle/);
   assert.match(board, /games\.warmTitle/);
   assert.match(board, /home\.skipKicker/);
@@ -124,7 +126,7 @@ test("TN $2/$3 stay out of New, Hot, Warm, and Skip", () => {
   const { catalog, reports } = scored(tnCatalog());
   const board = buildGamesBoard(catalog, reports, "all");
   const cheapNames = /Jumbo Bucks Seasons|^20X$/;
-  for (const section of [board.newGames, board.hot, board.warm, board.skip]) {
+  for (const section of [board.newGames, board.endingSoon, board.hot, board.warm, board.skip]) {
     assert.equal(section.some((g) => g.price < 5), false);
     assert.equal(section.some((g) => cheapNames.test(g.name) && g.price < 5), false);
   }
@@ -182,6 +184,7 @@ test("Kentucky uses the same Games board sections", () => {
   assert.equal(board.newGames.some((g) => g.price < 5), false);
   assert.equal(board.hot.some((g) => g.price < 5), false);
   assert.equal(board.warm.some((g) => g.price < 5), false);
+  assert.equal(board.endingSoon.some((g) => g.price < 5), false);
   assert.ok(board.hot.length + board.warm.length + board.skip.length > 0);
   const games = read("src/routes/games.tsx");
   const card = read("src/components/ticket-card.tsx");
@@ -201,7 +204,7 @@ test("public last-good desks keep $2/$3 out of New, Hot, Warm, and Skip", () => 
       snap.catalog.map((g) => ({ ...g, stateId: id })),
     );
     const board = buildGamesBoard(catalog, reports, "all");
-    for (const section of [board.newGames, board.hot, board.warm, board.skip]) {
+    for (const section of [board.newGames, board.endingSoon, board.hot, board.warm, board.skip]) {
       assert.equal(
         section.some((g) => g.price < 5),
         false,

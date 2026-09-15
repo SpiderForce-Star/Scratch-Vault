@@ -4,6 +4,7 @@ import {
   moneyFull,
   type Game,
 } from "@/data/games";
+import { formatYmdLabel, isEndingSoon } from "@/data/ended-games";
 import { type HeatReport } from "@/lib/heat";
 import { displayedHeat } from "@/lib/pace";
 import { getState } from "@/config/states";
@@ -76,6 +77,7 @@ export function TicketCard({
               </span>
               <BandChip band={forceBand ?? heat.band} />
               <PaceChip band={heat.paceBand} leftoverNow={locked ? null : heat.leftoverNow} />
+              <EndingSoonChip game={game} />
               {isNew ? <NewGameChip /> : null}
             </>
           )}
@@ -134,6 +136,14 @@ export function TicketCard({
         </p>
         {unposted ? (
           <p className="text-xs text-gold">{t("card.unposted")}</p>
+        ) : null}
+        {isEndingSoon(game) && game.endDate ? (
+          <p className="text-xs text-muted">
+            {t("card.lastDay", { date: formatYmdLabel(game.endDate) })}
+            {game.lastClaimDate
+              ? ` · ${t("card.lastClaim", { date: formatYmdLabel(game.lastClaimDate) })}`
+              : ""}
+          </p>
         ) : null}
       </div>
     </Link>
@@ -210,6 +220,32 @@ export function NewGameChip({ className }: { className?: string }) {
       )}
     >
       {t("card.newGame")}
+    </span>
+  );
+}
+
+export function EndingSoonChip({
+  game,
+  className,
+}: {
+  game: Game;
+  className?: string;
+}) {
+  const { t } = useI18n();
+  if (!isEndingSoon(game)) return null;
+  return (
+    <span
+      className={cn(
+        "inline-flex min-h-10 items-center rounded-md border-2 border-gold bg-[#14240c] px-3 py-1.5 text-sm font-bold tracking-[0.12em] text-[#c8e08a] uppercase",
+        className,
+      )}
+      title={
+        game.endDate
+          ? t("card.lastDay", { date: formatYmdLabel(game.endDate) })
+          : t("card.endingSoon")
+      }
+    >
+      {t("card.endingSoon")}
     </span>
   );
 }
