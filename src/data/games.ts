@@ -35,6 +35,10 @@ export type Game = {
   stateId?: string;
   /** Official new-games listing (or missing from last-good). Do not invent remaining. */
   fresh?: boolean;
+  /** Official last day to buy / game-end (YYYY-MM-DD). Missing when the lottery has not posted one. */
+  endDate?: string;
+  /** Official last day to claim (YYYY-MM-DD). Only when the lottery published it. */
+  lastClaimDate?: string;
 };
 
 export {
