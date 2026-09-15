@@ -11,6 +11,7 @@ import {
   type HeatReport,
 } from "./heat";
 import { applyPace } from "./pace";
+import { secondaryBandForPrice } from "./heat.server";
 import type { Game } from "@/data/games";
 
 const hot: HeatReport = {
@@ -168,6 +169,19 @@ describe("leftover pace stickers", () => {
     expect(board.hot.map((row) => row.number)).toEqual([152]);
     expect(board.warm.map((row) => row.number)).toEqual([153]);
     expect(board.skip.map((row) => row.number)).toEqual([151]);
+  });
+});
+
+describe("price-scaled secondary bands", () => {
+  it("keeps $5 / $10 / $20 and adds $25 / $30 / $50", () => {
+    expect(secondaryBandForPrice(5)).toEqual({ min: 3_000, max: 7_000 });
+    expect(secondaryBandForPrice(10)).toEqual({ min: 5_000, max: 10_000 });
+    expect(secondaryBandForPrice(20)).toEqual({ min: 10_000, max: 40_000 });
+    expect(secondaryBandForPrice(25)).toEqual({ min: 10_000, max: 50_000 });
+    expect(secondaryBandForPrice(30)).toEqual({ min: 15_000, max: 75_000 });
+    expect(secondaryBandForPrice(50)).toEqual({ min: 25_000, max: 100_000 });
+    expect(secondaryBandForPrice(1)).toBeNull();
+    expect(secondaryBandForPrice(3)).toBeNull();
   });
 });
 

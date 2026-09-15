@@ -176,7 +176,7 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     "heat.neonFoot",
   ];
   const banned =
-    /higher probability of winning|better odds|system to win|more likely to win/i;
+    /higher probability|better odds|system to win|more likely to win|expected value|\bEV\b|tickets purchased/i;
   for (const key of recipeKeys) {
     assert.equal(typeof en[key], "string");
     assert.equal(typeof es[key], "string");
@@ -185,9 +185,12 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     assert.doesNotMatch(es[key], banned);
   }
   assert.match(en["heat.recipeLead"], /aisle context/i);
-  assert.match(en["heat.recipeLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
-  assert.match(en["heat.recipe2"], /prize amount, not the ticket price/);
-  assert.match(en["heat.recipe3"], /Skip stays Skip/);
+  assert.match(en["heat.recipeLead"], /every \$5–\$50 card on every public desk/);
+  assert.match(en["heat.recipeLead"], /not a chance of winning/);
+  assert.match(en["heat.recipe1"], /\$25 \/ \$30 \/ \$50/);
+  assert.match(en["heat.recipe2"], /cannot be Fast or Moving/);
+  assert.match(en["heat.recipe3"], /damped leftover-pace bump/);
+  assert.match(en["heat.recipe3"], /Printed odds never change/);
   assert.match(en["heat.recipeWhy"], /Printed odds never change/);
   assert.match(en["heat.recipeWhy"], /18\+/);
   assert.match(en["heat.statLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
@@ -199,13 +202,10 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   assert.match(en["heat.statResult"], /does not change the odds/);
   assert.match(en["heat.statNote"], /claims/);
   assert.match(en["heat.neonKicker"], /Every \$5–\$50 card/);
-  assert.match(
-    en["heat.neonTitle"],
-    /every \$5, \$10, \$20, \$25, \$30, and \$50 game/,
-  );
-  assert.match(en["heat.neonBody"], /prize-row decay on every ticket price/);
-  assert.match(en["heat.neonBody"], /not “only \$50 tickets.”/);
-  assert.match(en["heat.neonFoot"], /not the ticket price/);
+  assert.match(en["heat.neonTitle"], /leftover mix \+ 16-day claim pace/);
+  assert.match(en["heat.neonBody"], /not the chance a ticket wins/);
+  assert.match(en["heat.neonBody"], /Printed odds never change/);
+  assert.match(en["heat.neonFoot"], /Claims over time/);
   assert.match(en["heat.neonFoot"], /18\+/);
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 
@@ -232,6 +232,8 @@ test("leftover math stays prize-row $50+ on every loaded $5–$50 game", () => {
   const states = read("src/config/states.ts");
   assert.match(pace, /const BOOK_MIN = 50/);
   assert.match(pace, /if \(tier\.amount < BOOK_MIN\) continue/);
+  assert.match(pace, /leftoverConfidence/);
+  assert.match(pace, /leftoverPrior < 8/);
   assert.doesNotMatch(pace, /game\.price\s*===?\s*50/);
   assert.doesNotMatch(pace, /PRICE_POINTS/);
   assert.match(pace, /for \(const game of current\)/);

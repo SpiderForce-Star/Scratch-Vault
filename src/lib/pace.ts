@@ -17,6 +17,8 @@ export type PaceReport = {
   days: number | null;
   /** Additive lift applied to Heat (vault). Does not change printed odds. */
   lift: number;
+  /** 0–1. Thin leftover books get a smaller bump. Null when unknown. */
+  leftoverConfidence: number | null;
 };
 
 export const EMPTY_PACE: PaceReport = {
@@ -27,6 +29,7 @@ export const EMPTY_PACE: PaceReport = {
   leftoverPrior: null,
   days: null,
   lift: 0,
+  leftoverConfidence: null,
 };
 
 const BOOK_MIN = 50;
@@ -69,22 +72,34 @@ export function daysBetween(fromIso: string | null | undefined, toIso: string | 
 export function overlapLeftover(
   prior: Game,
   current: Game,
-): { prior: number; now: number; pct: number } | null {
+): { prior: number; now: number; pct: number; sharedTiers: number } | null {
   const oldBook = leftoverBook(prior);
   const newBook = leftoverBook(current);
   let priorSum = 0;
   let nowSum = 0;
-  let shared = 0;
+  let sharedTiers = 0;
   for (const [amount, oldRem] of oldBook) {
     const nowRem = newBook.get(amount);
     if (nowRem == null) continue;
-    shared += 1;
+    sharedTiers += 1;
     priorSum += oldRem;
     nowSum += nowRem;
   }
-  if (!shared || priorSum <= 0) return null;
+  if (!sharedTiers || priorSum <= 0) return null;
   const pct = ((priorSum - nowSum) / priorSum) * 100;
-  return { prior: priorSum, now: nowSum, pct };
+  return { prior: priorSum, now: nowSum, pct, sharedTiers };
+}
+
+/** Thin leftover books must not scream Fast. */
+export function leftoverPaceConfidence(leftoverPrior: number, sharedTiers: number): number {
+  const size = Math.min(1, leftoverPrior / 40);
+  const breadth = sharedTiers >= 2 ? 1 : 0.6;
+  return size * breadth;
+}
+
+export function capPaceBand(band: PaceBand, leftoverPrior: number): PaceBand {
+  if (leftoverPrior < 8 && (band === "fast" || band === "moving")) return "quiet";
+  return band;
 }
 
 /** Band leftover % as if it were a 16-day window so labels stay stable. */
@@ -121,16 +136,20 @@ export function scoreGamePace(
   const windowDays = days != null && days >= 0.5 ? days : null;
   const daily = windowDays ? overlap.pct / windowDays : overlap.pct;
   const pct16 = windowDays ? daily * 16 : overlap.pct;
-  const band = paceBandFromPct16(pct16);
-  const lift = paceLift(band, heat);
+  const leftoverPrior = overlap.prior;
+  const leftoverConfidence = leftoverPaceConfidence(leftoverPrior, overlap.sharedTiers);
+  const band = capPaceBand(paceBandFromPct16(pct16), leftoverPrior);
+  const rawLift = paceLift(band, heat);
+  const lift = Math.round(rawLift * leftoverConfidence);
   return {
     band,
     leftoverPct: pct16,
     leftoverDaily: daily,
     leftoverNow: overlap.now,
-    leftoverPrior: overlap.prior,
+    leftoverPrior,
     days: windowDays,
     lift,
+    leftoverConfidence,
   };
 }
 
@@ -166,6 +185,7 @@ export function applyPace(heat: HeatReport, pace: PaceReport): HeatReport {
       leftoverDaily: null,
       leftoverNow: null,
       leftoverDays: null,
+      leftoverConfidence: null,
       deskScore: heat.deskScore ?? heat.vault,
       band: "new",
     };
@@ -178,6 +198,7 @@ export function applyPace(heat: HeatReport, pace: PaceReport): HeatReport {
     leftoverDaily: pace.leftoverDaily,
     leftoverNow: pace.leftoverNow,
     leftoverDays: pace.days,
+    leftoverConfidence: pace.leftoverConfidence ?? null,
     deskScore,
     band: pacedHeatBand(heat, deskScore),
   };
