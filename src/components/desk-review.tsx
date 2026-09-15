@@ -156,6 +156,7 @@ function Mini({ label, value }: { label: string; value: string }) {
 
 function PickCard({ kicker, pick }: { kicker: string; pick: DeskPick }) {
   const { stateId } = useActiveState();
+  const { t } = useI18n();
   return (
     <Link
       to="/game/$number"
@@ -170,7 +171,10 @@ function PickCard({ kicker, pick }: { kicker: string; pick: DeskPick }) {
       <p className="font-display text-lg leading-snug">{pick.game.name}</p>
       <p className="text-sm text-muted">{pick.why}</p>
       <p className="font-mono text-xs text-faint">
-        Vault {Math.round(pick.heat.vault)} · Med {Math.round(pick.heat.medium)}
+        {t("desk.vaultMed", {
+          vault: Math.round(pick.heat.vault),
+          med: Math.round(pick.heat.medium),
+        })}
       </p>
     </Link>
   );
@@ -178,8 +182,9 @@ function PickCard({ kicker, pick }: { kicker: string; pick: DeskPick }) {
 
 function PickList({ picks }: { picks: DeskPick[] }) {
   const { stateId } = useActiveState();
+  const { t } = useI18n();
   if (!picks.length) {
-    return <p className="mt-3 text-sm text-muted">None flagged.</p>;
+    return <p className="mt-3 text-sm text-muted">{t("desk.none")}</p>;
   }
   return (
     <ul className="mt-3 divide-y divide-line border border-line">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { freezeUiClicks } from "@/lib/native";
+import i18n from "@/lib/i18n";
 
 export const BOOT_SHOWN_KEY = "vsv.boot.shown";
 /** 6s vault clip + fade + slow-net slack. Hard-hide even if the video stalls. */
@@ -145,7 +146,7 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
         .join(" ")}
       role="dialog"
       aria-modal="true"
-      aria-label="Opening Scratch Vault. Tap to skip."
+      aria-label={i18n.t("boot.aria")}
       data-testid="boot-splash"
       data-phase={phase}
       onClick={() => skipRef.current()}

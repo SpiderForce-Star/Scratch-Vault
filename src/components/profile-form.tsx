@@ -8,6 +8,17 @@ import {
   type BillingProfile,
 } from "@/lib/profile";
 import { useI18n } from "@/lib/locale";
+import type { MessageKey } from "@/lib/i18n";
+
+function profileErr(
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+  err: unknown,
+  fallback: MessageKey,
+): string {
+  const msg = err instanceof Error ? err.message : "";
+  if (msg.startsWith("profile.err")) return t(msg as MessageKey);
+  return t(fallback);
+}
 
 export function ProfileForm({
   onSaved,
@@ -54,7 +65,7 @@ export function ProfileForm({
       }
       setError(t("pricing.checkoutFail"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("pricing.checkoutFail"));
+      setError(profileErr(t, err, "pricing.checkoutFail"));
     } finally {
       setCheckoutBusy(false);
       setBusy(false);
@@ -85,7 +96,7 @@ export function ProfileForm({
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : t("profile.loadFail"));
+        setError(profileErr(t, err, "profile.loadFail"));
         setLoaded(true);
       });
     return () => {
@@ -120,7 +131,7 @@ export function ProfileForm({
         return;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("profile.saveFail"));
+      setError(profileErr(t, err, "profile.saveFail"));
     } finally {
       setBusy(false);
     }
@@ -185,7 +196,7 @@ export function ProfileForm({
           <option value="">{t("profile.select")}</option>
           {PROFILE_HOME_STATES.map((id) => (
             <option key={id} value={id}>
-              {homeStateLabel(id)}
+              {id === "other" ? t("profile.stateOther") : homeStateLabel(id)}
             </option>
           ))}
         </select>

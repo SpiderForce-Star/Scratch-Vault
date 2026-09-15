@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { isNativeApp } from "@/lib/native";
+import { useI18n } from "@/lib/locale";
 
 const DISMISS_KEY = "vsv.install.coach.dismissed";
 
 type PromptEvent = Event & { prompt: () => Promise<void> };
 
 export function InstallCoach() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [ios, setIos] = useState(false);
   const [prompt, setPrompt] = useState<PromptEvent | null>(null);
@@ -47,18 +49,17 @@ export function InstallCoach() {
     <div className="border-b border-line bg-raised/80 px-4 py-3 sm:hidden">
       <div className="mx-auto flex max-w-6xl flex-col gap-2">
         <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-          Add Scratch Vault to your home screen
+          {t("install.kicker")}
         </p>
         {ios ? (
           <ol className="list-decimal space-y-1 pl-5 text-sm text-muted">
-            <li>Tap Share</li>
-            <li>Add to Home Screen</li>
-            <li>Add — then open Scratch Vault from the icon</li>
+            <li>{t("install.ios1")}</li>
+            <li>{t("install.ios2")}</li>
+            <li>{t("install.ios3")}</li>
           </ol>
         ) : (
           <p className="text-sm text-muted">
-            Put the desk on your home screen. Tap once at the store, then put
-            the phone away.
+            {t("install.android")}
           </p>
         )}
         <div className="flex flex-wrap gap-2">
@@ -71,7 +72,7 @@ export function InstallCoach() {
                 dismiss();
               }}
             >
-              Add Scratch Vault to your home screen
+              {t("install.add")}
             </button>
           ) : null}
           <button
@@ -79,7 +80,7 @@ export function InstallCoach() {
             className="inline-flex min-h-11 items-center px-3 text-sm text-muted underline underline-offset-4"
             onClick={() => dismiss()}
           >
-            Dismiss
+            {t("install.dismiss")}
           </button>
         </div>
       </div>

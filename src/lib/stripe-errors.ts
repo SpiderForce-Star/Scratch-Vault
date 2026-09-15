@@ -11,6 +11,28 @@ export const CHECKOUT_PUBLIC = {
   portal: "We couldn't open billing. Please try again in a moment.",
 } as const;
 
+export function checkoutCopyKey(
+  msg: string | null | undefined,
+):
+  | "stripe.canceled"
+  | "stripe.declined"
+  | "stripe.failed"
+  | "stripe.network"
+  | "stripe.server"
+  | "stripe.config"
+  | "stripe.portal"
+  | null {
+  if (!msg) return null;
+  if (msg === CHECKOUT_PUBLIC.canceled) return "stripe.canceled";
+  if (msg === CHECKOUT_PUBLIC.declined) return "stripe.declined";
+  if (msg === CHECKOUT_PUBLIC.failed) return "stripe.failed";
+  if (msg === CHECKOUT_PUBLIC.network) return "stripe.network";
+  if (msg === CHECKOUT_PUBLIC.server) return "stripe.server";
+  if (msg === CHECKOUT_PUBLIC.config) return "stripe.config";
+  if (msg === CHECKOUT_PUBLIC.portal) return "stripe.portal";
+  return null;
+}
+
 export function logStripe(scope: string, err: unknown, extra?: Record<string, unknown>): void {
   const stripe = stripeShape(err);
   console.error("[stripe]", scope, {

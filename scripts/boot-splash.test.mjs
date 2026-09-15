@@ -17,7 +17,7 @@ test("boot splash is once per session, 8s cap, skippable photoreal vault", () =>
   assert.match(src, /onClick/);
   assert.match(src, /muted/);
   assert.match(src, /playsInline/);
-  assert.match(src, /Opening Scratch Vault/);
+  assert.match(src, /boot\.aria/);
   assert.doesNotMatch(src, /function DollarBill/);
   assert.doesNotMatch(src, /sv-boot-fly/);
   assert.match(css, /sv-boot-media/);

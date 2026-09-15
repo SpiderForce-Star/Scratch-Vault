@@ -16,19 +16,17 @@ import {
 } from "@/lib/iap";
 import {
   formatBillingDate,
-  planLabel,
-  subscriptionStatusCopy,
+  subscriptionStatusKey,
   type BillingSummary,
 } from "@/lib/subscription";
-import { publicPortalMessage } from "@/lib/stripe-errors";
+import { checkoutCopyKey, publicPortalMessage } from "@/lib/stripe-errors";
 import {
   deskNotifyEnabled,
   enableDeskNotifications,
 } from "@/lib/desk-alert";
-import { TRIAL_CTA } from "@/components/trial-cta";
 import { ProfileForm } from "@/components/profile-form";
 import { pageHead } from "@/lib/site";
-import { NO_REFUNDS_ACCOUNT, NO_REFUNDS_LINE } from "@/lib/billing-policy";
+import { useI18n } from "@/lib/locale";
 
 export const Route = createFileRoute("/account")({
   validateSearch: (search: Record<string, unknown>): {
@@ -60,6 +58,8 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
+  const { t, locale } = useI18n();
+  const dateLocale = locale === "es" ? "es-US" : "en-US";
   const { complete, plan: checkoutPlan } = Route.useSearch();
   const selectedPlan = checkoutPlan ?? "monthly";
   const { user, isPending } = useCurrentUserState();
@@ -78,7 +78,7 @@ function AccountPage() {
       void getNativeAccess()
         .then(setNativeAccess)
         .catch((err) => {
-          setError(err instanceof Error ? err.message : "Could not load purchases.");
+          setError(err instanceof Error ? err.message : t("account.loadPurchases"));
         });
     }
     setNotifyOn(deskNotifyEnabled());
@@ -87,16 +87,16 @@ function AccountPage() {
         .then(setSummary)
         .catch((err) => {
           if (!native) {
-            setError(err instanceof Error ? err.message : "Could not load billing.");
+            setError(err instanceof Error ? err.message : t("account.loadBilling"));
           }
         });
     }
-  }, [user, isPending, native]);
+  }, [user, isPending, native, t]);
 
   if (isPending) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-sm text-muted">
-        Loading account…
+        {t("account.loading")}
       </div>
     );
   }
@@ -143,8 +143,8 @@ function AccountPage() {
     } catch (err) {
       setError(
         err instanceof Error && err.message.startsWith("No billing customer")
-          ? err.message
-          : publicPortalMessage(err),
+          ? t("account.loadBilling")
+          : t(checkoutCopyKey(publicPortalMessage(err)) ?? "stripe.portal"),
       );
       setBusy(null);
     }
@@ -157,10 +157,10 @@ function AccountPage() {
       const access = await restoreNativePurchases();
       setNativeAccess(access);
       if (!access.paid) {
-        setError("No active Full Access purchase was found for this store account.");
+        setError(t("pricing.restoreEmpty"));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Restore failed.");
+      setError(err instanceof Error ? err.message : t("pricing.restoreFailed"));
     } finally {
       setBusy(null);
     }
@@ -172,7 +172,7 @@ function AccountPage() {
     try {
       await manageNativeSubscription();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not open subscription settings.");
+      setError(err instanceof Error ? err.message : t("account.manageFail"));
     } finally {
       setBusy(null);
     }
@@ -185,29 +185,39 @@ function AccountPage() {
       const next = await setCancelAtPeriodEnd({ data: { cancel } });
       setSummary(next);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update renewal.");
+      setError(err instanceof Error ? err.message : t("account.renewFail"));
     } finally {
       setBusy(null);
     }
   };
 
   const signedInAs =
-    user?.primaryEmail ?? user?.displayName ?? (native ? "Store account" : "Signed in");
+    user?.primaryEmail ?? user?.displayName ?? (native ? t("account.storeAccount") : t("account.signedIn"));
+  const billedDate = formatBillingDate(periodEnd, dateLocale);
+  const trialDate = formatBillingDate(trialEnd ?? periodEnd, dateLocale);
+  const statusKey = subscriptionStatusKey(status);
   const planStatus = cancelScheduled
-    ? `Opted out. Access through ${formatBillingDate(periodEnd)}.`
+    ? t("account.optedOut", { date: billedDate })
     : status === "trialing"
-      ? `Trial. Trial ends ${formatBillingDate(trialEnd ?? periodEnd)}.`
+      ? t("account.trialEnds", { date: trialDate })
       : paid
-        ? `Active. Next charge ${formatBillingDate(periodEnd)}.`
-        : (subscriptionStatusCopy(status) ??
-          "No Full Access yet. Complete your profile and add a card to start the 7-day trial.");
+        ? t("account.activeNext", { date: billedDate })
+        : statusKey
+          ? t(statusKey)
+          : t("account.noAccess");
+  const planName =
+    billingPlan === "annual"
+      ? t("account.planAnnual")
+      : billingPlan === "monthly"
+        ? t("account.planMonthly")
+        : t("account.planNone");
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12 sm:px-6">
       <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
-        Account
+        {t("nav.account")}
       </p>
-      <h1 className="mt-3 font-display text-4xl tracking-tight">Your desk</h1>
+      <h1 className="mt-3 font-display text-4xl tracking-tight">{t("account.title")}</h1>
       <p className="mt-2 text-sm text-muted">{signedInAs}</p>
 
       {user && !native && !paid ? (
@@ -218,10 +228,10 @@ function AccountPage() {
 
       <div className="mt-8 rounded-xl border border-line bg-surface p-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-          Plan
+          {t("account.plan")}
         </p>
         <p className="mt-2 font-display text-2xl">
-          {paid ? planLabel(billingPlan ?? null) : "Locked"}
+          {paid ? planName : t("account.locked")}
         </p>
         <p className="mt-1 text-sm text-muted">{planStatus}</p>
 
@@ -233,7 +243,7 @@ function AccountPage() {
                   to="/pricing"
                   className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
                 >
-                  {TRIAL_CTA}
+                  {t("cta.trial")}
                 </Link>
               ) : null}
               <button
@@ -242,7 +252,7 @@ function AccountPage() {
                 onClick={() => void manage()}
                 className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
               >
-                {busy === "manage" ? "Opening…" : "Manage subscription"}
+                {busy === "manage" ? t("login.opening") : t("account.manageSub")}
               </button>
               <button
                 type="button"
@@ -250,7 +260,7 @@ function AccountPage() {
                 onClick={() => void restore()}
                 className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg disabled:opacity-60"
               >
-                {busy === "restore" ? "Restoring…" : "Restore purchases"}
+                {busy === "restore" ? t("pricing.restoring") : t("pricing.restore")}
               </button>
             </>
           ) : (
@@ -262,7 +272,7 @@ function AccountPage() {
                   onClick={() => void toggleRenewal(true)}
                   className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-base font-semibold text-accent-fg disabled:opacity-60"
                 >
-                  {busy === "optout" ? "Saving…" : "Opt out of the next charge"}
+                  {busy === "optout" ? t("profile.saving") : t("account.optOutNext")}
                 </button>
               ) : null}
               {paid && summary?.hasCustomer && cancelScheduled ? (
@@ -272,7 +282,7 @@ function AccountPage() {
                   onClick={() => void toggleRenewal(false)}
                   className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-base font-semibold text-accent-fg disabled:opacity-60"
                 >
-                  {busy === "resume" ? "Saving…" : "Resume auto-renewal"}
+                  {busy === "resume" ? t("profile.saving") : t("account.resumeRenew")}
                 </button>
               ) : null}
               {!paid ? (
@@ -287,34 +297,34 @@ function AccountPage() {
                   }}
                   className="inline-flex min-h-12 items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
                 >
-                  {TRIAL_CTA}
+                  {t("cta.trial")}
                 </Link>
               ) : null}
             </>
           )}
         </div>
 
-        <p className="mt-6 text-sm leading-relaxed text-muted">{NO_REFUNDS_ACCOUNT}</p>
-        <p className="sr-only">{NO_REFUNDS_LINE}</p>
+        <p className="mt-6 text-sm leading-relaxed text-muted">{t("account.noRefunds")}</p>
+        <p className="sr-only">{t("account.noRefunds")}</p>
 
         <div className="mt-6 flex flex-col">
           <Link
             to="/terms"
             className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
           >
-            Terms
+            {t("footer.terms")}
           </Link>
           <Link
             to="/privacy"
             className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
           >
-            Privacy
+            {t("footer.privacy")}
           </Link>
           <Link
             to="/disclaimer"
             className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
           >
-            Disclaimer / Play responsibly
+            {t("footer.disclaimer")}
           </Link>
         </div>
 
@@ -326,7 +336,7 @@ function AccountPage() {
               onClick={() => void openPortal()}
               className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg disabled:opacity-60"
             >
-              {busy === "portal" ? "Opening…" : "Update card"}
+              {busy === "portal" ? t("login.opening") : t("account.updateCard")}
             </button>
           ) : null}
           {user ? (
@@ -335,7 +345,7 @@ function AccountPage() {
               onClick={() => void signOut("/")}
               className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg"
             >
-              Sign out
+              {t("account.signOut")}
             </button>
           ) : (
             <Link
@@ -343,7 +353,7 @@ function AccountPage() {
               search={{ next: "/account" }}
               className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg"
             >
-              Sign in
+              {t("nav.signIn")}
             </Link>
           )}
         </div>
@@ -357,7 +367,7 @@ function AccountPage() {
 
       <div className="mt-8 rounded-xl border border-line bg-surface p-6">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-          Settings
+          {t("account.settings")}
         </p>
         <div className="mt-3 flex flex-col">
           {paid ? (
@@ -370,7 +380,7 @@ function AccountPage() {
                   .then((ok) => {
                     setNotifyOn(ok);
                     if (!ok) {
-                      setError("Browser did not allow notifications.");
+                      setError(t("account.alertsDenied"));
                     }
                   })
                   .finally(() => setBusy(null));
@@ -378,17 +388,17 @@ function AccountPage() {
               className="inline-flex min-h-11 items-center text-left text-sm text-muted underline underline-offset-2 hover:text-fg disabled:no-underline"
             >
               {notifyOn
-                ? "Desk alerts enabled in this browser"
+                ? t("account.alertsOn")
                 : busy === "notify"
-                  ? "Asking permission…"
-                  : "Enable desk alerts"}
+                  ? t("account.alertsAsk")
+                  : t("account.alertsEnable")}
             </button>
           ) : null}
           <Link
             to="/legal"
             className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
           >
-            State lottery notices
+            {t("footer.stateLaws")}
           </Link>
         </div>
       </div>
@@ -396,9 +406,7 @@ function AccountPage() {
       {error ? <p className="mt-4 text-sm text-bust">{error}</p> : null}
 
       <p className="mt-8 text-xs leading-relaxed text-faint">
-        Remaining counts do not improve the odds of winning any prize. 18+ only.
-        Arizona and Iowa lottery tickets are 21+. Scratch Vault is not a lottery.{" "}
-        {NO_REFUNDS_LINE}
+        {t("account.oddsFoot")} {t("account.noRefunds")}
       </p>
     </div>
   );

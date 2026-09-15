@@ -61,20 +61,40 @@ export function grantsPaidAccess(input: {
   return t + 36 * 60 * 60 * 1000 > Date.now();
 }
 
+export function subscriptionStatusKey(
+  status: string | null | undefined,
+):
+  | "billing.pastDue"
+  | "billing.unpaid"
+  | "billing.canceled"
+  | "billing.incomplete"
+  | "billing.paused"
+  | null {
+  if (status === "past_due") return "billing.pastDue";
+  if (status === "unpaid") return "billing.unpaid";
+  if (status === "canceled") return "billing.canceled";
+  if (status === "incomplete" || status === "incomplete_expired") {
+    return "billing.incomplete";
+  }
+  if (status === "paused") return "billing.paused";
+  return null;
+}
+
 export function subscriptionStatusCopy(status: string | null | undefined): string | null {
-  if (status === "past_due") {
+  const key = subscriptionStatusKey(status);
+  if (key === "billing.pastDue") {
     return "Payment is past due. Update your card to keep Full Access.";
   }
-  if (status === "unpaid") {
+  if (key === "billing.unpaid") {
     return "This subscription is unpaid. Update billing to restore Full Access.";
   }
-  if (status === "canceled") {
+  if (key === "billing.canceled") {
     return "This subscription is canceled. Start a new plan to unlock the desk.";
   }
-  if (status === "incomplete" || status === "incomplete_expired") {
+  if (key === "billing.incomplete") {
     return "Checkout did not finish. Start again from Pricing.";
   }
-  if (status === "paused") {
+  if (key === "billing.paused") {
     return "This subscription is paused. Full Access is locked until it resumes.";
   }
   return null;
@@ -108,11 +128,14 @@ export function planLabel(plan: Plan | null): string {
   return "None";
 }
 
-export function formatBillingDate(iso: string | null | undefined): string {
+export function formatBillingDate(
+  iso: string | null | undefined,
+  locale = "en-US",
+): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",

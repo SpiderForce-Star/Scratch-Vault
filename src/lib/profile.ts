@@ -80,47 +80,47 @@ export function homeStateLabel(id: ProfileHomeState | StateId | "other"): string
 
 export function parseBillingProfileInput(raw: unknown): BillingProfileInput {
   if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid profile");
+    throw new Error("profile.errInvalid");
   }
   const data = raw as Record<string, unknown>;
   const legalName = typeof data.legalName === "string" ? data.legalName.trim() : "";
   const dob = typeof data.dob === "string" ? data.dob.trim() : "";
   const homeState = data.homeState;
   if (legalName.length < 2 || legalName.length > 120) {
-    throw new Error("Enter the legal name on the card.");
+    throw new Error("profile.errLegalName");
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-    throw new Error("Enter a valid date of birth.");
+    throw new Error("profile.errDob");
   }
   if (!isProfileHomeState(homeState)) {
-    throw new Error("Select your home state.");
+    throw new Error("profile.errState");
   }
   const age = ageOnDate(dob);
   if (age === null || age < 18) {
-    throw new Error("You must be 18 or older to use Scratch Vault.");
+    throw new Error("profile.errAge");
   }
   const need = requiredAgeForHomeState(homeState);
   if (age < need) {
     throw new Error(
       homeState === "az"
-        ? "Arizona Lottery tickets are 21+. You must be 21 or older to complete a profile with Arizona as your home state."
-        : "Iowa Lottery tickets are 21+. You must be 21 or older to complete a profile with Iowa as your home state.",
+        ? "profile.errAz21"
+        : "profile.errIa21",
     );
   }
   if (age > 120) {
-    throw new Error("Enter a valid date of birth.");
+    throw new Error("profile.errDob");
   }
   if (data.ageAttested !== true) {
-    throw new Error("Confirm you meet the age requirement.");
+    throw new Error("profile.errAgeConfirm");
   }
   if (data.termsAccepted !== true) {
-    throw new Error("You must agree to the Terms of Service.");
+    throw new Error("profile.errTerms");
   }
   if (data.noRefundsAccepted !== true) {
-    throw new Error("You must acknowledge that fees are non-refundable.");
+    throw new Error("profile.errRefunds");
   }
   if (data.billingConsent !== true) {
-    throw new Error("You must authorize the trial and auto-renewal terms.");
+    throw new Error("profile.errConsent");
   }
   return {
     legalName,

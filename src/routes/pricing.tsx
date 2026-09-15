@@ -159,13 +159,13 @@ function PricingPage() {
       </div>
 
       {checkout === "canceled" ? (
-        <p className="mt-6 text-center text-sm text-warm">{CHECKOUT_PUBLIC.canceled}</p>
+        <p className="mt-6 text-center text-sm text-warm">{t("stripe.canceled")}</p>
       ) : null}
       {checkout === "declined" ? (
-        <p className="mt-6 text-center text-sm text-bust">{CHECKOUT_PUBLIC.declined}</p>
+        <p className="mt-6 text-center text-sm text-bust">{t("stripe.declined")}</p>
       ) : null}
       {checkout === "failed" ? (
-        <p className="mt-6 text-center text-sm text-bust">{CHECKOUT_PUBLIC.failed}</p>
+        <p className="mt-6 text-center text-sm text-bust">{t("stripe.failed")}</p>
       ) : null}
 
       {native ? (
