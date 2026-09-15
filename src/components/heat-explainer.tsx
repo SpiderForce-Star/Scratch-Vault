@@ -12,7 +12,7 @@ const SAMPLE = {
   desk: 65,
 } as const;
 
-export function HeatExplainer() {
+export function HeatExplainer({ neon = false }: { neon?: boolean }) {
   const { t } = useI18n();
   const priorPct = 100;
   const nowPct = Math.round((SAMPLE.now / SAMPLE.prior) * 100);
@@ -20,6 +20,23 @@ export function HeatExplainer() {
   return (
     <section className="border-b border-line bg-surface/50">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
+        {neon ? (
+          <aside className="sv-neon-decay sv-neon-decay-pulse mb-6 max-w-3xl rounded-lg px-4 py-4 sm:px-5">
+            <p className="font-mono text-[10px] tracking-[0.18em] text-neon uppercase">
+              {t("heat.neonKicker")}
+            </p>
+            <h2 className="mt-2 font-display text-xl tracking-tight text-neon sm:text-2xl">
+              {t("heat.neonTitle")}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-paper">
+              {t("heat.neonBody")}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-neon/80">
+              {t("heat.neonFoot")}
+            </p>
+          </aside>
+        ) : null}
+
         <h2 className="font-display text-xl tracking-tight sm:text-2xl">
           {t("heat.whatTitle")}
         </h2>
@@ -97,10 +114,14 @@ export function HeatExplainer() {
 
           <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatCell label={t("heat.statClaimedLabel")} value={`−${SAMPLE.claimed}`} />
-            <StatCell label={t("heat.statDropLabel")} value={`${SAMPLE.dropPct}% / ${SAMPLE.days}d`} />
-            <StatCell label={t("heat.statPaceLabel")} value={t("pace.fast")} />
+            <StatCell
+              label={t("heat.statDropLabel")}
+              value={`${SAMPLE.dropPct}% / ${SAMPLE.days}d`}
+              neon
+            />
+            <StatCell label={t("heat.statPaceLabel")} value={t("pace.fast")} neon />
             <StatCell label={t("heat.statVaultLabel")} value={String(SAMPLE.vault)} />
-            <StatCell label={t("heat.statBumpLabel")} value={`+${SAMPLE.lift}`} />
+            <StatCell label={t("heat.statBumpLabel")} value={`+${SAMPLE.lift}`} neon />
             <StatCell label={t("heat.statDeskLabel")} value={String(SAMPLE.desk)} accent />
           </dl>
 
@@ -143,8 +164,7 @@ function StatBar({
   width: number;
   tone: "paper" | "gold";
 }) {
-  const bar =
-    tone === "gold" ? "bg-gold" : "bg-paper/80";
+  const bar = tone === "gold" ? "bg-gold" : "bg-paper/80";
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
@@ -152,10 +172,7 @@ function StatBar({
         <p className="font-mono text-sm tabular-nums text-paper">{value}</p>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line">
-        <div
-          className={`h-full rounded-full ${bar}`}
-          style={{ width: `${width}%` }}
-        />
+        <div className={`h-full rounded-full ${bar}`} style={{ width: `${width}%` }} />
       </div>
     </div>
   );
@@ -165,19 +182,25 @@ function StatCell({
   label,
   value,
   accent = false,
+  neon = false,
 }: {
   label: string;
   value: string;
   accent?: boolean;
+  neon?: boolean;
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs leading-snug text-faint">{label}</dt>
+      <dt className={neon ? "text-xs leading-snug text-neon/70" : "text-xs leading-snug text-faint"}>
+        {label}
+      </dt>
       <dd
         className={
-          accent
-            ? "mt-1 font-display text-xl tabular-nums tracking-tight text-gold"
-            : "mt-1 font-mono text-sm tabular-nums text-paper"
+          neon
+            ? "mt-1 font-mono text-sm tabular-nums text-neon"
+            : accent
+              ? "mt-1 font-display text-xl tabular-nums tracking-tight text-gold"
+              : "mt-1 font-mono text-sm tabular-nums text-paper"
         }
       >
         {value}

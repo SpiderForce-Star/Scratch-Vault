@@ -170,6 +170,10 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     "heat.statResult",
     "heat.statNote",
     "heat.statOdds",
+    "heat.neonKicker",
+    "heat.neonTitle",
+    "heat.neonBody",
+    "heat.neonFoot",
   ];
   const banned =
     /higher probability of winning|better odds|system to win|more likely to win/i;
@@ -187,6 +191,9 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   assert.match(en["heat.statLead"], /Printed odds never change/);
   assert.match(en["heat.statResult"], /does not change the odds/);
   assert.match(en["heat.statNote"], /claims/);
+  assert.match(en["heat.neonTitle"], /Hot \/ Warm \/ Cold/);
+  assert.match(en["heat.neonBody"], /not tickets purchased/);
+  assert.match(en["heat.neonFoot"], /18\+/);
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 
   const explainer = read("src/components/heat-explainer.tsx");
@@ -195,7 +202,7 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   for (const key of recipeKeys) {
     assert.match(explainer, new RegExp(key.replace(".", "\\.")));
   }
-  assert.match(read("src/routes/index.tsx"), /HeatExplainer/);
+  assert.match(read("src/routes/index.tsx"), /HeatExplainer neon/);
   assert.match(read("src/routes/games.tsx"), /HeatExplainer/);
   assert.match(read("src/routes/game/$number.tsx"), /HeatExplainer/);
 

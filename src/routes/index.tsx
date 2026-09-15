@@ -221,7 +221,7 @@ function VaultHome() {
         stale={snap?.stale}
       />
       <DeskRibbon />
-      <HeatExplainer />
+      <HeatExplainer neon />
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
