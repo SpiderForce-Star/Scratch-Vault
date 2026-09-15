@@ -31,7 +31,10 @@ operation.
    with the same cutoffs as vault: Hot ≥ 62, Warm ≥ 42, else Cold. Bust/Skip
    stays Skip when bust rules fire or the retail top is gone; leftover pace
    never promotes Skip into Hot/Warm. NEW stays NEW. The public Heat recipe
-   is aisle intel from the official leftover-prize list.
+   is aisle intel from the official leftover-prize list. The homepage
+   statistical walkthrough is sample claims math (leftover drop → 16-day
+   pace → Heat sticker). It is not live store inventory and not a change
+   in printed odds.
 5. **No “system to win.”** Printed odds do not change. Remaining counts do not
    improve the odds of any individual ticket. Copy must never say “higher
    probability of winning,” “better odds,” “system to win,” or “more likely

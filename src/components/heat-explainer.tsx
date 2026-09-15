@@ -1,7 +1,22 @@
 import { useI18n } from "@/lib/locale";
 
+/** Illustrative leftover-pace math from tests — not a live game. */
+const SAMPLE = {
+  prior: 100,
+  now: 92,
+  claimed: 8,
+  days: 16,
+  dropPct: 8,
+  vault: 55,
+  lift: 10,
+  desk: 65,
+} as const;
+
 export function HeatExplainer() {
   const { t } = useI18n();
+  const priorPct = 100;
+  const nowPct = Math.round((SAMPLE.now / SAMPLE.prior) * 100);
+
   return (
     <section className="border-b border-line bg-surface/50">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
@@ -12,7 +27,91 @@ export function HeatExplainer() {
           {t("heat.whatBody")}
         </p>
         <p className="mt-2 text-xs text-faint">{t("heat.whatAge")}</p>
-        <div className="mt-5 max-w-3xl">
+
+        <div className="mt-6">
+          <h3 className="font-display text-lg tracking-tight sm:text-xl">
+            {t("heat.statTitle")}
+          </h3>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+            {t("heat.statLead")}
+          </p>
+          <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+            <li className="rounded-lg border border-line bg-raised/40 p-4">
+              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                01
+              </p>
+              <h4 className="mt-2 font-display text-base tracking-tight">
+                {t("heat.statStep1Title")}
+              </h4>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {t("heat.statStep1Body")}
+              </p>
+            </li>
+            <li className="rounded-lg border border-line bg-raised/40 p-4">
+              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                02
+              </p>
+              <h4 className="mt-2 font-display text-base tracking-tight">
+                {t("heat.statStep2Title")}
+              </h4>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {t("heat.statStep2Body")}
+              </p>
+            </li>
+            <li className="rounded-lg border border-line bg-raised/40 p-4">
+              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                03
+              </p>
+              <h4 className="mt-2 font-display text-base tracking-tight">
+                {t("heat.statStep3Title")}
+              </h4>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {t("heat.statStep3Body")}
+              </p>
+            </li>
+          </ol>
+        </div>
+
+        <div className="mt-6 max-w-3xl rounded-lg border border-gold/30 bg-raised/50 p-4 sm:p-5">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+            {t("heat.statExampleKicker")}
+          </p>
+          <h3 className="mt-2 font-display text-lg tracking-tight">
+            {t("heat.statExampleTitle")}
+          </h3>
+
+          <div className="mt-4 space-y-3">
+            <StatBar
+              label={t("heat.statPriorLabel")}
+              value={SAMPLE.prior.toLocaleString()}
+              width={priorPct}
+              tone="paper"
+            />
+            <StatBar
+              label={t("heat.statNowLabel")}
+              value={SAMPLE.now.toLocaleString()}
+              width={nowPct}
+              tone="gold"
+            />
+          </div>
+
+          <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCell label={t("heat.statClaimedLabel")} value={`−${SAMPLE.claimed}`} />
+            <StatCell label={t("heat.statDropLabel")} value={`${SAMPLE.dropPct}% / ${SAMPLE.days}d`} />
+            <StatCell label={t("heat.statPaceLabel")} value={t("pace.fast")} />
+            <StatCell label={t("heat.statVaultLabel")} value={String(SAMPLE.vault)} />
+            <StatCell label={t("heat.statBumpLabel")} value={`+${SAMPLE.lift}`} />
+            <StatCell label={t("heat.statDeskLabel")} value={String(SAMPLE.desk)} accent />
+          </dl>
+
+          <p className="mt-4 text-sm leading-relaxed text-paper">
+            {t("heat.statResult")}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted">{t("heat.statNote")}</p>
+          <p className="mt-2 text-xs text-faint">{t("heat.statOdds")}</p>
+        </div>
+
+        <div className="mt-6 max-w-3xl">
           <h3 className="font-display text-lg tracking-tight">
             {t("heat.recipeTitle")}
           </h3>
@@ -30,5 +129,59 @@ export function HeatExplainer() {
         </div>
       </div>
     </section>
+  );
+}
+
+function StatBar({
+  label,
+  value,
+  width,
+  tone,
+}: {
+  label: string;
+  value: string;
+  width: number;
+  tone: "paper" | "gold";
+}) {
+  const bar =
+    tone === "gold" ? "bg-gold" : "bg-paper/80";
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-xs text-muted">{label}</p>
+        <p className="font-mono text-sm tabular-nums text-paper">{value}</p>
+      </div>
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line">
+        <div
+          className={`h-full rounded-full ${bar}`}
+          style={{ width: `${width}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatCell({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs leading-snug text-faint">{label}</dt>
+      <dd
+        className={
+          accent
+            ? "mt-1 font-display text-xl tabular-nums tracking-tight text-gold"
+            : "mt-1 font-mono text-sm tabular-nums text-paper"
+        }
+      >
+        {value}
+      </dd>
+    </div>
   );
 }

@@ -149,6 +149,27 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     "heat.recipe2",
     "heat.recipe3",
     "heat.recipeWhy",
+    "heat.statTitle",
+    "heat.statLead",
+    "heat.statStep1Title",
+    "heat.statStep1Body",
+    "heat.statStep2Title",
+    "heat.statStep2Body",
+    "heat.statStep3Title",
+    "heat.statStep3Body",
+    "heat.statExampleKicker",
+    "heat.statExampleTitle",
+    "heat.statPriorLabel",
+    "heat.statNowLabel",
+    "heat.statClaimedLabel",
+    "heat.statDropLabel",
+    "heat.statPaceLabel",
+    "heat.statVaultLabel",
+    "heat.statBumpLabel",
+    "heat.statDeskLabel",
+    "heat.statResult",
+    "heat.statNote",
+    "heat.statOdds",
   ];
   const banned =
     /higher probability of winning|better odds|system to win|more likely to win/i;
@@ -163,6 +184,9 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   assert.match(en["heat.recipe3"], /Skip stays Skip/);
   assert.match(en["heat.recipeWhy"], /Printed odds never change/);
   assert.match(en["heat.recipeWhy"], /18\+/);
+  assert.match(en["heat.statLead"], /Printed odds never change/);
+  assert.match(en["heat.statResult"], /does not change the odds/);
+  assert.match(en["heat.statNote"], /claims/);
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 
   const explainer = read("src/components/heat-explainer.tsx");
