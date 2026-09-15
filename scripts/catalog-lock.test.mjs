@@ -185,14 +185,27 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     assert.doesNotMatch(es[key], banned);
   }
   assert.match(en["heat.recipeLead"], /aisle context/i);
+  assert.match(en["heat.recipeLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
+  assert.match(en["heat.recipe2"], /prize amount, not the ticket price/);
   assert.match(en["heat.recipe3"], /Skip stays Skip/);
   assert.match(en["heat.recipeWhy"], /Printed odds never change/);
   assert.match(en["heat.recipeWhy"], /18\+/);
+  assert.match(en["heat.statLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
+  assert.match(en["heat.statLead"], /not “only \$50 tickets.”/);
   assert.match(en["heat.statLead"], /Printed odds never change/);
+  assert.match(en["heat.statStep1Body"], /On each \$5–\$50 game/);
+  assert.match(en["heat.statPriorLabel"], /prize rows of \$50\+/);
+  assert.match(en["heat.statNowLabel"], /prize rows of \$50\+/);
   assert.match(en["heat.statResult"], /does not change the odds/);
   assert.match(en["heat.statNote"], /claims/);
-  assert.match(en["heat.neonTitle"], /Hot \/ Warm \/ Cold/);
-  assert.match(en["heat.neonBody"], /not tickets purchased/);
+  assert.match(en["heat.neonKicker"], /Every \$5–\$50 card/);
+  assert.match(
+    en["heat.neonTitle"],
+    /every \$5, \$10, \$20, \$25, \$30, and \$50 game/,
+  );
+  assert.match(en["heat.neonBody"], /prize-row decay on every ticket price/);
+  assert.match(en["heat.neonBody"], /not “only \$50 tickets.”/);
+  assert.match(en["heat.neonFoot"], /not the ticket price/);
   assert.match(en["heat.neonFoot"], /18\+/);
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 
@@ -210,6 +223,36 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   const scopeAt = radar.indexOf("function RadarScope");
   const tAt = radar.indexOf("const { t } = useI18n()", scopeAt);
   assert.ok(scopeAt >= 0 && tAt > scopeAt && tAt < scopeAt + 800);
+});
+
+test("leftover math stays prize-row $50+ on every loaded $5–$50 game", () => {
+  const pace = read("src/lib/pace.ts");
+  const heat = read("src/lib/heat.ts");
+  const desk = read("src/lib/desk.server.ts");
+  const states = read("src/config/states.ts");
+  assert.match(pace, /const BOOK_MIN = 50/);
+  assert.match(pace, /if \(tier\.amount < BOOK_MIN\) continue/);
+  assert.doesNotMatch(pace, /game\.price\s*===?\s*50/);
+  assert.doesNotMatch(pace, /PRICE_POINTS/);
+  assert.match(pace, /for \(const game of current\)/);
+  assert.match(heat, /export const PRICE_POINTS = \[5, 10, 20, 25, 30, 50\]/);
+  assert.match(desk, /scoreCatalogPace\(prior\?\.catalog, games, days/);
+  const publicBlock = states.slice(
+    states.indexOf("export const PUBLIC_STATE_IDS"),
+    states.indexOf("export const HIDDEN_STATE_IDS"),
+  );
+  const hiddenBlock = states.slice(
+    states.indexOf("export const HIDDEN_STATE_IDS"),
+    states.indexOf("export const HIDDEN_RETURN_MIN_GAMES"),
+  );
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+    assert.match(publicBlock, new RegExp(`"${id}"`));
+    assert.doesNotMatch(hiddenBlock, new RegExp(`"${id}"`));
+  }
+  for (const id of ["az", "mi", "oh", "ct", "il", "ma"]) {
+    assert.match(hiddenBlock, new RegExp(`"${id}"`));
+    assert.doesNotMatch(publicBlock, new RegExp(`"${id}"`));
+  }
 });
 
 test("stripe webhook and prices are untouched by the catalog lock", () => {
