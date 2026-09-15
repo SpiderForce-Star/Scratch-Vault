@@ -198,6 +198,7 @@ function RadarScope({
   reduce: boolean;
   alert: boolean;
 }) {
+  const { t } = useI18n();
   const rings = [56, 96, 136, 168];
   const uid = `vsv-${stateId || "desk"}-${cycleId.slice(0, 24) || "idle"}`;
   const sweepSec = alert ? 4 : 5.5;
