@@ -216,8 +216,8 @@ function RadarScope({
             ? captures
                 .slice(0, 2)
                 .map((row) => `${row.shortName} ${row.name} ${money(row.amount)}`)
-                .join("; ") || "Grand-prize capture"
-            : "Published remaining-jackpot radar. Not store inventory."
+                .join("; ") || t("hero.radarCaptureAria")
+            : t("hero.radarIdleAria")
         }
       >
         <defs>

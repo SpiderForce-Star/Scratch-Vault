@@ -50,9 +50,13 @@ export function PostedBookPanel({
             {holdback
               ? t("posted.afterHoldback", { label: holdback.label })
               : t("posted.effective")}
-            {moneyFull(retailPool)} still in play at retail
+            {t("posted.stillRetail", { amount: moneyFull(retailPool) })}
             {heat.effectiveTop != null
-              ? ` · ${heat.effectiveTop.toLocaleString()} top prize${heat.effectiveTop === 1 ? "" : "s"}`
+              ? t("posted.topPrizeDot", {
+                  count: heat.effectiveTop.toLocaleString(),
+                  s: heat.effectiveTop === 1 ? "" : "s",
+                  es: heat.effectiveTop === 1 ? "" : "es",
+                })
               : ""}
           </p>
         ) : null}
@@ -83,11 +87,16 @@ export function PostedBookPanel({
               key={row.amount}
               className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
             >
-              <span className="text-muted">{moneyFull(row.amount)} prizes</span>
+              <span className="text-muted">
+                {t("posted.prizes", { amount: moneyFull(row.amount) })}
+              </span>
               <span className="font-mono text-sm text-fg">
                 {row.remaining == null
-                  ? "Not published"
-                  : `${row.remaining.toLocaleString()} left · ${moneyFull(row.pool ?? 0)}`}
+                  ? t("posted.notPublished")
+                  : t("posted.leftPool", {
+                      count: row.remaining.toLocaleString(),
+                      pool: moneyFull(row.pool ?? 0),
+                    })}
               </span>
             </li>
           ))}
@@ -96,9 +105,15 @@ export function PostedBookPanel({
 
       {!locked && book.unpublishedTiers > 0 ? (
         <p className="mt-3 text-xs text-faint">
-          {book.unpublishedTiers} published prize amount
-          {book.unpublishedTiers === 1 ? " has" : "s have"} no remaining count, so
-          the true book is higher than {moneyFull(book.knownPool)}.
+          {t(
+            book.unpublishedTiers === 1
+              ? "posted.unpublishedOne"
+              : "posted.unpublishedMany",
+            {
+              count: book.unpublishedTiers,
+              pool: moneyFull(book.knownPool),
+            },
+          )}
         </p>
       ) : null}
     </section>

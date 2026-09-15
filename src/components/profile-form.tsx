@@ -7,7 +7,7 @@ import {
   homeStateLabel,
   type BillingProfile,
 } from "@/lib/profile";
-import { CHECKOUT_CONSENT_MESSAGE, NO_REFUNDS_LINE } from "@/lib/billing-policy";
+import { useI18n } from "@/lib/locale";
 
 export function ProfileForm({
   onSaved,
@@ -18,6 +18,7 @@ export function ProfileForm({
   highlight?: boolean;
   plan?: "monthly" | "annual";
 }) {
+  const { t } = useI18n();
   const [legalName, setLegalName] = useState("");
   const [dob, setDob] = useState("");
   const [homeState, setHomeState] = useState<(typeof PROFILE_HOME_STATES)[number] | "">(
@@ -44,16 +45,16 @@ export function ProfileForm({
         return;
       }
       if (result?.needsProfile) {
-        setError("Save your profile before adding a card.");
+        setError(t("profile.needSave"));
         return;
       }
       if (result?.url) {
         window.location.assign(result.url);
         return;
       }
-      setError("Could not start checkout. Please try again.");
+      setError(t("pricing.checkoutFail"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start checkout.");
+      setError(err instanceof Error ? err.message : t("pricing.checkoutFail"));
     } finally {
       setCheckoutBusy(false);
       setBusy(false);
@@ -68,8 +69,10 @@ export function ProfileForm({
   }, [highlight, loaded]);
 
   useEffect(() => {
+    let cancelled = false;
     void getBillingProfile()
       .then((profile) => {
+        if (cancelled) return;
         setLegalName(profile.legalName ?? "");
         setDob(profile.dob ?? "");
         setHomeState(profile.homeState ?? "");
@@ -81,15 +84,19 @@ export function ProfileForm({
         setLoaded(true);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Could not load profile.");
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : t("profile.loadFail"));
         setLoaded(true);
       });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!homeState) {
-      setError("Select your home state.");
+      setError(t("profile.selectState"));
       return;
     }
     setBusy(true);
@@ -113,14 +120,14 @@ export function ProfileForm({
         return;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save profile.");
+      setError(err instanceof Error ? err.message : t("profile.saveFail"));
     } finally {
       setBusy(false);
     }
   };
 
   if (!loaded) {
-    return <p className="text-sm text-muted">Loading profile…</p>;
+    return <p className="text-sm text-muted">{t("profile.loading")}</p>;
   }
 
   return (
@@ -133,20 +140,17 @@ export function ProfileForm({
       }
     >
       <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-        Customer profile
+        {t("profile.kicker")}
       </p>
       <h2 className="mt-2 font-display text-2xl tracking-tight">
-        {complete ? "Profile on file" : "Complete your profile to start a trial"}
+        {complete ? t("profile.onFile") : t("profile.title")}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        A completed profile and a credit or debit card are required for the
-        7-day monthly trial. Annual Full Access is $49.99 charged up front.
-        {" "}
-        {NO_REFUNDS_LINE}
+        {t("profile.lead")} {t("profile.noRefunds")}
       </p>
 
       <label className="mt-6 block text-sm text-muted">
-        Legal name
+        {t("profile.legalName")}
         <input
           required
           autoComplete="name"
@@ -157,7 +161,7 @@ export function ProfileForm({
       </label>
 
       <label className="mt-4 block text-sm text-muted">
-        Date of birth
+        {t("profile.dob")}
         <input
           required
           type="date"
@@ -169,7 +173,7 @@ export function ProfileForm({
       </label>
 
       <label className="mt-4 block text-sm text-muted">
-        Home state
+        {t("profile.homeState")}
         <select
           required
           value={homeState}
@@ -178,7 +182,7 @@ export function ProfileForm({
           }
           className="mt-1 min-h-11 w-full rounded-md border border-line bg-bg px-3 text-sm text-fg"
         >
-          <option value="">Select…</option>
+          <option value="">{t("profile.select")}</option>
           {PROFILE_HOME_STATES.map((id) => (
             <option key={id} value={id}>
               {homeStateLabel(id)}
@@ -186,10 +190,7 @@ export function ProfileForm({
           ))}
         </select>
       </label>
-      <p className="mt-1 text-xs text-faint">
-        Arizona and Iowa lottery tickets are 21+. A home state of AZ or IA
-        requires you to be 21.
-      </p>
+      <p className="mt-1 text-xs text-faint">{t("profile.ageNote")}</p>
 
       <fieldset className="mt-5 space-y-3 text-sm text-muted">
         <label className="flex gap-3">
@@ -199,10 +200,7 @@ export function ProfileForm({
             onChange={(e) => setAgeAttested(e.target.checked)}
             className="mt-1"
           />
-          <span>
-            I am 18 or older. I understand Arizona and Iowa lottery tickets are
-            21+ to buy or redeem.
-          </span>
+          <span>{t("profile.ageCheck")}</span>
         </label>
         <label className="flex gap-3">
           <input
@@ -212,17 +210,17 @@ export function ProfileForm({
             className="mt-1"
           />
           <span>
-            I agree to the{" "}
+            {t("profile.termsCheckA")}{" "}
             <Link to="/terms" className="underline underline-offset-2">
-              Terms of Service
+              {t("profile.terms")}
             </Link>
             ,{" "}
             <Link to="/privacy" className="underline underline-offset-2">
-              Privacy Policy
+              {t("pricing.privacyPolicy")}
             </Link>
-            , and{" "}
+            , {t("pricing.and")}{" "}
             <Link to="/legal" className="underline underline-offset-2">
-              state lottery notices
+              {t("profile.notices")}
             </Link>
             .
           </span>
@@ -234,10 +232,7 @@ export function ProfileForm({
             onChange={(e) => setNoRefundsAccepted(e.target.checked)}
             className="mt-1"
           />
-          <span>
-            I understand there are no refunds. If I opt out, I keep access
-            through the period already paid and future charges stop.
-          </span>
+          <span>{t("profile.refundsCheck")}</span>
         </label>
         <label className="flex gap-3">
           <input
@@ -246,7 +241,7 @@ export function ProfileForm({
             onChange={(e) => setBillingConsent(e.target.checked)}
             className="mt-1"
           />
-          <span>{CHECKOUT_CONSENT_MESSAGE}</span>
+          <span>{t("profile.consent")}</span>
         </label>
       </fieldset>
 
@@ -259,11 +254,11 @@ export function ProfileForm({
       >
         {busy
           ? checkoutBusy
-            ? "Starting checkout…"
-            : "Saving…"
+            ? t("pricing.startingAnnual")
+            : t("profile.saving")
           : complete
-            ? "Update profile"
-            : "Save profile"}
+            ? t("profile.update")
+            : t("profile.save")}
       </button>
       {complete ? (
         <button
@@ -272,7 +267,11 @@ export function ProfileForm({
           onClick={() => void startCard()}
           className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
         >
-          {busy ? "Starting checkout…" : plan === "annual" ? "Add a card — pay $49.99" : "Add a card — start 7-day trial"}
+          {busy
+            ? t("pricing.startingAnnual")
+            : plan === "annual"
+              ? t("profile.addCardAnnual")
+              : t("profile.addCardTrial")}
         </button>
       ) : null}
     </form>
