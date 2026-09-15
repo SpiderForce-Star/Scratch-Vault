@@ -30,7 +30,7 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: SITE_TITLE },
       { name: "description", content: SITE_DESCRIPTION },
       { name: "robots", content: "index, follow" },
@@ -108,7 +108,7 @@ function NativeRoot() {
   }, []);
 
   return (
-    <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">
+    <div className="min-h-svh overflow-x-hidden bg-bg text-fg">
       <SiteHeader />
       <PromoMarquee />
       <InstallCoach />

@@ -152,7 +152,7 @@ function StatePill({
           : "min-h-14 min-w-0 px-1 py-2",
         selected
           ? "border-gold bg-gold text-accent-fg"
-          : "border-line bg-raised text-muted hover:border-gold hover:text-gold",
+          : "sv-gold-hover border-line bg-raised text-muted",
       )}
     >
       <span className="font-display text-base leading-none tracking-tight">

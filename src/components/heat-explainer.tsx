@@ -21,11 +21,11 @@ export function HeatExplainer({ neon = false }: { neon?: boolean }) {
     <section className="border-b border-line bg-surface/50">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
         {neon ? (
-          <aside className="sv-neon-decay sv-neon-decay-pulse mb-6 max-w-3xl rounded-lg px-4 py-4 sm:px-5">
+          <aside className="sv-neon-decay sv-neon-decay-pulse mb-6 w-full min-w-0 max-w-3xl rounded-lg px-4 py-4 sm:px-5">
             <p className="font-mono text-[10px] tracking-[0.18em] text-neon uppercase">
               {t("heat.neonKicker")}
             </p>
-            <h2 className="mt-2 font-display text-xl tracking-tight text-neon sm:text-2xl">
+            <h2 className="mt-2 font-display text-xl tracking-tight break-words text-neon sm:text-2xl">
               {t("heat.neonTitle")}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-paper">
@@ -52,7 +52,7 @@ export function HeatExplainer({ neon = false }: { neon?: boolean }) {
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
             {t("heat.statLead")}
           </p>
-          <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+          <ol className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
             <li className="rounded-lg border border-line bg-raised/40 p-4">
               <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
                 01
@@ -167,9 +167,9 @@ function StatBar({
   const bar = tone === "gold" ? "bg-gold" : "bg-paper/80";
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-xs text-muted">{label}</p>
-        <p className="font-mono text-sm tabular-nums text-paper">{value}</p>
+      <div className="flex min-w-0 items-baseline justify-between gap-3">
+        <p className="min-w-0 text-xs text-muted">{label}</p>
+        <p className="shrink-0 font-mono text-sm tabular-nums text-paper">{value}</p>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line">
         <div className={`h-full rounded-full ${bar}`} style={{ width: `${width}%` }} />

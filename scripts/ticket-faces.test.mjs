@@ -290,10 +290,10 @@ test("store-rack named bills contain left and phone desk stays one column", () =
   assert.doesNotMatch(face, /object-cover/);
   assert.doesNotMatch(face, /absolute bottom-1\.5 left-1\.5/);
   assert.match(card, /OfficialTableControl/);
-  assert.match(card, /min-h-10/);
+  assert.match(card, /min-h-11/);
   assert.match(card, /line-clamp-2/);
   assert.match(card, /break-normal/);
-  assert.match(home, /sticky top-14/);
+  assert.match(home, /sticky top-\[calc\(3\.5rem\+env\(safe-area-inset-top,0px\)\)\]/);
   assert.match(home, /grid-cols-1/);
   assert.doesNotMatch(home, /w-56 shrink-0/);
   assert.doesNotMatch(home, /sm:grid-cols-2 lg:grid-cols-3[\s\S]{0,80}newGames/);

@@ -411,7 +411,7 @@ test("homepage skip rows force Cold or Skip chips", () => {
   assert.match(home, /RadarCashHero/);
   assert.match(home, /home\.skipTitle/);
   assert.match(home, /order-2 lg:order-1/);
-  assert.match(home, /sm:grid-cols-2 lg:grid-cols-3/);
+  assert.match(home, /sm:grid-cols-2 xl:grid-cols-3/);
   assert.match(home, /hero\.titleAll/);
   assert.match(home, /cta\.trial/);
   assert.match(home, /viewState === "tn"/);

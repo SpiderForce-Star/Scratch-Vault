@@ -43,8 +43,8 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-2 sm:gap-2 sm:px-6">
+    <header className="sticky top-0 z-30 overflow-x-hidden border-b border-line bg-bg/95 pt-[env(safe-area-inset-top,0px)] backdrop-blur-sm">
+      <div className="mx-auto flex h-14 min-w-0 max-w-6xl flex-nowrap items-center justify-between gap-1 overflow-x-hidden px-2 sm:gap-2 sm:px-6">
         <div className="flex min-w-0 items-center gap-2">
           <Link
             to="/"
@@ -56,7 +56,7 @@ export function SiteHeader() {
               <span className="text-gold">$</span>
               <span className="text-sage">V</span>
             </span>
-            <span className="hidden font-display text-base tracking-tight text-fg sm:inline lg:text-lg">Scratch Vault</span>
+            <span className="hidden min-w-0 truncate font-display text-base tracking-tight text-fg sm:inline lg:text-lg">Scratch Vault</span>
           </Link>
           <span className="hidden shrink-0 items-center rounded-md border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-muted uppercase sm:inline-flex">
             {t("header.deskChip", { short: config.shortName })}

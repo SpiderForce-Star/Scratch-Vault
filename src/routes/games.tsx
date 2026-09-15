@@ -211,9 +211,9 @@ function GamesCatalog() {
 
           <div
             className={cn(
-              "mt-5 flex flex-wrap gap-1",
-              "sticky top-14 z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
-              "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
+              "sv-hide-scrollbar mt-5 flex flex-nowrap gap-1 overflow-x-auto",
+              "sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
+              "sm:static sm:mx-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
             )}
           >
             {priceFilters.map((f) => (
@@ -222,7 +222,7 @@ function GamesCatalog() {
                 type="button"
                 onClick={() => setPrice(f.id)}
                 className={cn(
-                  "min-h-11 min-w-11 rounded-md px-3 text-sm",
+                  "min-h-11 min-w-11 shrink-0 rounded-md px-3 text-sm",
                   price === f.id
                     ? "bg-gold text-accent-fg"
                     : "bg-surface text-muted hover:text-fg",
