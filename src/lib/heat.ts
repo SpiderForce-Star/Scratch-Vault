@@ -43,6 +43,8 @@ export type HeatReport = {
   leftoverDaily?: number | null;
   leftoverNow?: number | null;
   leftoverDays?: number | null;
+  /** 0–1 leftover-pace confidence. Null when unknown. */
+  leftoverConfidence?: number | null;
   /** Ranking score: remaining heat plus leftover pace. Printed odds never change. */
   deskScore?: number;
 };

@@ -51,7 +51,7 @@ describe("leftover overlap", () => {
     ]);
     const live = game(1, [{ amount: 500, remaining: 90 }]);
     const overlap = overlapLeftover(prior, live);
-    expect(overlap).toEqual({ prior: 100, now: 90, pct: 10 });
+    expect(overlap).toEqual({ prior: 100, now: 90, pct: 10, sharedTiers: 1 });
   });
 
   it("does not count sub-$50 rows", () => {
@@ -72,12 +72,56 @@ describe("pace bands (16-day equivalent)", () => {
   });
 
   it("normalizes a 16-day 8% drop to fast", () => {
-    const prior = game(3, [{ amount: 500, remaining: 100 }]);
-    const live = game(3, [{ amount: 500, remaining: 92 }]);
+    const prior = game(3, [
+      { amount: 500, remaining: 50 },
+      { amount: 100, remaining: 50 },
+    ]);
+    const live = game(3, [
+      { amount: 500, remaining: 46 },
+      { amount: 100, remaining: 46 },
+    ]);
     const pace = scoreGamePace(prior, live, 16, baseHeat);
     expect(pace.band).toBe("fast");
     expect(pace.leftoverPct).toBeCloseTo(8, 5);
     expect(pace.lift).toBe(10);
+    expect(pace.leftoverConfidence).toBe(1);
+  });
+
+  it("caps a thin leftover book at quiet even when the drop looks Fast", () => {
+    const prior = game(5, [{ amount: 500, remaining: 4 }]);
+    const live = game(5, [{ amount: 500, remaining: 2 }]);
+    const pace = scoreGamePace(prior, live, 16, baseHeat);
+    expect(pace.leftoverPrior).toBe(4);
+    expect(pace.leftoverPct).toBeCloseTo(50, 5);
+    expect(pace.band).toBe("quiet");
+    expect(pace.lift).toBe(0);
+  });
+
+  it("prior 100 and an 8% drop stay Fast with full lift", () => {
+    const prior = game(6, [
+      { amount: 500, remaining: 60 },
+      { amount: 50, remaining: 40 },
+    ]);
+    const live = game(6, [
+      { amount: 500, remaining: 55.2 },
+      { amount: 50, remaining: 36.8 },
+    ]);
+    const pace = scoreGamePace(prior, live, 16, baseHeat);
+    expect(pace.leftoverPrior).toBe(100);
+    expect(pace.leftoverPct).toBeCloseTo(8, 5);
+    expect(pace.band).toBe("fast");
+    expect(pace.lift).toBe(10);
+  });
+
+  it("prior 10 and an 8% drop damps Fast lift below 10", () => {
+    const prior = game(7, [{ amount: 500, remaining: 10 }]);
+    const live = game(7, [{ amount: 500, remaining: 9.2 }]);
+    const pace = scoreGamePace(prior, live, 16, baseHeat);
+    expect(pace.leftoverPrior).toBe(10);
+    expect(pace.leftoverPct).toBeCloseTo(8, 5);
+    expect(pace.band).toBe("fast");
+    expect(pace.lift).toBeLessThan(10);
+    expect(pace.lift).toBe(Math.round(10 * (10 / 40) * 0.6));
   });
 
   it("unknown when no prior catalog", () => {
