@@ -47,9 +47,9 @@ export function TicketCard({
       params={{ number: String(game.number) }}
       search={deskSearch(deskId)}
       className={cn(
-        "group block overflow-hidden border bg-surface",
-        "rounded-xl transition-transform duration-200",
-        "hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+        "group sv-card-lift block overflow-hidden border bg-surface",
+        "rounded-xl",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
         heat.bust && "border-bust/40",
         isNew && "border-gold/50",
       )}
@@ -71,7 +71,7 @@ export function TicketCard({
             <NewGameChip />
           ) : (
             <>
-              <span className="inline-flex min-h-10 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
+              <span className="inline-flex min-h-11 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
                 {t("heat.score", { score: displayedHeat(heat) })}
               </span>
               <BandChip band={forceBand ?? heat.band} />
@@ -84,8 +84,8 @@ export function TicketCard({
           <OfficialTableControl href={state.remainingPrizesUrl} />
         ) : null}
 
-        <div className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
-          <div>
+        <div className="grid min-w-0 grid-cols-1 gap-2 border-t border-line pt-3 text-xs sm:grid-cols-3">
+          <div className="min-w-0">
             <p className="text-faint">{t("card.grandPrize")}</p>
             <p className="mt-1 font-mono text-sm text-fg">{moneyFull(game.topPrize)}</p>
             <p className="mt-0.5 font-mono text-sm text-fg">
@@ -99,7 +99,7 @@ export function TicketCard({
               </p>
             ) : null}
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-faint">{t("card.topTier")}</p>
             {topTier ? (
               <>
@@ -112,7 +112,7 @@ export function TicketCard({
               <p className="mt-1 font-mono text-sm text-muted">{t("card.none")}</p>
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             {middleNone ? (
               <p className="font-mono text-sm leading-snug text-muted">{t("card.middleNone")}</p>
             ) : (
@@ -158,7 +158,7 @@ export function BandChip({
   return (
     <span
       className={cn(
-        "inline-flex min-h-10 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
+        "inline-flex min-h-11 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
         map[band],
         className,
       )}
@@ -188,7 +188,7 @@ export function PaceChip({
   return (
     <span
       className={cn(
-        "inline-flex min-h-10 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
+        "inline-flex min-h-11 items-center rounded-md border-2 px-3 py-1.5 text-sm font-bold tracking-[0.12em] uppercase",
         map[band],
         className,
       )}
@@ -205,7 +205,7 @@ export function NewGameChip({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex min-h-10 items-center rounded-md border-2 border-gold bg-[#14240c] px-3 py-1.5 text-sm font-bold tracking-[0.14em] text-[#c8e08a] uppercase",
+        "inline-flex min-h-11 items-center rounded-md border-2 border-gold bg-[#14240c] px-3 py-1.5 text-sm font-bold tracking-[0.14em] text-[#c8e08a] uppercase",
         className,
       )}
     >

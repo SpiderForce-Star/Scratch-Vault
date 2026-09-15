@@ -127,7 +127,7 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   assert.equal(header.includes(">Scratch Vault<"), true);
   assert.match(header, /aria-label="Scratch Vault"/);
   assert.match(header, /header\.deskChip/);
-  assert.match(header, /hidden font-display/);
+  assert.match(header, /hidden min-w-0 truncate font-display/);
   const desktopNav = header.slice(
     header.indexOf('className="hidden items-center md:flex"'),
     header.indexOf("{open ?"),

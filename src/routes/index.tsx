@@ -276,7 +276,7 @@ function VaultHome() {
               {tripGames.length === 0 ? (
                 <p className="mt-4 text-muted">{tripEmptyCopy}</p>
               ) : (
-                <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:grid-cols-2 xl:grid-cols-3">
                   {tripGames.map((game) => {
                     const heat = reports.get(game.number);
                     if (!heat) return null;
@@ -316,7 +316,7 @@ function VaultHome() {
                     {t("home.newTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-muted">{t("home.newSub")}</p>
-                  <div className="mt-3 grid grid-cols-1 gap-3 md:flex md:gap-3 md:overflow-x-auto md:pb-2">
+                  <div className="sv-hide-scrollbar mt-3 grid grid-cols-1 gap-3 md:flex md:snap-x md:snap-mandatory md:gap-3 md:overflow-x-auto md:pb-2">
                     {newGames.map((game, index) => {
                       const heat = reports.get(game.number);
                       if (!heat) return null;
@@ -327,7 +327,7 @@ function VaultHome() {
                           params={{ number: String(game.number) }}
                           search={deskSearch(game.stateId ?? viewState)}
                           className={cn(
-                            "w-full overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold md:w-72 md:shrink-0",
+                            "sv-gold-hover w-full overflow-hidden rounded-xl border border-gold/40 bg-surface md:w-72 md:shrink-0 md:snap-start",
                             index > 0 && "hidden md:block",
                           )}
                         >
@@ -362,7 +362,7 @@ function VaultHome() {
 
       <section id="skip" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <h2 className="font-display text-4xl tracking-[0.16em] text-gold uppercase sm:text-6xl [text-shadow:0_0_28px_rgb(196,92,74,0.45)]">
+          <h2 className="font-display text-3xl tracking-wide text-gold uppercase sm:text-5xl lg:text-6xl break-words [text-shadow:0_0_28px_rgb(196,92,74,0.45)]">
             {t("home.skipKicker")}
           </h2>
           <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
@@ -477,7 +477,7 @@ function PriceChipBar({
         type="button"
         onClick={() => onSelect(id)}
         className={cn(
-          "min-h-11 min-w-11 rounded-md px-3 text-sm",
+          "min-h-11 min-w-11 shrink-0 rounded-md px-3 text-sm",
           filter === id
             ? "bg-gold text-accent-fg"
             : "bg-surface text-muted hover:text-fg",
@@ -490,9 +490,11 @@ function PriceChipBar({
 
   if (!sticky) {
     return (
-      <div className="mb-4 mt-4 flex flex-wrap gap-1">
+      <div className="mb-4 mt-4">
         {freshness}
-        {chips}
+        <div className="sv-hide-scrollbar mt-2 flex flex-nowrap gap-1 overflow-x-auto sm:flex-wrap sm:overflow-visible">
+          {chips}
+        </div>
       </div>
     );
   }
@@ -500,13 +502,15 @@ function PriceChipBar({
   return (
     <div
       className={cn(
-        "mb-4 mt-4 flex flex-wrap gap-1",
-        "sticky top-14 z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
+        "mb-4 mt-4",
+        "sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
         "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
       )}
     >
       {freshness}
-      {chips}
+      <div className="sv-hide-scrollbar mt-2 flex flex-nowrap gap-1 overflow-x-auto sm:flex-wrap sm:overflow-visible">
+        {chips}
+      </div>
     </div>
   );
 }

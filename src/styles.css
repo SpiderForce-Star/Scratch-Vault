@@ -42,6 +42,7 @@
     color: var(--color-fg);
     font-family: var(--font-sans);
     min-height: 100%;
+    overflow-x: hidden;
   }
 
   button:not(:disabled),
@@ -384,6 +385,34 @@ html[data-sv-boot="done"] #sv-boot-paint {
 
 .sv-neon-decay-pulse {
   animation: sv-neon-pulse 2.4s ease-in-out infinite;
+}
+
+.sv-hide-scrollbar {
+  scrollbar-width: none;
+}
+.sv-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.sv-card-lift {
+  transition: transform 200ms ease;
+}
+.sv-card-lift:active {
+  transform: translateY(-0.125rem);
+}
+
+@media (hover: hover) {
+  .sv-card-lift:hover {
+    transform: translateY(-0.125rem);
+  }
+
+  .sv-gold-hover:hover {
+    border-color: var(--color-gold);
+  }
+
+  .group:hover .sv-gold-hover-text {
+    color: var(--color-gold);
+  }
 }
 
 @keyframes sv-neon-pulse {

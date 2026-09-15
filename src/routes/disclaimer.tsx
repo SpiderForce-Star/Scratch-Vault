@@ -21,11 +21,11 @@ export const Route = createFileRoute("/disclaimer")({
 function DisclaimerPage() {
   const { t } = useI18n();
   return (
-    <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <article className="mx-auto min-w-0 max-w-3xl overflow-x-hidden px-4 py-10 sm:px-6">
       <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
         {t("disc.pageKicker")}
       </p>
-      <h1 className="mt-3 font-display text-4xl tracking-tight">{t("disc.pageTitle")}</h1>
+      <h1 className="mt-3 font-display text-4xl tracking-tight break-words">{t("disc.pageTitle")}</h1>
       <p className="mt-2 text-sm text-faint">Last updated {LEGAL_REVIEW_DATE}.</p>
       <div className="mt-4 mb-8">
         <DisclaimerLead />

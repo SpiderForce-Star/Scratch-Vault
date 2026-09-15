@@ -31,9 +31,9 @@ export function AgeGate() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="age-gate-title"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-bg/92 px-4 py-6 sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-bg/92 px-4 py-6"
     >
-      <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-2xl">
+      <div className="my-auto w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-2xl">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
           {t("age.kicker")}
         </p>

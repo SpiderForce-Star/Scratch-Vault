@@ -11,7 +11,7 @@ export function SiteFooter() {
   const mode = deskMode ?? config.dataMode;
 
   return (
-    <footer className="border-t border-line bg-surface">
+    <footer className="border-t border-line bg-surface pb-[env(safe-area-inset-bottom,0px)]">
       <TicketCopyright />
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr]">
@@ -104,7 +104,7 @@ export function SiteFooter() {
             height={528}
             className="h-auto w-44 mix-blend-lighten sm:w-56"
           />
-          <span className="font-mono text-[10px] tracking-[0.18em] text-faint uppercase group-hover:text-gold">
+          <span className="sv-gold-hover-text font-mono text-[10px] tracking-[0.18em] text-faint uppercase">
             {t("footer.built")}
           </span>
         </a>

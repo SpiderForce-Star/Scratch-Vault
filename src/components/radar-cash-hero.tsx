@@ -135,7 +135,7 @@ export function RadarCashHero({
           {t("hero.contact")}
         </p>
       ) : null}
-      <div className="mx-auto mt-3 w-full max-w-[380px] min-w-0 lg:max-w-none">
+      <div className="mx-auto mt-3 w-full min-w-0 max-w-[380px] overflow-hidden lg:max-w-none">
         {scopeReady ? (
           <RadarScope
             stateId={stateId}
@@ -203,11 +203,11 @@ function RadarScope({
   const uid = `vsv-${stateId || "desk"}-${cycleId.slice(0, 24) || "idle"}`;
   const sweepSec = alert ? 4 : 5.5;
   return (
-    <div className="relative aspect-square w-full overflow-visible">
+    <div className="relative aspect-square w-full overflow-hidden">
       <svg
         key={uid}
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="block h-auto w-full overflow-visible"
+        className="block h-auto w-full max-w-full overflow-hidden"
         data-radar-state={stateId}
         data-radar-cycle={cycleId}
         data-radar-hub="cash"
