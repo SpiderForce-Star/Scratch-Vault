@@ -12,6 +12,22 @@ export function HeatExplainer() {
           {t("heat.whatBody")}
         </p>
         <p className="mt-2 text-xs text-faint">{t("heat.whatAge")}</p>
+        <div className="mt-5 max-w-3xl">
+          <h3 className="font-display text-lg tracking-tight">
+            {t("heat.recipeTitle")}
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            {t("heat.recipeLead")}
+          </p>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
+            <li>{t("heat.recipe1")}</li>
+            <li>{t("heat.recipe2")}</li>
+            <li>{t("heat.recipe3")}</li>
+          </ol>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            {t("heat.recipeWhy")}
+          </p>
+        </div>
       </div>
     </section>
   );

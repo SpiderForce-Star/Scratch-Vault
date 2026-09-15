@@ -27,6 +27,7 @@ import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { DeskRibbon } from "@/components/desk-ribbon";
+import { HeatExplainer } from "@/components/heat-explainer";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
@@ -220,6 +221,7 @@ function VaultHome() {
         stale={snap?.stale}
       />
       <DeskRibbon />
+      <HeatExplainer />
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">

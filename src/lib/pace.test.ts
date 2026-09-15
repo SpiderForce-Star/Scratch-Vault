@@ -104,6 +104,102 @@ describe("heat blend", () => {
     expect(next.paceBand).toBe("fast");
   });
 
+  it("same vault + Fast lift can move Warm → Hot", () => {
+    const warm: HeatReport = { ...baseHeat, vault: 55, deskScore: 55, band: "warm" };
+    const next = applyPace(warm, {
+      band: "fast",
+      leftoverPct: 9,
+      leftoverDaily: 9 / 16,
+      leftoverNow: 92,
+      leftoverPrior: 100,
+      days: 16,
+      lift: 10,
+    });
+    expect(next.vault).toBe(55);
+    expect(next.deskScore).toBe(65);
+    expect(next.band).toBe("hot");
+    expect(next.bust).toBe(false);
+  });
+
+  it("same vault + Still lift can move Hot → Warm", () => {
+    const hot: HeatReport = { ...baseHeat, vault: 64, deskScore: 64, band: "hot" };
+    const next = applyPace(hot, {
+      band: "still",
+      leftoverPct: 0.2,
+      leftoverDaily: 0.2 / 16,
+      leftoverNow: 100,
+      leftoverPrior: 100,
+      days: 16,
+      lift: -3,
+    });
+    expect(next.vault).toBe(64);
+    expect(next.deskScore).toBe(61);
+    expect(next.band).toBe("warm");
+  });
+
+  it("bust stays bust — leftover pace never promotes Skip", () => {
+    const bust: HeatReport = {
+      ...baseHeat,
+      vault: 0,
+      deskScore: 0,
+      band: "bust",
+      bust: true,
+      effectiveTop: 0,
+      topRemaining: 0,
+    };
+    const next = applyPace(bust, {
+      band: "fast",
+      leftoverPct: 12,
+      leftoverDaily: 12 / 16,
+      leftoverNow: 80,
+      leftoverPrior: 100,
+      days: 16,
+      lift: -6,
+    });
+    expect(next.band).toBe("bust");
+    expect(next.bust).toBe(true);
+  });
+
+  it("Cold / Skip stays Skip even with Fast leftover", () => {
+    const cold: HeatReport = { ...baseHeat, vault: 40, deskScore: 40, band: "cool" };
+    const next = applyPace(cold, {
+      band: "fast",
+      leftoverPct: 10,
+      leftoverDaily: 10 / 16,
+      leftoverNow: 90,
+      leftoverPrior: 100,
+      days: 16,
+      lift: 10,
+    });
+    expect(next.deskScore).toBe(50);
+    expect(next.band).toBe("cool");
+  });
+
+  it("NEW stays NEW and leftover pace stays unknown", () => {
+    const fresh: HeatReport = {
+      ...baseHeat,
+      vault: 0,
+      deskScore: 0,
+      band: "new",
+      remainingUnknown: true,
+      topRemaining: null,
+      effectiveTop: null,
+      midRemaining: null,
+    };
+    const next = applyPace(fresh, {
+      band: "fast",
+      leftoverPct: 10,
+      leftoverDaily: 10 / 16,
+      leftoverNow: 90,
+      leftoverPrior: 100,
+      days: 16,
+      lift: 10,
+    });
+    expect(next.band).toBe("new");
+    expect(next.paceBand).toBe("unknown");
+    expect(next.deskScore).toBe(0);
+  });
+
   it("fast leftover ranks above still leftover at the same vault", () => {
     const stillPrior = game(1, [{ amount: 500, remaining: 100 }]);
     const stillNow = game(1, [{ amount: 500, remaining: 100 }]);

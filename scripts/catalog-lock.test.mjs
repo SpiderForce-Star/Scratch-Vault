@@ -139,6 +139,48 @@ test("lock copy does not claim remaining counts improve odds", () => {
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 });
 
+test("public Heat recipe is listed and locales stay in lockstep", () => {
+  const en = JSON.parse(read("src/locales/en.json"));
+  const es = JSON.parse(read("src/locales/es.json"));
+  const recipeKeys = [
+    "heat.recipeTitle",
+    "heat.recipeLead",
+    "heat.recipe1",
+    "heat.recipe2",
+    "heat.recipe3",
+    "heat.recipeWhy",
+  ];
+  const banned =
+    /higher probability of winning|better odds|system to win|more likely to win/i;
+  for (const key of recipeKeys) {
+    assert.equal(typeof en[key], "string");
+    assert.equal(typeof es[key], "string");
+    assert.ok(en[key].length > 8);
+    assert.doesNotMatch(en[key], banned);
+    assert.doesNotMatch(es[key], banned);
+  }
+  assert.match(en["heat.recipeLead"], /aisle context/i);
+  assert.match(en["heat.recipe3"], /Skip stays Skip/);
+  assert.match(en["heat.recipeWhy"], /Printed odds never change/);
+  assert.match(en["heat.recipeWhy"], /18\+/);
+  assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
+
+  const explainer = read("src/components/heat-explainer.tsx");
+  assert.match(explainer, /export function HeatExplainer/);
+  assert.match(explainer, /const \{ t \} = useI18n\(\)/);
+  for (const key of recipeKeys) {
+    assert.match(explainer, new RegExp(key.replace(".", "\\.")));
+  }
+  assert.match(read("src/routes/index.tsx"), /HeatExplainer/);
+  assert.match(read("src/routes/games.tsx"), /HeatExplainer/);
+  assert.match(read("src/routes/game/$number.tsx"), /HeatExplainer/);
+
+  const radar = read("src/components/radar-cash-hero.tsx");
+  const scopeAt = radar.indexOf("function RadarScope");
+  const tAt = radar.indexOf("const { t } = useI18n()", scopeAt);
+  assert.ok(scopeAt >= 0 && tAt > scopeAt && tAt < scopeAt + 800);
+});
+
 test("stripe webhook and prices are untouched by the catalog lock", () => {
   const webhook = read("src/routes/api/stripe/webhook.ts");
   const stripeServer = read("src/lib/stripe.server.ts");
