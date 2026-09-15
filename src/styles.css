@@ -23,6 +23,9 @@
   --color-cool-ink: #12161c;
   --color-bust: #e23b3b;
   --color-bust-ink: #220c0c;
+  --color-neon: #39ff6a;
+  --color-neon-ink: #04150a;
+  --color-neon-dim: #0d3b1a;
   --font-display: "Fraunces", "Times New Roman", serif;
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -368,5 +371,31 @@ html[data-sv-boot="done"] #sv-boot-paint {
   .vsv-hub3d-scene {
     animation: none !important;
     transform: rotateX(18deg) rotateZ(-8deg);
+  }
+}
+
+.sv-neon-decay {
+  border: 1px solid var(--color-neon);
+  background: color-mix(in srgb, var(--color-neon-dim) 88%, black);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-neon) 35%, transparent),
+    0 0 28px color-mix(in srgb, var(--color-neon) 28%, transparent);
+}
+
+.sv-neon-decay-pulse {
+  animation: sv-neon-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes sv-neon-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-neon) 30%, transparent),
+      0 0 22px color-mix(in srgb, var(--color-neon) 22%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-neon) 70%, transparent),
+      0 0 36px color-mix(in srgb, var(--color-neon) 45%, transparent);
   }
 }

@@ -26,9 +26,22 @@ operation.
 4. **Leftover pace is claims, not tickets sold.** Comparing two official
    remaining-prize snapshots estimates how fast listed prizes are being claimed.
    That pace is aisle context and a small Heat ranking factor. It is **not**
-   unit sales, store inventory, or a change in printed odds.
+   unit sales, store inventory, or a change in printed odds. Hot / Warm / Cold
+   stickers follow the combined Heat number (remaining + leftover-pace bump)
+   with the same cutoffs as vault: Hot ≥ 62, Warm ≥ 42, else Cold. Bust/Skip
+   stays Skip when bust rules fire or the retail top is gone; leftover pace
+   never promotes Skip into Hot/Warm. NEW stays NEW. The public Heat recipe
+   is aisle intel from the official leftover-prize list. The homepage
+   statistical walkthrough is sample claims math (leftover drop → 16-day
+   pace → Heat sticker). The homepage neon callout is the same fact:
+   time-scaled leftover decay (claims, not tickets purchased) is folded
+   into Hot / Warm / Cold for every game. It is not live store inventory
+   and not a change in printed odds.
 5. **No “system to win.”** Printed odds do not change. Remaining counts do not
-   improve the odds of any individual ticket. Copy must keep saying so.
+   improve the odds of any individual ticket. Copy must never say “higher
+   probability of winning,” “better odds,” “system to win,” or “more likely
+   to win.” Required: leftover pace is claims; printed odds never change;
+   18+ (Iowa tickets 21+); not a lottery; not affiliated.
 6. **Age.** App use is 18+. Ticket purchase / redeem: **21+ Arizona**,
    **21+ Iowa (Iowa Code § 99G.30)**, **18+** in TN KY SC OK MI NC PA TX MO
    OH IL MA ID CT.

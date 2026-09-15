@@ -20,6 +20,7 @@ import { gamesPriceFilters, GamesBoardView } from "@/components/games-board";
 import { LockedPanel } from "@/components/locked-panel";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
+import { HeatExplainer } from "@/components/heat-explainer";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, useActiveState } from "@/lib/active-state";
 import { pageHead } from "@/lib/site";
@@ -171,6 +172,7 @@ function GamesCatalog() {
             </div>
           </div>
         </section>
+        <HeatExplainer />
       </div>
     );
   }
@@ -184,6 +186,7 @@ function GamesCatalog() {
         loadError={snap?.loadError}
         stale={snap?.stale}
       />
+      <HeatExplainer />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">

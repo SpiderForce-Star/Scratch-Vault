@@ -134,7 +134,42 @@ export function scoreGamePace(
   };
 }
 
+/** Same cutoffs vault used for stickers: Hot ≥62, Warm ≥42, else Cold. */
+export function heatBandFromDeskScore(score: number): HeatReport["band"] {
+  if (score >= 62) return "hot";
+  if (score >= 42) return "warm";
+  return "cool";
+}
+
+function retailTopGone(heat: HeatReport): boolean {
+  return heat.role === "jackpot" && heat.effectiveTop != null && heat.effectiveTop <= 0;
+}
+
+/**
+ * Stickers follow deskScore after leftover pace.
+ * NEW stays NEW. Bust stays bust. Retail-top-gone and Cold stay Skip —
+ * leftover pace must never promote Skip into Hot/Warm.
+ */
+export function pacedHeatBand(heat: HeatReport, deskScore: number): HeatReport["band"] {
+  if (heat.band === "new") return "new";
+  if (heat.bust || heat.band === "bust") return "bust";
+  if (retailTopGone(heat) || heat.band === "cool") return "cool";
+  return heatBandFromDeskScore(deskScore);
+}
+
 export function applyPace(heat: HeatReport, pace: PaceReport): HeatReport {
+  if (heat.band === "new") {
+    return {
+      ...heat,
+      paceBand: "unknown",
+      leftoverPct: null,
+      leftoverDaily: null,
+      leftoverNow: null,
+      leftoverDays: null,
+      deskScore: heat.deskScore ?? heat.vault,
+      band: "new",
+    };
+  }
   const deskScore = clamp((heat.deskScore ?? heat.vault) + pace.lift);
   return {
     ...heat,
@@ -144,6 +179,7 @@ export function applyPace(heat: HeatReport, pace: PaceReport): HeatReport {
     leftoverNow: pace.leftoverNow,
     leftoverDays: pace.days,
     deskScore,
+    band: pacedHeatBand(heat, deskScore),
   };
 }
 

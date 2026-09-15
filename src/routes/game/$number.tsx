@@ -24,6 +24,7 @@ import { TicketFace } from "@/components/ticket-face";
 import { PostedBookPanel } from "@/components/posted-book";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { DataModeBanner } from "@/components/data-mode-banner";
+import { HeatExplainer } from "@/components/heat-explainer";
 import { StateRulesCompact } from "@/components/state-rules";
 import { isHomepageTeaseGame } from "@/lib/catalog-lock";
 import { pageHead } from "@/lib/site";
@@ -190,6 +191,7 @@ function GameDetail() {
       <div>
         <DeskAlertBanner />
         <DataModeBanner state={state} dataMode={dataMode} />
+        <HeatExplainer />
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
           <Link
             to="/"
@@ -214,6 +216,7 @@ function GameDetail() {
     <div>
       <DeskAlertBanner />
       <DataModeBanner state={state} dataMode={dataMode} />
+      <HeatExplainer />
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/"

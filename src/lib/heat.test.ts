@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildGamesBoard,
   isSkipCandidate,
   isSkipGame,
   pickSkipGames,
@@ -9,6 +10,7 @@ import {
   sortGames,
   type HeatReport,
 } from "./heat";
+import { applyPace } from "./pace";
 import type { Game } from "@/data/games";
 
 const hot: HeatReport = {
@@ -82,6 +84,90 @@ describe("skip", () => {
     ]);
     expect(pickTripGames(games, reports, "5", 3).map((row) => row.number)).toEqual([153]);
     expect(pickSkipGames(games, reports, "5", 5).map((row) => row.number)).toEqual([107]);
+  });
+});
+
+describe("leftover pace stickers", () => {
+  const live: HeatReport = {
+    grand: 40,
+    medium: 50,
+    vault: 55,
+    deskScore: 55,
+    band: "warm",
+    bust: false,
+    mediumKnown: true,
+    role: "jackpot",
+    topRemaining: 2,
+    effectiveTop: 2,
+    midRemaining: 20,
+    lowRemaining: 100,
+  };
+
+  it("same vault + Fast lift can move Warm → Hot", () => {
+    const next = applyPace(live, {
+      band: "fast",
+      leftoverPct: 9,
+      leftoverDaily: 9 / 16,
+      leftoverNow: 92,
+      leftoverPrior: 100,
+      days: 16,
+      lift: 10,
+    });
+    expect(next.band).toBe("hot");
+    expect(next.deskScore).toBe(65);
+    expect(isSkipGame(next)).toBe(false);
+  });
+
+  it("same vault + Still lift can move Hot → Warm", () => {
+    const next = applyPace(
+      { ...live, vault: 64, deskScore: 64, band: "hot" },
+      {
+        band: "still",
+        leftoverPct: 0.2,
+        leftoverDaily: 0.2 / 16,
+        leftoverNow: 100,
+        leftoverPrior: 100,
+        days: 16,
+        lift: -3,
+      },
+    );
+    expect(next.band).toBe("warm");
+    expect(next.deskScore).toBe(61);
+    expect(isSkipGame(next)).toBe(false);
+  });
+
+  it("bust stays bust", () => {
+    const next = applyPace(
+      { ...live, vault: 0, deskScore: 0, band: "bust", bust: true, effectiveTop: 0 },
+      {
+        band: "fast",
+        leftoverPct: 12,
+        leftoverDaily: 12 / 16,
+        leftoverNow: 80,
+        leftoverPrior: 100,
+        days: 16,
+        lift: -6,
+      },
+    );
+    expect(next.band).toBe("bust");
+    expect(next.bust).toBe(true);
+    expect(isSkipGame(next)).toBe(true);
+  });
+
+  it("buildGamesBoard and heat sort stay on deskScore after pace", () => {
+    const warm = g(153, 10);
+    const hot = g(152, 10);
+    const skip = g(151, 10);
+    const reports = new Map<number, HeatReport>([
+      [153, applyPace(live, { band: "quiet", leftoverPct: 1, leftoverDaily: 1 / 16, leftoverNow: 99, leftoverPrior: 100, days: 16, lift: 0 })],
+      [152, applyPace({ ...live, vault: 55, deskScore: 55, band: "warm" }, { band: "fast", leftoverPct: 9, leftoverDaily: 9 / 16, leftoverNow: 92, leftoverPrior: 100, days: 16, lift: 10 })],
+      [151, { ...bust, deskScore: 0 }],
+    ]);
+    expect(sortGames([warm, hot, skip], "heat", reports).map((row) => row.number)).toEqual([152, 153, 151]);
+    const board = buildGamesBoard([warm, hot, skip], reports, 10);
+    expect(board.hot.map((row) => row.number)).toEqual([152]);
+    expect(board.warm.map((row) => row.number)).toEqual([153]);
+    expect(board.skip.map((row) => row.number)).toEqual([151]);
   });
 });
 
