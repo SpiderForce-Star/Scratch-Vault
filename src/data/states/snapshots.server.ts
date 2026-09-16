@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Game } from "@/data/games";
 import type { StateId } from "@/config/states";
-import { trustedCatalog } from "./parse.server";
+import { trustedCatalog } from "./parse.server.ts";
 
 function hasPostgres(): boolean {
   return Boolean(

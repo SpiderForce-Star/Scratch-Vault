@@ -77,6 +77,18 @@ test("KY TBD is skipped; dated cards stamp last-day and claim-by", () => {
   assert.equal(g124?.lastClaimDate, "2027-03-31");
   assert.equal(g555?.endDate, "2026-10-31");
   assert.equal(g555?.lastClaimDate, "2027-04-30");
+
+  const noComments = parseEndedGames(
+    "ky",
+    `<span>Game End / Last Day to Purchase:&nbsp;</span><b>TBD</b><br />
+     <span>Last Date to Claim:&nbsp;</span><b>TBD</b><br />
+     <span>Game #:&nbsp;</span><b>848</b><br />
+     <span>Game End / Last Day to Purchase:&nbsp;</span><b>September 30, 2026</b><br />
+     <span>Last Date to Claim:&nbsp;</span><b>March 31, 2027</b><br />
+     <span>Game #:&nbsp;</span><b>124</b><br />`,
+  );
+  assert.equal(noComments.some((r) => r.number === 848), false);
+  assert.equal(noComments.find((r) => r.number === 124)?.endDate, "2026-09-30");
 });
 
 test("TN / NC / TX / PA / ID tables parse; SC with no dates fails closed", () => {
@@ -92,11 +104,12 @@ test("TN / NC / TX / PA / ID tables parse; SC with no dates fails closed", () =>
   const nc = parseEndedGames(
     "nc",
     `<table><tr><th>#</th><th>Game Name</th><th>Launched</th><th>End Date</th><th>Last Day to Claim</th></tr>
-     <tr><td>928</td><td>$400,000 Jackpot</td><td>Apr 2, 2024</td><td>Sep 30, 2026</td><td>Dec 29, 2026</td></tr></table>`,
+     <tr><td>928</td><td>$400,000 Jackpot</td><td>Apr 2, 2024</td><td>Sep 30, 2026</td><td>Dec 29, 2026</td></tr>
+     <tr><td>1</td><td>5 Times Lucky</td><td>Jul 1, 2025</td><td>Sep 4, 2026</td><td>Dec 3, 2026</td></tr></table>`,
   );
-  assert.equal(nc[0]?.number, 928);
-  assert.equal(nc[0]?.endDate, "2026-09-30");
-  assert.equal(nc[0]?.lastClaimDate, "2026-12-29");
+  assert.equal(nc.find((r) => r.number === 928)?.endDate, "2026-09-30");
+  assert.equal(nc.find((r) => r.number === 928)?.lastClaimDate, "2026-12-29");
+  assert.equal(nc.find((r) => r.number === 1)?.endDate, "2026-09-04");
 
   const tx = parseEndedGames(
     "tx",
@@ -110,12 +123,21 @@ test("TN / NC / TX / PA / ID tables parse; SC with no dates fails closed", () =>
   const pa = parseEndedGames(
     "pa",
     `<table><tr><th>Game #</th><th>Game Name</th><th>On Sale</th><th>Price</th><th>End Sale</th><th>Last Date to Claim Prize</th></tr>
-     <tr><td>1804</td><td>Fat Stacks</td><td>09/2026</td><td>$5</td><td></td><td></td></tr>
+     <tr><td class="new"><div class="new-tag">NEW</div><span class="new-game">1804</span></td><td>Fat Stacks</td><td>09/2026</td><td>$5</td><td></td><td></td></tr>
      <tr><td>1772</td><td>Find the Leprechaun</td><td>01/2026</td><td>$2</td><td>9/28/2026 12:00:00 AM</td><td>9/28/2027 12:00:00 AM</td></tr></table>`,
   );
   assert.equal(pa.some((r) => r.number === 1804), false);
   assert.equal(pa.find((r) => r.number === 1772)?.endDate, "2026-09-28");
   assert.equal(pa.find((r) => r.number === 1772)?.lastClaimDate, "2027-09-28");
+
+  const ia = parseEndedGames(
+    "ia",
+    `<table id="Ended"><tr><th colspan="2">Game</th><th>Official Game End Date</th><th>Last Date To Pay Prizes</th></tr>
+     <tr><td>#731</td><td>Triple Red 777s</td><td>07/18/25</td><td></td></tr></table>`,
+  );
+  assert.equal(ia[0]?.number, 731);
+  assert.equal(ia[0]?.endDate, "2025-07-18");
+  assert.equal(ia[0]?.lastClaimDate, undefined);
 
   const id = parseEndedGames(
     "id",
@@ -164,18 +186,23 @@ test("mergeEndedDates stamps dates and never invents remaining", () => {
   assert.equal(merged[0].endDate, "2026-09-30");
   assert.equal(merged[0].lastClaimDate, "2027-03-31");
   assert.equal(merged[0].tiers[0].remaining, 3);
+  assert.equal(merged[0].price, 5);
+  assert.equal(merged[0].odds, 4.71);
+  assert.equal(merged[1].price, 20);
+  assert.equal(merged[1].odds, 3.1);
   assert.equal(merged[1].endDate, undefined);
+  assert.equal(merged[1].tiers[0].remaining, 2);
   assert.equal(merged.some((g) => g.number === 9999), false);
 });
 
 test("ending-soon board lists dated $5+ games and skips already-ended", () => {
   const today = calendarYmd();
   const games = [
-    game(10, 5, shiftYmd(today, 7)),
-    game(11, 2, shiftYmd(today, 7)),
-    game(12, 10, shiftYmd(today, -2)),
-    game(13, 20, shiftYmd(today, 40)),
-    game(14, 5, null),
+    game(848, 5, shiftYmd(today, 7)),
+    game(153, 2, shiftYmd(today, 7)),
+    game(841, 10, shiftYmd(today, -2)),
+    game(980, 20, shiftYmd(today, 40)),
+    game(113, 5, null),
   ];
   const reports = new Map(
     games.map((g) => [
@@ -198,15 +225,16 @@ test("ending-soon board lists dated $5+ games and skips already-ended", () => {
   const soon = pickEndingSoon(games);
   assert.deepEqual(
     soon.map((g) => g.number),
-    [10],
+    [848],
   );
   const board = buildGamesBoard(games, reports, "all");
   assert.deepEqual(
     board.endingSoon.map((g) => g.number),
-    [10],
+    [848],
   );
-  assert.equal(board.hot.some((g) => g.number === 12), false);
-  assert.equal(board.warm.some((g) => g.number === 12), false);
+  assert.equal(board.hot.some((g) => g.number === 841), false);
+  assert.equal(board.warm.some((g) => g.number === 841), false);
+  assert.equal(board.warm.some((g) => g.number === 848), true);
 });
 
 test("copy lockstep and fetch archive the current snapshot", () => {
@@ -222,6 +250,38 @@ test("copy lockstep and fetch archive the current snapshot", () => {
   assert.ok(upsertAt > 0 && archiveAt > upsertAt, "current catalog is archived after upsert");
   const migration = readFileSync(join(root, "migrations/0007_snapshot_history.sql"), "utf8");
   assert.match(migration, /remaining_snapshot_state_fetched_uidx/);
+  const lastGoodDir = join(root, "src/data/states/last-good");
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+    const path = join(lastGoodDir, `${id}.json`);
+    let json;
+    try {
+      json = readFileSync(path, "utf8");
+    } catch {
+      continue;
+    }
+    assert.doesNotMatch(json, /"endDate"/);
+    assert.doesNotMatch(json, /"lastClaimDate"/);
+  }
+});
+
+test("in-memory archive keeps history and does not overwrite the pace prior", () => {
+  const snap = readFileSync(join(root, "src/data/states/snapshots.server.ts"), "utf8");
+  assert.match(snap, /const historyMemory = new Map/);
+  assert.match(snap, /HISTORY_CAP = 90/);
+  assert.match(snap, /export async function readSnapshotHistory/);
+  assert.match(snap, /ORDER BY fetched_at DESC/);
+  const archiveStart = snap.indexOf("export async function archiveSnapshot");
+  const priorStart = snap.indexOf("export async function archivePriorSnapshot");
+  assert.ok(archiveStart > 0 && priorStart > archiveStart);
+  const archiveFn = snap.slice(archiveStart, priorStart);
+  assert.match(archiveFn, /rememberHistory/);
+  assert.doesNotMatch(archiveFn, /priorMemory/);
+  assert.match(snap, /LIMIT 1/);
+  const fetch = readFileSync(join(root, "src/data/states/fetch.server.ts"), "utf8");
+  const priorAt = fetch.indexOf("await archivePriorSnapshot");
+  const upsertAt = fetch.indexOf("await upsertSnapshot");
+  const currentAt = fetch.lastIndexOf("await archiveSnapshot");
+  assert.ok(priorAt > 0 && upsertAt > priorAt && currentAt > upsertAt);
 });
 
 function isYmdLike(value) {
