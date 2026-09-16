@@ -327,14 +327,34 @@ function report(partial) {
   };
 }
 
-test("hot, warm, and new are never skip even when jackpot grand is 0", () => {
-  assert.equal(isSkipGame(report({ band: "hot", grand: 0, bust: false })), false);
-  assert.equal(isSkipGame(report({ band: "warm", grand: 0, bust: false })), false);
-  assert.equal(isSkipGame(report({ band: "new", grand: 0, bust: false })), false);
-  assert.equal(isSkipGame(report({ band: "hot", bust: true })), false);
-  assert.equal(isSkipGame(report({ band: "cool", grand: 80, bust: false })), true);
+test("hot, warm, and new look-ats are never skip; retail-top-gone and bust are skip", () => {
+  assert.equal(
+    isSkipGame(report({ band: "hot", grand: 40, topRemaining: 3, effectiveTop: 3, bust: false })),
+    false,
+  );
+  assert.equal(
+    isSkipGame(report({ band: "warm", grand: 40, topRemaining: 2, effectiveTop: 2, bust: false })),
+    false,
+  );
+  assert.equal(
+    isSkipGame(
+      report({
+        band: "new",
+        grand: 0,
+        bust: false,
+        remainingUnknown: true,
+        topRemaining: null,
+        effectiveTop: null,
+        midRemaining: null,
+      }),
+    ),
+    false,
+  );
+  assert.equal(isSkipGame(report({ band: "hot", grand: 0, topRemaining: 0, effectiveTop: 0, bust: false })), true);
+  assert.equal(isSkipGame(report({ band: "hot", bust: true })), true);
+  assert.equal(isSkipGame(report({ band: "cool", grand: 80, bust: false, topRemaining: 3, effectiveTop: 3 })), true);
   assert.equal(isSkipGame(report({ band: "bust", grand: 0, bust: true })), true);
-  assert.equal(skipChipBand(report({ band: "hot" })), "cool");
+  assert.equal(skipChipBand(report({ band: "hot", topRemaining: 3, effectiveTop: 3 })), "cool");
   assert.equal(skipChipBand(report({ band: "cool" })), "cool");
   assert.equal(skipChipBand(report({ band: "bust", bust: true })), "bust");
 });
@@ -346,8 +366,8 @@ test("pickSkipGames never pads empty price lists with hot games", () => {
     { number: 50, name: "Big $50", price: 50 },
   ];
   const reports = new Map([
-    [991, report({ band: "hot", grand: 0 })],
-    [971, report({ band: "hot", grand: 0 })],
+    [991, report({ band: "hot", grand: 70, topRemaining: 4, effectiveTop: 4 })],
+    [971, report({ band: "hot", grand: 70, topRemaining: 3, effectiveTop: 3 })],
     [50, report({ band: "hot", grand: 80, topRemaining: 4, effectiveTop: 4 })],
   ]);
   assert.deepEqual(
@@ -370,10 +390,8 @@ test("PA $10 Skip These has no HOT crossword chips", () => {
   const { catalog, reports } = scored(pa.catalog.map((g) => ({ ...g, stateId: "pa" })));
   const skip = pickSkipGames(catalog, reports, "10", 5);
   assert.equal(skip.every((g) => isSkipGame(reports.get(g.number))), true);
-  assert.equal(
-    skip.some((g) => /Bonus Crossword|Big Cash Payout|Crossword Mania/i.test(g.name)),
-    false,
-  );
+  assert.equal(skip.some((g) => reports.get(g.number)?.band === "hot"), false);
+  assert.equal(skip.some((g) => reports.get(g.number)?.band === "warm"), false);
   assert.equal(
     skip.every((g) => {
       const band = reports.get(g.number)?.band;
@@ -541,8 +559,10 @@ test("Idaho $50 with posted remaining is not blank-trip plus all-skip", () => {
     5,
     trip.map((g) => g.number),
   );
-  assert.equal(trip.length, 2);
-  assert.equal(skip.length, 0);
+  assert.ok(trip.length >= 1, "posted remaining still yields a look-at");
+  assert.equal(trip.length + skip.length, 2);
+  assert.equal(trip.every((g) => isSkipGame(postedScored.reports.get(g.number)) === false), true);
+  assert.equal(skip.every((g) => isSkipGame(postedScored.reports.get(g.number))), true);
 });
 
 test("OK $50 has two posted games and does not invent a third", () => {

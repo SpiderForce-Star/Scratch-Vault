@@ -38,6 +38,48 @@ function clamp(n: number, lo = 0, hi = 100) {
   return Math.max(lo, Math.min(hi, n));
 }
 
+/** Leftover-mix weights. Public recipe: grand 0.28 / medium 0.42 / cash 0.30. */
+export const MIX_GRAND = 0.28;
+export const MIX_MEDIUM = 0.42;
+export const MIX_CASH = 0.3;
+
+function heatBandFromVault(vault: number): HeatBand {
+  if (vault >= 62) return "hot";
+  if (vault >= 42) return "warm";
+  return "cool";
+}
+
+function retailTopGone(heat: HeatReport): boolean {
+  return heat.role === "jackpot" && heat.effectiveTop != null && heat.effectiveTop <= 0;
+}
+
+function cashOf(heat: HeatReport): number {
+  if (typeof heat.cash === "number" && Number.isFinite(heat.cash)) return heat.cash;
+  if (heat.bust) return 0;
+  const denom = MIX_CASH || 0.3;
+  return clamp((heat.vault - heat.grand * MIX_GRAND - heat.medium * MIX_MEDIUM) / denom);
+}
+
+/** Min-max to 0–1. Ties (no spread) sit at 0.5 so defaults cannot Hot a desk by themselves. */
+function scale01(values: number[], value: number): number {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const v of values) {
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  if (!Number.isFinite(min) || max <= min) return 0.5;
+  return (value - min) / (max - min);
+}
+
+export function isScoreableGame(game: Game, heat: HeatReport | undefined): boolean {
+  if (!heat) return false;
+  if (heat.band === "new" || isUnpostedNewGame(game)) return false;
+  if (isEndedGame(game)) return false;
+  if (heat.remainingUnknown) return false;
+  return true;
+}
+
 export function gameRole(game: Game): GameRole {
   const top = game.tiers[0]?.amount ?? game.topPrize;
   return top <= game.price * 120 ? "cash-out" : "jackpot";
@@ -117,6 +159,7 @@ export function scoreGame(
       midRemaining: null,
       lowRemaining: null,
       remainingUnknown: true,
+      cash: 0,
       paceBand: "unknown",
       leftoverPct: null,
       leftoverDaily: null,
@@ -193,12 +236,13 @@ export function scoreGame(
     effectiveTop <= 0 &&
     ((midRemaining != null && midRemaining <= 2) || secondaryGone);
 
-  const vault = bust ? 0 : clamp(grand * 0.28 + medium * 0.42 + cash * 0.3);
+  const vault = bust ? 0 : clamp(grand * MIX_GRAND + medium * MIX_MEDIUM + cash * MIX_CASH);
 
+  const topGone = role === "jackpot" && effectiveTop != null && effectiveTop <= 0;
   let band: HeatBand = "cool";
   if (bust) band = "bust";
-  else if (vault >= 62 || medium >= 68 || cash >= 72) band = "hot";
-  else if (vault >= 42 || medium >= 44 || cash >= 50) band = "warm";
+  else if (topGone) band = "cool";
+  else band = heatBandFromVault(vault);
 
   return {
     grand,
@@ -212,6 +256,7 @@ export function scoreGame(
     effectiveTop,
     midRemaining,
     lowRemaining,
+    cash,
     remainingUnknown: topRemaining == null && midRemaining == null,
     paceBand: "unknown",
     leftoverPct: null,
@@ -220,6 +265,78 @@ export function scoreGame(
     leftoverDays: null,
     deskScore: vault,
   };
+}
+
+/**
+ * Re-scale leftover mix against peers on this desk at this price.
+ * Fewer than 4 scoreable peers at a price → all scoreable $5–$50 games on the desk.
+ * Band from the re-scaled vault only. Printed odds never change.
+ */
+export function scoreCatalogRelative(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+): Map<number, HeatReport> {
+  const next = new Map(reports);
+  const desks = new Map<string, Game[]>();
+  for (const game of games) {
+    if (!(PRICE_POINTS as readonly number[]).includes(game.price)) continue;
+    const sid = (game.stateId ?? "tn").toLowerCase();
+    const list = desks.get(sid) ?? [];
+    list.push(game);
+    desks.set(sid, list);
+  }
+  for (const deskGames of desks.values()) {
+    applyDeskRelative(deskGames, next);
+  }
+  return next;
+}
+
+function applyDeskRelative(deskGames: Game[], reports: Map<number, HeatReport>): void {
+  const scoreable = deskGames.filter((game) => isScoreableGame(game, reports.get(game.number)));
+  const byPrice = new Map<number, Game[]>();
+  for (const game of scoreable) {
+    const list = byPrice.get(game.price) ?? [];
+    list.push(game);
+    byPrice.set(game.price, list);
+  }
+
+  for (const game of deskGames) {
+    const heat = reports.get(game.number);
+    if (!heat) continue;
+    if (heat.band === "new" || heat.bust || heat.band === "bust") continue;
+    if (!isScoreableGame(game, heat)) continue;
+
+    const pricePeers = byPrice.get(game.price) ?? [];
+    const peers = pricePeers.length >= 4 ? pricePeers : scoreable;
+    if (!peers.length) continue;
+
+    const grands = peers.map((row) => reports.get(row.number)!.grand);
+    const mediums = peers.map((row) => reports.get(row.number)!.medium);
+    const cashes = peers.map((row) => cashOf(reports.get(row.number)!));
+    const mix = clamp(
+      100 *
+        (scale01(grands, heat.grand) * MIX_GRAND +
+          scale01(mediums, heat.medium) * MIX_MEDIUM +
+          scale01(cashes, cashOf(heat)) * MIX_CASH),
+    );
+    let band = heatBandFromVault(mix);
+    if (retailTopGone(heat)) band = "cool";
+    reports.set(game.number, {
+      ...heat,
+      vault: mix,
+      deskScore: mix,
+      band,
+    });
+  }
+}
+
+/** Per-game leftover mix, then desk-relative vault / stickers. */
+export function scoreDeskHeat(
+  games: Game[],
+  ctx: HeatContext = DEFAULT_HEAT,
+): Map<number, HeatReport> {
+  const raw = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
+  return scoreCatalogRelative(games, raw);
 }
 
 /** Strip mid/low remaining so only public heat scoring remains. */

@@ -167,6 +167,33 @@ export function unionBundledGames<T extends { number: number; name: string }>(
   return trustedCatalog([...byNumber.values()]);
 }
 
+/** Persist published $50+ prize rows (cap 12) plus the top even if remaining is null. */
+export const LEFTOVER_TIER_CAP = 12;
+export const LEFTOVER_AMOUNT_MIN = 50;
+
+export function persistPrizeTiers<T extends { amount: number; remaining?: number | null }>(
+  prizes: T[],
+): T[] {
+  const rows = prizes
+    .filter((p) => Number.isFinite(p.amount) && p.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+  if (!rows.length) return [];
+  const kept: T[] = [];
+  const seen = new Set<number>();
+  const push = (row: T) => {
+    if (seen.has(row.amount)) return;
+    if (kept.length >= LEFTOVER_TIER_CAP) return;
+    seen.add(row.amount);
+    kept.push(row);
+  };
+  push(rows[0]);
+  for (const row of rows) {
+    if (row.amount < LEFTOVER_AMOUNT_MIN) continue;
+    push(row);
+  }
+  return kept;
+}
+
 export function toCatalog(games: ParsedGame[], source: GameSource): Game[] {
   const seen = new Set<number>();
   const out: Game[] = [];
@@ -174,9 +201,9 @@ export function toCatalog(games: ParsedGame[], source: GameSource): Game[] {
     if (!PRICES.has(game.price) || !game.number || !game.name) continue;
     if (isImportedJunkGame(game)) continue;
     if (seen.has(game.number)) continue;
-    const prizes = [...game.prizes]
-      .filter((p) => p.amount > 0)
-      .sort((a, b) => b.amount - a.amount);
+    const prizes = persistPrizeTiers(
+      [...game.prizes].filter((p) => p.amount > 0),
+    );
     if (!prizes.length) continue;
     const topPrize = prizes[0].amount;
     if (!topPrize) continue;
@@ -631,7 +658,8 @@ function applyParsedRemaining(game: Game, next: ParsedGame, stateId: StateId): G
     if (seen.has(prize.amount)) continue;
     tiers.push({ amount: prize.amount, remaining: prize.remaining });
   }
-  tiers.sort((a, b) => b.amount - a.amount);
+  const leftover = persistPrizeTiers(tiers);
+  leftover.sort((a, b) => b.amount - a.amount);
   return {
     ...game,
     name:
@@ -640,8 +668,8 @@ function applyParsedRemaining(game: Game, next: ParsedGame, stateId: StateId): G
         : game.name,
     stateId,
     source: stateId === "tn" ? "tn-remaining" : "official-remaining",
-    topPrize: tiers[0]?.amount ?? game.topPrize,
-    tiers,
+    topPrize: leftover[0]?.amount ?? game.topPrize,
+    tiers: leftover,
   };
 }
 

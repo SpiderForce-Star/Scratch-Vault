@@ -123,6 +123,33 @@ test("merge overlays remaining onto known games without inventing price or missi
   assert.equal(merged[0].tiers[2].remaining, null);
 });
 
+test("toCatalog persists the $50+ leftover book and keeps a null top", () => {
+  const games = toCatalog(
+    [
+      {
+        number: 88,
+        name: "Fat Book",
+        price: 10,
+        prizes: [
+          { amount: 500_000, remaining: null },
+          { amount: 10_000, remaining: 4 },
+          { amount: 5_000, remaining: 8 },
+          { amount: 1_000, remaining: 12 },
+          { amount: 500, remaining: 20 },
+          { amount: 100, remaining: 40 },
+          { amount: 50, remaining: 80 },
+          { amount: 20, remaining: 999 },
+        ],
+      },
+    ],
+    "official-remaining",
+  );
+  assert.equal(games[0].tiers[0].remaining, null);
+  assert.ok(games[0].tiers.length > 3);
+  assert.equal(games[0].tiers.some((t) => t.amount === 20), false);
+  assert.equal(games[0].tiers.some((t) => t.amount === 50), true);
+});
+
 test("unpublished remaining is not invented when converting catalogs", () => {
   const games = toCatalog(
     [

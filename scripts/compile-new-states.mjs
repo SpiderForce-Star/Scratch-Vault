@@ -19,25 +19,25 @@ function remainingCount(s) {
   return Number.isFinite(n) ? n : null;
 }
 
-function pickThree(prizes) {
+/** Keep published $50+ rows (cap 12) plus the top prize. Do not invent remaining. */
+function pickLeftoverBook(prizes) {
   const rows = prizes
     .filter((p) => p.amount != null && p.amount > 0)
     .sort((a, b) => b.amount - a.amount);
   if (!rows.length) return [];
-  const top = rows[0];
-  const mid =
-    rows.find((p) => p.amount > 3_000 && p.amount < top.amount) ?? rows[1] ?? null;
-  const cash =
-    rows.find(
-      (p) =>
-        p !== top &&
-        p !== mid &&
-        p.amount >= 50 &&
-        p.amount <= 3_000,
-    ) ??
-    rows.find((p) => p !== top && p !== mid) ??
-    null;
-  return [top, mid, cash].filter(Boolean);
+  const kept = [];
+  const seen = new Set();
+  const push = (row) => {
+    if (seen.has(row.amount) || kept.length >= 12) return;
+    seen.add(row.amount);
+    kept.push(row);
+  };
+  push(rows[0]);
+  for (const row of rows) {
+    if (row.amount < 50) continue;
+    push(row);
+  }
+  return kept;
 }
 
 function themeOf(name, price) {
@@ -74,7 +74,7 @@ function emitState(id, asOf, games) {
   const remaining = {};
   const seen = new Set();
   for (const game of games) {
-    const tiers = pickThree(game.prizes);
+    const tiers = pickLeftoverBook(game.prizes);
     if (!tiers.length || !PRICES.has(game.price)) continue;
     if (seen.has(game.number)) continue;
     seen.add(game.number);
@@ -87,11 +87,7 @@ function emitState(id, asOf, games) {
       theme: themeOf(game.name, game.price),
       tiers: tiers.map((t) => ({ amount: t.amount })),
     });
-    remaining[game.number] = [
-      tiers[0]?.remaining ?? null,
-      tiers[1]?.remaining ?? null,
-      tiers[2]?.remaining ?? null,
-    ];
+    remaining[game.number] = tiers.map((t) => t.remaining ?? null);
   }
   drafts.sort((a, b) => a.price - b.price || b.topPrize - a.topPrize);
   return { id, asOf, drafts, remaining };

@@ -176,7 +176,7 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     "heat.neonFoot",
   ];
   const banned =
-    /higher probability of winning|better odds|system to win|more likely to win/i;
+    /higher probability of winning|better odds|current odds|expected value|\bEV\b|tickets purchased|system to win|more likely to win/i;
   for (const key of recipeKeys) {
     assert.equal(typeof en[key], "string");
     assert.equal(typeof es[key], "string");
@@ -186,7 +186,10 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   }
   assert.match(en["heat.recipeLead"], /aisle context/i);
   assert.match(en["heat.recipeLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
+  assert.match(en["heat.recipeLead"], /leftover mix on that desk at that price/i);
+  assert.match(en["heat.recipe1"], /Same recipe on all 10 public desks/);
   assert.match(en["heat.recipe2"], /prize amount, not the ticket price/);
+  assert.match(en["heat.recipe3"], /leftover mix \+ a small leftover-pace bump/);
   assert.match(en["heat.recipe3"], /Skip stays Skip/);
   assert.match(en["heat.recipeWhy"], /Printed odds never change/);
   assert.match(en["heat.recipeWhy"], /18\+/);
@@ -236,7 +239,12 @@ test("leftover math stays prize-row $50+ on every loaded $5–$50 game", () => {
   assert.doesNotMatch(pace, /PRICE_POINTS/);
   assert.match(pace, /for \(const game of current\)/);
   assert.match(heat, /export const PRICE_POINTS = \[5, 10, 20, 25, 30, 50\]/);
+  assert.match(desk, /scoreCatalogRelative/);
   assert.match(desk, /scoreCatalogPace\(prior\?\.catalog, games, days/);
+  const heatServer = read("src/lib/heat.server.ts");
+  assert.match(heatServer, /export function scoreCatalogRelative/);
+  assert.doesNotMatch(heatServer, /medium >= 68/);
+  assert.doesNotMatch(heatServer, /cash >= 72/);
   const publicBlock = states.slice(
     states.indexOf("export const PUBLIC_STATE_IDS"),
     states.indexOf("export const HIDDEN_STATE_IDS"),
