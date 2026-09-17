@@ -40,12 +40,14 @@ test("public selector is the weekly-refreshable desks only", () => {
 test("selector and deep-links ignore hidden desks", () => {
   const selector = read("src/components/state-selector.tsx");
   const home = read("src/routes/index.tsx");
+  const strategy = read("src/routes/strategy.tsx");
   const game = read("src/routes/game/$number.tsx");
   const desk = read("src/lib/desk.ts");
   const active = read("src/lib/active-state.tsx");
   assert.equal(selector.includes("PUBLIC_STATE_LIST.map"), true);
   assert.equal(/\bSTATE_LIST\b/.test(selector), false);
   assert.equal(home.includes("isPublicStateId"), true);
+  assert.equal(strategy.includes("isPublicStateId"), true);
   assert.equal(game.includes("isPublicStateId"), true);
   assert.equal(desk.includes("parsePublicStateId"), true);
   assert.equal(active.includes("parsePublicStateId"), true);

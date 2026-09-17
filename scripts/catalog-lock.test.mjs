@@ -52,11 +52,14 @@ test("unpaid catalog links share one signup next=/games path", () => {
   assert.match(link, /to="\/signup"/);
   assert.match(link, /fullCatalogSignupSearch/);
   assert.match(header, /FullCatalogLink/);
+  assert.match(header, /nav\.strategy/);
+  assert.match(read("src/routes/strategy.tsx"), /createFileRoute\("\/strategy"\)/);
   assert.doesNotMatch(
     header.slice(header.indexOf("function NavLinks"), header.indexOf("function HeaderTrial")),
     /to="\/games"/,
   );
   assert.match(home, /FullCatalogLink/);
+  assert.match(home, /strategy\.compareCta/);
   assert.doesNotMatch(home, /to="\/games"/);
   assert.match(games, /LockedPanel/);
   assert.match(games, /locked \? \[\]/);
@@ -137,6 +140,8 @@ test("lock copy does not claim remaining counts improve odds", () => {
     assert.doesNotMatch(es[key], /mejoran las probabilidades/i);
   }
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
+  assert.equal(typeof en["nav.strategy"], "string");
+  assert.equal(typeof es["nav.strategy"], "string");
 });
 
 test("public Heat recipe is listed and locales stay in lockstep", () => {

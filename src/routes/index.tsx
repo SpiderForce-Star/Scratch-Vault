@@ -310,13 +310,20 @@ function VaultHome() {
                   <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
                 </aside>
               ) : null}
-              <p className="mt-5">
+              <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
                 <FullCatalogLink
                   locked={locked}
                   className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
                 >
                   {t("games.seeAll")}
                 </FullCatalogLink>
+                <Link
+                  to="/strategy"
+                  search={deskPageSearch(viewState)}
+                  className="font-mono text-sm tracking-wide text-muted underline underline-offset-4 hover:text-gold"
+                >
+                  {t("strategy.compareCta")}
+                </Link>
               </p>
               {!locked && newGames.length > 0 ? (
                 <div className="mt-6 mb-2">

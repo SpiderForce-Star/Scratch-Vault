@@ -12,12 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as GamesRouteImport } from './routes/games'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as GamesRouteImport } from './routes/games'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as BillingIndexRouteImport } from './routes/billing/index'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
@@ -41,6 +42,11 @@ const DisclaimerRoute = DisclaimerRouteImport.update({
   path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesRoute = GamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalRoute = LegalRouteImport.update({
   id: '/legal',
   path: '/legal',
@@ -51,24 +57,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GamesRoute = GamesRouteImport.update({
-  id: '/games',
-  path: '/games',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StrategyRoute = StrategyRouteImport.update({
+  id: '/strategy',
+  path: '/strategy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -111,16 +117,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/games': typeof GamesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
-  '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
+  '/strategy': typeof StrategyRoute
   '/terms': typeof TermsRoute
-  '/billing': typeof BillingIndexRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
+  '/billing': typeof BillingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -129,16 +136,17 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/games': typeof GamesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
-  '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
+  '/strategy': typeof StrategyRoute
   '/terms': typeof TermsRoute
-  '/billing': typeof BillingIndexRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
+  '/billing': typeof BillingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -148,16 +156,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/games': typeof GamesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
   '/pricing': typeof PricingRoute
-  '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
+  '/strategy': typeof StrategyRoute
   '/terms': typeof TermsRoute
-  '/billing': typeof BillingIndexRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
+  '/billing': typeof BillingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -168,16 +177,17 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/disclaimer'
+    | '/games'
     | '/legal'
     | '/login'
-    | '/signup'
     | '/pricing'
-    | '/games'
     | '/privacy'
+    | '/signup'
+    | '/strategy'
     | '/terms'
-    | '/billing'
     | '/billing/success'
     | '/game/$number'
+    | '/billing'
     | '/api/auth/$'
     | '/api/cron/daily-fetch'
     | '/api/stripe/webhook'
@@ -186,16 +196,17 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/disclaimer'
+    | '/games'
     | '/legal'
     | '/login'
-    | '/signup'
     | '/pricing'
-    | '/games'
     | '/privacy'
+    | '/signup'
+    | '/strategy'
     | '/terms'
-    | '/billing'
     | '/billing/success'
     | '/game/$number'
+    | '/billing'
     | '/api/auth/$'
     | '/api/cron/daily-fetch'
     | '/api/stripe/webhook'
@@ -204,16 +215,17 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/disclaimer'
+    | '/games'
     | '/legal'
     | '/login'
-    | '/signup'
     | '/pricing'
-    | '/games'
     | '/privacy'
+    | '/signup'
+    | '/strategy'
     | '/terms'
-    | '/billing'
     | '/billing/success'
     | '/game/$number'
+    | '/billing'
     | '/api/auth/$'
     | '/api/cron/daily-fetch'
     | '/api/stripe/webhook'
@@ -223,16 +235,17 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   DisclaimerRoute: typeof DisclaimerRoute
+  GamesRoute: typeof GamesRoute
   LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
-  SignupRoute: typeof SignupRoute
   PricingRoute: typeof PricingRoute
-  GamesRoute: typeof GamesRoute
   PrivacyRoute: typeof PrivacyRoute
+  SignupRoute: typeof SignupRoute
+  StrategyRoute: typeof StrategyRoute
   TermsRoute: typeof TermsRoute
-  BillingIndexRoute: typeof BillingIndexRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
   GameNumberRoute: typeof GameNumberRoute
+  BillingIndexRoute: typeof BillingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronDailyFetchRoute: typeof ApiCronDailyFetchRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games': {
+      id: '/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal': {
       id: '/legal'
       path: '/legal'
@@ -275,13 +295,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -289,18 +302,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/games': {
-      id: '/games'
-      path: '/games'
-      fullPath: '/games'
-      preLoaderRoute: typeof GamesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/strategy': {
+      id: '/strategy'
+      path: '/strategy'
+      fullPath: '/strategy'
+      preLoaderRoute: typeof StrategyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -359,16 +379,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   DisclaimerRoute: DisclaimerRoute,
+  GamesRoute: GamesRoute,
   LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
-  SignupRoute: SignupRoute,
   PricingRoute: PricingRoute,
-  GamesRoute: GamesRoute,
   PrivacyRoute: PrivacyRoute,
+  SignupRoute: SignupRoute,
+  StrategyRoute: StrategyRoute,
   TermsRoute: TermsRoute,
-  BillingIndexRoute: BillingIndexRoute,
   BillingSuccessRoute: BillingSuccessRoute,
   GameNumberRoute: GameNumberRoute,
+  BillingIndexRoute: BillingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronDailyFetchRoute: ApiCronDailyFetchRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
