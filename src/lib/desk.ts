@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { optionalAuthMiddleware } from "./auth/optional";
 import type { Game } from "@/data/games";
-import type { CashBlip, DeskReview, HeatContext, HeatReport, TonightCard } from "./heat";
+import type { CashBlip, CatalogHeatStats, DeskReview, HeatContext, HeatReport, TonightCard } from "./heat";
 import { EMPTY_RADAR, type RadarScopePayload } from "./radar";
 import {
   DEFAULT_STATE_ID,
@@ -21,7 +21,7 @@ export type DeskSnapshot = {
   reports: Record<string, HeatReport>;
   desk: DeskReview;
   blips: CashBlip[];
-  stats: { grand: number; medium: number; busts: number; games: number };
+  stats: CatalogHeatStats;
   loadError: string | null;
   stale: boolean;
   fetchedAt: string | null;

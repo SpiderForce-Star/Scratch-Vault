@@ -21,6 +21,7 @@ import { LockedPanel } from "@/components/locked-panel";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { HeatExplainer } from "@/components/heat-explainer";
+import { LeftoverDecayStrip } from "@/components/leftover-decay-strip";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, useActiveState } from "@/lib/active-state";
 import { pageHead } from "@/lib/site";
@@ -173,6 +174,7 @@ function GamesCatalog() {
           </div>
         </section>
         <HeatExplainer />
+        <LeftoverDecayStrip stats={snap?.stats} locked />
       </div>
     );
   }
@@ -187,6 +189,7 @@ function GamesCatalog() {
         stale={snap?.stale}
       />
       <HeatExplainer />
+      <LeftoverDecayStrip stats={snap?.stats} locked={locked} />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">

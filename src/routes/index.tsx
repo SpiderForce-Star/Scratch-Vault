@@ -28,6 +28,8 @@ import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { DeskRibbon } from "@/components/desk-ribbon";
 import { HeatExplainer } from "@/components/heat-explainer";
+import { LeftoverDecayStrip } from "@/components/leftover-decay-strip";
+import { TonightHeatStrip } from "@/components/tonight-heat-strip";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
@@ -222,6 +224,15 @@ function VaultHome() {
       />
       <DeskRibbon />
       <HeatExplainer neon />
+      <LeftoverDecayStrip stats={snap?.stats} locked={locked} />
+      {snap?.tonight?.length ? (
+        <TonightHeatStrip
+          stateId={snap.stateId}
+          cards={snap.tonight}
+          depleted={snap.tonightDepleted}
+          dataMode={snap.dataMode}
+        />
+      ) : null}
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">

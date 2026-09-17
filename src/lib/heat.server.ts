@@ -3,15 +3,27 @@ import { isEndedGame } from "../data/ended-games.ts";
 import { isUnpostedNewGame } from "../data/tn-snapshot.ts";
 import type {
   CashBlip,
+  CatalogHeatStats,
   DeskPick,
   DeskReview,
   GameRole,
   HeatBand,
   HeatContext,
   HeatReport,
+  LeftoverDecayStats,
   PriceFilter,
   TonightCard,
 } from "./heat";
+
+const EMPTY_LEFTOVER_DECAY: LeftoverDecayStats = {
+  still: 0,
+  quiet: 0,
+  moving: 0,
+  fast: 0,
+  unknown: 0,
+  movers: 0,
+  meanPct16: null,
+};
 
 /** Keep this inlined so Node tests can import this file without Vite aliases. */
 const DEFAULT_HEAT: HeatContext = {
@@ -24,6 +36,10 @@ function isOfficialSource(source: Game["source"]): boolean {
 }
 
 const PRICE_POINTS = [5, 10, 20, 25, 30, 50] as const;
+
+function isDeskPrice(price: number): boolean {
+  return (PRICE_POINTS as readonly number[]).includes(price);
+}
 
 function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   if (filter === "all") return true;
@@ -314,10 +330,12 @@ export function pickTonightHeat(
     const aTop = a.heat.effectiveTop != null && a.heat.effectiveTop > 0 ? 1 : 0;
     const bTop = b.heat.effectiveTop != null && b.heat.effectiveTop > 0 ? 1 : 0;
     if (aTop !== bTop) return bTop - aTop;
+    const aHeat = deskOf(a.heat);
+    const bHeat = deskOf(b.heat);
+    if (bHeat !== aHeat) return bHeat - aHeat;
     const aSec = a.secondary ?? -1;
     const bSec = b.secondary ?? -1;
-    if (bSec !== aSec) return bSec - aSec;
-    return deskOf(b.heat) - deskOf(a.heat);
+    return bSec - aSec;
   });
 
   const cards: TonightCard[] = pool.slice(0, Math.min(limit, pool.length)).map((row) => ({
@@ -335,6 +353,81 @@ export function pickTonightHeat(
 
 export const pickTonight = pickTonightHeat;
 
+function emptyCatalogHeat(games = 0): CatalogHeatStats {
+  return {
+    grand: 0,
+    medium: 0,
+    busts: 0,
+    games,
+    heat: 0,
+    leftover: { ...EMPTY_LEFTOVER_DECAY },
+  };
+}
+
+/** Leftover-prize decay on this desk. Claims, not tickets sold. Printed odds never change. */
+export function leftoverDecayStats(
+  reports: Iterable<HeatReport>,
+): LeftoverDecayStats {
+  const leftover: LeftoverDecayStats = { ...EMPTY_LEFTOVER_DECAY };
+  let pctSum = 0;
+  let pctN = 0;
+  for (const heat of reports) {
+    const band = heat.paceBand ?? "unknown";
+    if (band === "fast") leftover.fast += 1;
+    else if (band === "moving") leftover.moving += 1;
+    else if (band === "still") leftover.still += 1;
+    else if (band === "quiet") leftover.quiet += 1;
+    else leftover.unknown += 1;
+    if (band === "fast" || band === "moving") leftover.movers += 1;
+    if (
+      heat.leftoverPct != null &&
+      Number.isFinite(heat.leftoverPct) &&
+      band !== "unknown"
+    ) {
+      pctSum += heat.leftoverPct;
+      pctN += 1;
+    }
+  }
+  leftover.meanPct16 = pctN ? pctSum / pctN : null;
+  return leftover;
+}
+
+/** Overall stats from the same reports that drive stickers (mix + leftover pace). */
+export function catalogHeatFromReports(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+): CatalogHeatStats {
+  if (!games.length) return emptyCatalogHeat(0);
+  let grand = 0;
+  let medium = 0;
+  let busts = 0;
+  const used: HeatReport[] = [];
+  const deskUsed: HeatReport[] = [];
+  let deskHeat = 0;
+  for (const game of games) {
+    const report = reports.get(game.number);
+    if (!report) continue;
+    used.push(report);
+    grand += report.grand;
+    medium += report.medium;
+    if (report.bust) busts += 1;
+    if (!isDeskPrice(game.price)) continue;
+    deskUsed.push(report);
+    deskHeat += report.deskScore ?? report.vault;
+  }
+  const n = used.length;
+  if (!n) return emptyCatalogHeat(games.length);
+  const heatN = deskUsed.length;
+  return {
+    grand: grand / n,
+    medium: medium / n,
+    heat: heatN ? deskHeat / heatN : 0,
+    busts,
+    games: games.length,
+    leftover: leftoverDecayStats(deskUsed),
+  };
+}
+
 export function catalogHeat(
   games: Game[],
   score: (game: Game) => HeatReport = scoreGame,
@@ -344,21 +437,13 @@ export function catalogHeat(
   busts: number;
   games: number;
 } {
-  if (!games.length) return { grand: 0, medium: 0, busts: 0, games: 0 };
-  let grand = 0;
-  let medium = 0;
-  let busts = 0;
-  for (const game of games) {
-    const report = score(game);
-    grand += report.grand;
-    medium += report.medium;
-    if (report.bust) busts += 1;
-  }
+  const reports = new Map(games.map((game) => [game.number, score(game)]));
+  const next = catalogHeatFromReports(games, reports);
   return {
-    grand: grand / games.length,
-    medium: medium / games.length,
-    busts,
-    games: games.length,
+    grand: next.grand,
+    medium: next.medium,
+    busts: next.busts,
+    games: next.games,
   };
 }
 
@@ -501,6 +586,14 @@ export function buildDesk(
     .sort((a, b) => deskOf(b.heat) - deskOf(a.heat))
     .map((r) => ({ ...r, why: why(r.game, r.heat) }));
 
+  const deskHeats = rows
+    .filter((r) => isDeskPrice(r.game.price))
+    .map((r) => r.heat);
+  const leftover = leftoverDecayStats(deskHeats);
+  const heatMean =
+    deskHeats.reduce((sum, h) => sum + deskOf(h), 0) /
+    Math.max(deskHeats.length, 1);
+
   return {
     byPrice,
     mediumLeaders,
@@ -514,6 +607,8 @@ export function buildDesk(
       cashOuts: rows.filter((r) => r.heat.role === "cash-out").length,
       busts: rows.filter((r) => r.heat.bust).length,
       officialTiers: rows.filter((r) => isOfficialSource(r.game.source)).length,
+      heat: deskHeats.length ? heatMean : 0,
+      leftover,
     },
   };
 }

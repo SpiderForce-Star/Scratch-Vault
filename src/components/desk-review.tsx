@@ -59,6 +59,23 @@ export function DeskReviewPanel({
             }
             value={String(desk.stats.officialTiers)}
           />
+          <Mini
+            label={t("decay.heat")}
+            value={String(Math.round(desk.stats.heat))}
+          />
+          <Mini label={t("pace.fast")} value={String(desk.stats.leftover.fast)} />
+          <Mini label={t("pace.moving")} value={String(desk.stats.leftover.moving)} />
+          <Mini label={t("decay.movers")} value={String(desk.stats.leftover.movers)} />
+          <Mini
+            label={t("decay.mean")}
+            value={
+              desk.stats.leftover.meanPct16 != null
+                ? t("decay.meanPct", {
+                    pct: desk.stats.leftover.meanPct16.toFixed(1),
+                  })
+                : t("decay.meanNone")
+            }
+          />
         </div>
 
         <div>

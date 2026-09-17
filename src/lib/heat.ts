@@ -47,6 +47,48 @@ export type HeatReport = {
   deskScore?: number;
 };
 
+/** Desk-wide leftover-prize decay (claims), not tickets sold and not odds. */
+export type LeftoverDecayStats = {
+  still: number;
+  quiet: number;
+  moving: number;
+  fast: number;
+  unknown: number;
+  /** Fast + Moving. Look-at leftover books. */
+  movers: number;
+  /** Mean 16-day leftover % drop among games with a pace read. Null when unknown. */
+  meanPct16: number | null;
+};
+
+export type CatalogHeatStats = {
+  grand: number;
+  medium: number;
+  busts: number;
+  games: number;
+  /** Mean displayed Heat (leftover mix + leftover-pace bump). */
+  heat: number;
+  leftover: LeftoverDecayStats;
+};
+
+export const EMPTY_LEFTOVER_DECAY: LeftoverDecayStats = {
+  still: 0,
+  quiet: 0,
+  moving: 0,
+  fast: 0,
+  unknown: 0,
+  movers: 0,
+  meanPct16: null,
+};
+
+export const EMPTY_CATALOG_HEAT: CatalogHeatStats = {
+  grand: 0,
+  medium: 0,
+  busts: 0,
+  games: 0,
+  heat: 0,
+  leftover: EMPTY_LEFTOVER_DECAY,
+};
+
 /** Compact remaining-heat card for the top-of-desk strip. */
 export type TonightCard = {
   number: number;
@@ -127,6 +169,9 @@ export type DeskReview = {
     cashOuts: number;
     busts: number;
     officialTiers: number;
+    /** Mean displayed Heat after leftover pace. */
+    heat: number;
+    leftover: LeftoverDecayStats;
   };
 };
 
