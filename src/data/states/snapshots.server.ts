@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Game } from "@/data/games";
 import type { StateId } from "@/config/states";
-import { trustedCatalog } from "./parse.server";
+import { trustedCatalog } from "./parse.server.ts";
 
 function hasPostgres(): boolean {
   return Boolean(
@@ -264,31 +264,25 @@ export async function markSnapshotFailed(
 }
 
 const priorMemory = new Map<StateId, DeskSnapshotRow>();
+const historyMemory = new Map<StateId, DeskSnapshotRow[]>();
+const HISTORY_CAP = 90;
 
-/** Keep the trusted catalog we are about to overwrite so radar can diff tops. */
-export async function archivePriorSnapshot(row: DeskSnapshotRow): Promise<void> {
-  if (!row.catalog?.length) return;
-  const catalog = trustedCatalog(row.catalog);
-  if (!catalog.length) return;
-  const stored: DeskSnapshotRow = { ...row, catalog, gameCount: catalog.length };
-  const existing = priorMemory.get(row.stateId);
-  if (existing?.fetchedAt !== stored.fetchedAt) {
-    priorMemory.set(row.stateId, stored);
-  }
+function rememberHistory(row: DeskSnapshotRow): void {
+  const list = historyMemory.get(row.stateId) ?? [];
+  if (list.some((item) => item.fetchedAt === row.fetchedAt)) return;
+  list.unshift(row);
+  historyMemory.set(row.stateId, list.slice(0, HISTORY_CAP));
+}
+
+async function insertRemainingSnapshot(row: DeskSnapshotRow, catalog: Game[]): Promise<void> {
   if (!hasPostgres()) return;
   try {
     const sql = await getSqlOrThrow();
-    const already = await sql.query<{ id: number }>(
-      `SELECT id FROM remaining_snapshot
-       WHERE state_id = $1 AND fetched_at = $2::timestamptz
-       LIMIT 1`,
-      [row.stateId, row.fetchedAt],
-    );
-    if (already[0]) return;
     await sql.query(
       `INSERT INTO remaining_snapshot
         (state_id, fetched_at, source_url, week_label, game_count, status, error, games)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (state_id, fetched_at) DO NOTHING`,
       [
         row.stateId,
         row.fetchedAt,
@@ -303,6 +297,87 @@ export async function archivePriorSnapshot(row: DeskSnapshotRow): Promise<void> 
   } catch {
     /* remaining_snapshot may be missing; radar falls back to bundled last-good. */
   }
+}
+
+/** Archive any trusted catalog into the snapshot tape. Does not move pace's prior pointer. */
+export async function archiveSnapshot(row: DeskSnapshotRow): Promise<void> {
+  if (!row.catalog?.length) return;
+  const catalog = trustedCatalog(row.catalog);
+  if (!catalog.length) return;
+  const stored: DeskSnapshotRow = { ...row, catalog, gameCount: catalog.length };
+  rememberHistory(stored);
+  await insertRemainingSnapshot(stored, catalog);
+}
+
+/** Keep the trusted catalog we are about to overwrite so radar can diff tops. */
+export async function archivePriorSnapshot(row: DeskSnapshotRow): Promise<void> {
+  if (!row.catalog?.length) return;
+  const catalog = trustedCatalog(row.catalog);
+  if (!catalog.length) return;
+  const stored: DeskSnapshotRow = { ...row, catalog, gameCount: catalog.length };
+  const existing = priorMemory.get(row.stateId);
+  if (existing?.fetchedAt !== stored.fetchedAt) {
+    priorMemory.set(row.stateId, stored);
+  }
+  await archiveSnapshot(stored);
+}
+
+function historyToRows(
+  rows: { games: unknown; fetched_at: string | Date; source_url?: string | null; week_label?: string; game_count?: number; status?: string; error?: string | null }[],
+  stateId: StateId,
+): DeskSnapshotRow[] {
+  const out: DeskSnapshotRow[] = [];
+  for (const row of rows) {
+    const catalog = asGames(row.games);
+    if (!catalog?.length) continue;
+    out.push({
+      stateId,
+      ok: row.status ? row.status === "ok" : true,
+      stale: row.status ? row.status !== "ok" : false,
+      fetchedAt: asIso(row.fetched_at),
+      weekLabel: row.week_label || formatWeekLabel(asIso(row.fetched_at)),
+      sourceUrl: row.source_url ?? null,
+      reason: row.error ?? null,
+      gameCount: catalog.length,
+      catalog,
+    });
+  }
+  return out;
+}
+
+/** Newest-first tape of trusted catalogs. Pace still uses readPriorDesk (one prior). */
+export async function readSnapshotHistory(
+  stateId: StateId,
+  limit = 90,
+): Promise<DeskSnapshotRow[]> {
+  const cap = Math.max(1, Math.min(HISTORY_CAP, Math.floor(limit) || 90));
+  if (hasPostgres()) {
+    try {
+      const sql = await getSqlOrThrow();
+      const rows = await sql.query<{
+        games: unknown;
+        fetched_at: string | Date;
+        source_url: string | null;
+        week_label: string;
+        game_count: number;
+        status: string;
+        error: string | null;
+      }>(
+        `SELECT games, fetched_at, source_url, week_label, game_count, status, error
+         FROM remaining_snapshot
+         WHERE state_id = $1
+           AND games IS NOT NULL
+         ORDER BY fetched_at DESC
+         LIMIT $2`,
+        [stateId, cap],
+      );
+      const mapped = historyToRows(rows, stateId);
+      if (mapped.length) return mapped;
+    } catch {
+      /* table missing — fall through */
+    }
+  }
+  return (historyMemory.get(stateId) ?? []).slice(0, cap);
 }
 
 /**
@@ -342,6 +417,15 @@ export async function readPriorDesk(
   const mem = priorMemory.get(stateId);
   if (mem?.catalog?.length && mem.fetchedAt !== currentFetchedAt) {
     return { catalog: mem.catalog, fetchedAt: mem.fetchedAt };
+  }
+
+  const hist = (historyMemory.get(stateId) ?? []).find((row) => {
+    if (!row.catalog?.length || row.fetchedAt === currentFetchedAt) return false;
+    if (!currentFetchedAt) return true;
+    return Date.parse(row.fetchedAt) < Date.parse(currentFetchedAt);
+  });
+  if (hist?.catalog?.length) {
+    return { catalog: hist.catalog, fetchedAt: hist.fetchedAt };
   }
 
   const bundled = readBundledLastGood(stateId);

@@ -17,11 +17,13 @@ import {
 } from "./parse.server";
 import {
   archivePriorSnapshot,
+  archiveSnapshot,
   formatWeekLabel,
   markSnapshotFailed,
   readSnapshot,
   upsertSnapshot,
 } from "./snapshots.server";
+import { mergeEndedDates, parseEndedGames } from "./ended.server";
 
 const FETCH_MS = 8_000;
 const CONCURRENCY = 4;
@@ -174,12 +176,36 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
       }
     }
 
+    const endedGamesUrl = state.endedGamesUrl;
+    if (endedGamesUrl && endedGamesUrl !== usedUrl) {
+      try {
+        const extra = await fetchText(endedGamesUrl);
+        if (extra.status < 400 && extra.body.trim()) {
+          const dates = parseEndedGames(stateId, extra.body, extra.type);
+          catalog = mergeEndedDates(catalog, dates);
+        }
+      } catch {
+        /* remaining catalog stands — missing last-day is not a failed desk */
+      }
+    }
+
     const asOf = extractAsOf(body) || fetchedAt;
     const weekLabel = formatWeekLabel(asOf, true);
     if (lastGood?.catalog?.length) {
       await archivePriorSnapshot(lastGood);
     }
     await upsertSnapshot({
+      stateId,
+      ok: true,
+      stale: false,
+      fetchedAt,
+      weekLabel,
+      sourceUrl: usedUrl,
+      reason: "ok",
+      gameCount: catalog.length,
+      catalog,
+    });
+    await archiveSnapshot({
       stateId,
       ok: true,
       stale: false,
