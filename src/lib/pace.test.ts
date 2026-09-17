@@ -4,6 +4,7 @@ import type { HeatReport } from "./heat";
 import {
   applyPace,
   leftoverBook,
+  leftoverConfidence,
   overlapLeftover,
   paceBandFromPct16,
   scoreCatalogPace,
@@ -51,7 +52,7 @@ describe("leftover overlap", () => {
     ]);
     const live = game(1, [{ amount: 500, remaining: 90 }]);
     const overlap = overlapLeftover(prior, live);
-    expect(overlap).toEqual({ prior: 100, now: 90, pct: 10 });
+    expect(overlap).toEqual({ prior: 100, now: 90, pct: 10, shared: 1 });
   });
 
   it("does not count sub-$50 rows", () => {
@@ -96,13 +97,51 @@ describe("pace bands (16-day equivalent)", () => {
     expect(paceBandFromPct16(9)).toBe("fast");
   });
 
-  it("normalizes a 16-day 8% drop to fast", () => {
-    const prior = game(3, [{ amount: 500, remaining: 100 }]);
-    const live = game(3, [{ amount: 500, remaining: 92 }]);
+  it("normalizes a 16-day 8% drop to fast on a full leftover book", () => {
+    const amounts = [200_000, 50_000, 10_000, 5_000, 1_000, 500, 100, 50];
+    const prior = game(
+      3,
+      amounts.map((amount) => ({ amount, remaining: 100 })),
+    );
+    const live = game(
+      3,
+      amounts.map((amount) => ({ amount, remaining: 92 })),
+    );
     const pace = scoreGamePace(prior, live, 16, baseHeat);
     expect(pace.band).toBe("fast");
     expect(pace.leftoverPct).toBeCloseTo(8, 5);
+    expect(pace.leftoverConfidence).toBe(1);
     expect(pace.lift).toBe(10);
+  });
+
+  it("caps a thin leftover book at Quiet even when the 16-day drop is Fast", () => {
+    const prior = game(3, [{ amount: 500, remaining: 100 }]);
+    const live = game(3, [{ amount: 500, remaining: 92 }]);
+    const pace = scoreGamePace(prior, live, 16, baseHeat);
+    expect(pace.band).toBe("quiet");
+    expect(pace.leftoverPct).toBeCloseTo(8, 5);
+    expect(pace.leftoverConfidence).toBeCloseTo(0.6, 5);
+    expect(pace.lift).toBe(6);
+  });
+
+  it("scales leftover-pace lift by leftoverConfidence", () => {
+    expect(leftoverConfidence(40, 8)).toBe(1);
+    expect(leftoverConfidence(20, 8)).toBe(0.5);
+    expect(leftoverConfidence(40, 1)).toBeCloseTo(0.6, 5);
+    const amounts = [200_000, 50_000, 10_000, 5_000, 1_000, 500, 100, 50];
+    const prior = game(
+      5,
+      amounts.map((amount) => ({ amount, remaining: 3 })),
+    );
+    const live = game(
+      5,
+      amounts.map((amount) => ({ amount, remaining: 2 })),
+    );
+    const pace = scoreGamePace(prior, live, 16, baseHeat);
+    expect(pace.band).toBe("fast");
+    expect(pace.leftoverPrior).toBe(24);
+    expect(pace.leftoverConfidence).toBeCloseTo(24 / 40, 5);
+    expect(pace.lift).toBe(6);
   });
 
   it("unknown when no prior catalog", () => {
@@ -241,7 +280,7 @@ describe("heat blend", () => {
       ]),
     );
     expect(next.get(2)!.deskScore!).toBeGreaterThan(next.get(1)!.deskScore!);
-    expect(next.get(2)!.paceBand).toBe("fast");
+    expect(next.get(2)!.paceBand).toBe("quiet");
     expect(next.get(1)!.paceBand).toBe("still");
   });
 });

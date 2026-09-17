@@ -121,13 +121,16 @@ function isMidPrize(game: Game, tier: PrizeTier, index: number): boolean {
   return tier.amount > 3_000 && tier.amount < game.topPrize;
 }
 
-/** Price-scaled secondary bands. Other ticket prices have no extra Medium weight. */
+/** Price-scaled secondary bands. Same medium boost on every loaded $5–$50 desk price. */
 export function secondaryBandForPrice(
   price: number,
 ): { min: number; max: number } | null {
   if (price === 5) return { min: 3_000, max: 7_000 };
   if (price === 10) return { min: 5_000, max: 10_000 };
   if (price === 20) return { min: 10_000, max: 40_000 };
+  if (price === 25) return { min: 10_000, max: 50_000 };
+  if (price === 30) return { min: 15_000, max: 75_000 };
+  if (price === 50) return { min: 25_000, max: 100_000 };
   return null;
 }
 
@@ -232,7 +235,7 @@ export function scoreGame(
 
   const secondaryLeft = secondaryRemaining(game);
   if (secondaryLeft != null && secondaryLeft > 0) {
-    // Dedicated lift so $5 / $10 / $20 in-band remaining is a real Medium bump
+    // Dedicated lift so $5–$50 in-band remaining is a real Medium bump
     // (20 remaining → +17), on top of existing mid-tier scoring.
     const boost = 8 + Math.min(secondaryLeft, 40) * 0.45;
     medium = clamp(medium + boost);

@@ -338,13 +338,14 @@ test("guest desk picks are not the paid mid-tier ranking", () => {
   assert.equal(guestPick?.heat.midRemaining, null);
 });
 
-test("price-scaled secondary bands match $5 / $10 / $20 only", () => {
+test("price-scaled secondary bands cover every $5–$50 desk price", () => {
   assert.deepEqual(secondaryBandForPrice(5), { min: 3_000, max: 7_000 });
   assert.deepEqual(secondaryBandForPrice(10), { min: 5_000, max: 10_000 });
   assert.deepEqual(secondaryBandForPrice(20), { min: 10_000, max: 40_000 });
-  assert.equal(secondaryBandForPrice(25), null);
-  assert.equal(secondaryBandForPrice(30), null);
-  assert.equal(secondaryBandForPrice(50), null);
+  assert.deepEqual(secondaryBandForPrice(25), { min: 10_000, max: 50_000 });
+  assert.deepEqual(secondaryBandForPrice(30), { min: 15_000, max: 75_000 });
+  assert.deepEqual(secondaryBandForPrice(50), { min: 25_000, max: 100_000 });
+  assert.equal(secondaryBandForPrice(3), null);
 });
 
 test("secondary remaining counts the price-scaled band and ignores the jackpot", () => {
@@ -376,7 +377,7 @@ test("secondary remaining counts the price-scaled band and ignores the jackpot",
   });
   assert.equal(secondaryRemaining(ten), 40);
   assert.equal(secondaryRemaining(twenty), 12);
-  assert.equal(secondaryRemaining(thirty), null);
+  assert.equal(secondaryRemaining(thirty), 12);
 });
 
 test("Medium heat boosts in-band secondary remaining without changing Grand heat", () => {
@@ -435,8 +436,17 @@ test("$5 $3,000 remaining boosts Medium heat even though it is not a mid-tier ro
   assert.ok(a.medium > b.medium);
 });
 
-test("$30 tickets keep the unboosted Medium heat path", () => {
-  const thirty = fixture({
+test("$25 / $30 / $50 in-band remaining uses the same medium boost", () => {
+  const twentyFive = fixture({
+    price: 25,
+    topPrize: 1_000_000,
+    tiers: [
+      { amount: 1_000_000, remaining: 4 },
+      { amount: 25_000, remaining: 40 },
+      { amount: 500, remaining: 200 },
+    ],
+  });
+  const thirtyIn = fixture({
     price: 30,
     topPrize: 1_000_000,
     tiers: [
@@ -445,19 +455,31 @@ test("$30 tickets keep the unboosted Medium heat path", () => {
       { amount: 500, remaining: 200 },
     ],
   });
-  const twenty = fixture({
-    price: 20,
+  const thirtyOut = fixture({
+    number: 88,
+    price: 30,
     topPrize: 1_000_000,
     tiers: [
       { amount: 1_000_000, remaining: 4 },
-      { amount: 25_000, remaining: 40 },
+      { amount: 8_000, remaining: 40 },
       { amount: 500, remaining: 200 },
     ],
   });
-  assert.equal(secondaryRemaining(thirty), null);
-  assert.equal(secondaryRemaining(twenty), 40);
-  assert.ok(scoreGame(twenty).medium > scoreGame(thirty).medium);
-  assert.equal(scoreGame(twenty).grand, scoreGame(thirty).grand);
+  const fifty = fixture({
+    price: 50,
+    topPrize: 1_000_000,
+    tiers: [
+      { amount: 1_000_000, remaining: 4 },
+      { amount: 50_000, remaining: 40 },
+      { amount: 500, remaining: 200 },
+    ],
+  });
+  assert.equal(secondaryRemaining(twentyFive), 40);
+  assert.equal(secondaryRemaining(thirtyIn), 40);
+  assert.equal(secondaryRemaining(thirtyOut), null);
+  assert.equal(secondaryRemaining(fifty), 40);
+  assert.ok(scoreGame(thirtyIn).medium > scoreGame(thirtyOut).medium);
+  assert.equal(scoreGame(thirtyIn).grand, scoreGame(thirtyOut).grand);
 });
 
 test("bust is stronger when effective top and the secondary band are both gone", () => {
