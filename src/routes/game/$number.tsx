@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { moneyFull } from "@/data/games";
+import { formatYmdLabel, isEndingSoon } from "@/data/ended-games";
 import { findPublicGame, publicCatalog, publicGameMatches } from "@/data/states";
 import {
   DEFAULT_STATE_ID,
@@ -17,7 +18,7 @@ import {
   reportMap,
   type HeatReport,
 } from "@/lib/heat";
-import { BandChip, PaceChip, TicketCard } from "@/components/ticket-card";
+import { BandChip, EndingSoonChip, PaceChip, TicketCard } from "@/components/ticket-card";
 import { FullCatalogLink } from "@/components/full-catalog-link";
 import { LockedPanel } from "@/components/locked-panel";
 import { TicketFace } from "@/components/ticket-face";
@@ -252,6 +253,7 @@ function GameDetail() {
             <div className="flex flex-wrap items-center gap-2">
               <BandChip band={heat.band} />
               <PaceChip band={heat.paceBand} leftoverNow={heat.leftoverNow} />
+              <EndingSoonChip game={game} />
             </div>
           </div>
         </div>
@@ -323,6 +325,37 @@ function GameDetail() {
           <p className="mt-8 rounded-lg border border-bust/40 bg-bust-ink px-4 py-3 text-sm text-bust">
             {t("game.bust")}
           </p>
+        ) : null}
+
+        {game.endDate || game.lastClaimDate ? (
+          <section className="mt-8 rounded-lg border border-line bg-surface p-5">
+            <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+              {isEndingSoon(game) ? t("card.endingSoon") : t("game.lastDayKicker")}
+            </p>
+            {game.endDate ? (
+              <p className="mt-2 text-sm text-fg">
+                {t("game.lastDay", { date: formatYmdLabel(game.endDate) })}
+              </p>
+            ) : null}
+            {game.lastClaimDate ? (
+              <p className="mt-1 text-sm text-fg">
+                {t("game.lastClaim", { date: formatYmdLabel(game.lastClaimDate) })}
+              </p>
+            ) : null}
+            <p className="mt-2 text-xs leading-relaxed text-muted">{t("game.endingNote")}</p>
+            {state.endedGamesUrl ? (
+              <p className="mt-3">
+                <a
+                  href={state.endedGamesUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-xs text-gold underline-offset-2 hover:underline"
+                >
+                  {t("game.officialLastDay")}
+                </a>
+              </p>
+            ) : null}
+          </section>
         ) : null}
 
         <PostedBookPanel game={game} heat={heat} locked={locked || !ready} />

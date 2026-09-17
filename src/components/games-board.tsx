@@ -73,7 +73,11 @@ export function GamesBoardView({
 }) {
   const { t } = useI18n();
   const empty =
-    !board.newGames.length && !board.hot.length && !board.warm.length && !board.skip.length;
+    !board.newGames.length &&
+    !board.endingSoon.length &&
+    !board.hot.length &&
+    !board.warm.length &&
+    !board.skip.length;
 
   if (empty) {
     return <p className="mt-6 text-muted">{t("games.empty")}</p>;
@@ -91,6 +95,19 @@ export function GamesBoardView({
           </h2>
           <p className="mt-2 text-sm text-muted">{t("games.newUnposted")}</p>
           <PriceGrouped games={board.newGames} reports={reports} locked={locked} />
+        </section>
+      ) : null}
+
+      {board.endingSoon.length ? (
+        <section>
+          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+            {t("games.endingKicker")}
+          </p>
+          <h2 className="mt-1 font-display text-2xl tracking-tight sm:text-3xl">
+            {t("games.endingTitle")}
+          </h2>
+          <p className="mt-2 text-sm text-muted">{t("games.endingHint")}</p>
+          <PriceGrouped games={board.endingSoon} reports={reports} locked={locked} />
         </section>
       ) : null}
 
