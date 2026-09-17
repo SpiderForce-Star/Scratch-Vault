@@ -35,6 +35,8 @@ export type HeatReport = {
   effectiveTop: number | null;
   midRemaining: number | null;
   lowRemaining: number | null;
+  /** Cash-band leftover mix input (not displayed remaining). Used for desk-relative vault. */
+  cash?: number;
   /** True when top and mid remaining were both unpublished at score time. Survives guest redaction. */
   remainingUnknown?: boolean;
   /** Leftover-prize claim pace. Unknown until two snapshots overlap. */
@@ -243,14 +245,18 @@ export function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   return game.price === Number(filter);
 }
 
+function retailTopGone(heat: HeatReport): boolean {
+  return heat.role === "jackpot" && heat.effectiveTop != null && heat.effectiveTop <= 0;
+}
+
 /**
- * Skip IFF band is cool or bust, or heat.bust is true.
- * Hot, warm, and new are never skip — even jackpots with grand leftover 0.
- * Unknown remaining (top and mid both null) is not skip.
+ * Skip IFF band is cool or bust, retail top is gone, or heat.bust is true.
+ * Hot / Warm / NEW look-ats are never skip. Unknown remaining is not skip.
+ * Retail-top-gone stays Skip even if leftover cash is fat.
  */
 export function isSkipGame(heat: HeatReport | undefined): boolean {
   if (!heat) return false;
-  if (heat.band === "hot" || heat.band === "warm" || heat.band === "new") return false;
+  if (heat.band === "new") return false;
   if (heat.remainingUnknown === true) return false;
   if (
     heat.remainingUnknown !== false &&
@@ -259,7 +265,10 @@ export function isSkipGame(heat: HeatReport | undefined): boolean {
   ) {
     return false;
   }
-  return heat.band === "cool" || heat.band === "bust" || heat.bust === true;
+  if (heat.bust === true || heat.band === "bust") return true;
+  if (retailTopGone(heat)) return true;
+  if (heat.band === "hot" || heat.band === "warm") return false;
+  return heat.band === "cool";
 }
 
 /** Ended / not-sold games are skips even if leftover-prize heat still looks hot. */
