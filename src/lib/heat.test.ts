@@ -14,9 +14,9 @@ import { applyPace } from "./pace";
 import type { Game } from "@/data/games";
 
 const hot: HeatReport = {
-  grand: 0, medium: 80, vault: 70, band: "hot", bust: false,
-  mediumKnown: true, role: "jackpot", topRemaining: 0,
-  effectiveTop: 0, midRemaining: 10, lowRemaining: null,
+  grand: 40, medium: 80, vault: 70, band: "hot", bust: false,
+  mediumKnown: true, role: "jackpot", topRemaining: 3,
+  effectiveTop: 3, midRemaining: 10, lowRemaining: null,
 };
 const cool: HeatReport = { ...hot, band: "cool", vault: 12, medium: 10 };
 const bust: HeatReport = { ...hot, band: "bust", bust: true, vault: 0 };
@@ -30,8 +30,22 @@ function g(n: number, price: 5 | 10 | 30 | 50): Game {
 }
 
 describe("skip", () => {
-  it("hot + grand 0 is not skip", () => {
+  it("hot with a live retail top is not skip", () => {
     expect(isSkipGame(hot)).toBe(false);
+  });
+  it("retail-top-gone stays Skip even if leftover cash is fat", () => {
+    const drained: HeatReport = {
+      ...hot,
+      grand: 0,
+      topRemaining: 0,
+      effectiveTop: 0,
+      lowRemaining: 400,
+      cash: 82,
+      vault: 70,
+      band: "hot",
+    };
+    expect(isSkipGame(drained)).toBe(true);
+    expect(isSkipCandidate(g(9, 10), drained)).toBe(true);
   });
   it("cool and bust are skip", () => {
     expect(isSkipGame(cool)).toBe(true);

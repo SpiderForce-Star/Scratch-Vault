@@ -61,6 +61,31 @@ describe("leftover overlap", () => {
     ]);
     expect([...leftoverBook(g).keys()]).toEqual([500]);
   });
+
+  it("uses more than three $50+ rows when published", () => {
+    const prior = game(1, [
+      { amount: 200_000, remaining: 2 },
+      { amount: 10_000, remaining: 10 },
+      { amount: 5_000, remaining: 20 },
+      { amount: 1_000, remaining: 30 },
+      { amount: 500, remaining: 40 },
+      { amount: 100, remaining: 50 },
+      { amount: 50, remaining: 60 },
+    ]);
+    const live = game(1, [
+      { amount: 200_000, remaining: 2 },
+      { amount: 10_000, remaining: 8 },
+      { amount: 5_000, remaining: 18 },
+      { amount: 1_000, remaining: 28 },
+      { amount: 500, remaining: 38 },
+      { amount: 100, remaining: 48 },
+      { amount: 50, remaining: 58 },
+    ]);
+    expect(leftoverBook(live).size).toBe(7);
+    const overlap = overlapLeftover(prior, live);
+    expect(overlap?.prior).toBe(2 + 10 + 20 + 30 + 40 + 50 + 60);
+    expect(overlap?.now).toBe(2 + 8 + 18 + 28 + 38 + 48 + 58);
+  });
 });
 
 describe("pace bands (16-day equivalent)", () => {

@@ -17,6 +17,7 @@ import {
   publicGame,
   redactHeatReport,
   redactTonightCard,
+  scoreCatalogRelative,
   scoreGame,
   scoreGamePublic,
 } from "./heat.server";
@@ -130,7 +131,10 @@ export async function buildDeskSnapshot(
   const dataMode = honestDataMode(state, loaded);
 
   if (paid) {
-    const scored = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
+    const scored = scoreCatalogRelative(
+      games,
+      new Map(games.map((game) => [game.number, scoreGame(game, ctx)])),
+    );
     const prior = await readPriorDesk(state.id, loaded.fetchedAt);
     const days = daysBetween(prior?.fetchedAt, loaded.fetchedAt);
     const reports = scoreCatalogPace(prior?.catalog, games, days, scored);
@@ -156,8 +160,9 @@ export async function buildDeskSnapshot(
   }
 
   const scoredGames = games.map(publicGame);
-  const scoredReports = new Map(
-    scoredGames.map((game) => [game.number, scoreGamePublic(game, ctx)]),
+  const scoredReports = scoreCatalogRelative(
+    scoredGames,
+    new Map(scoredGames.map((game) => [game.number, scoreGamePublic(game, ctx)])),
   );
   const prior = await readPriorDesk(state.id, loaded.fetchedAt);
   const days = daysBetween(prior?.fetchedAt, loaded.fetchedAt);
