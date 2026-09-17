@@ -189,8 +189,12 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   assert.match(en["heat.recipeLead"], /leftover mix on that desk at that price/i);
   assert.match(en["heat.recipe1"], /Same recipe on all 10 public desks/);
   assert.match(en["heat.recipe2"], /prize amount, not the ticket price/);
-  assert.match(en["heat.recipe3"], /leftover mix \+ a small leftover-pace bump/);
+  assert.match(en["heat.recipeLead"], /damped when the leftover book is thin/);
+  assert.match(en["heat.recipe2"], /capped at Quiet/);
+  assert.match(en["heat.recipe3"], /leftover mix \+ leftover-prize claim pace/);
+  assert.match(en["heat.recipe3"], /damped when the leftover book is thin/);
   assert.match(en["heat.recipe3"], /Skip stays Skip/);
+  assert.match(en["heat.neonBody"], /damped when the leftover book is thin/);
   assert.match(en["heat.recipeWhy"], /Printed odds never change/);
   assert.match(en["heat.recipeWhy"], /18\+/);
   assert.match(en["heat.statLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
@@ -245,6 +249,8 @@ test("leftover math stays prize-row $50+ on every loaded $5–$50 game", () => {
   assert.doesNotMatch(pace, /game\.price\s*===?\s*50/);
   assert.doesNotMatch(pace, /PRICE_POINTS/);
   assert.match(pace, /for \(const game of current\)/);
+  assert.match(pace, /leftoverConfidence/);
+  assert.match(pace, /THIN_BOOK_TIERS = 8/);
   assert.match(heat, /export const PRICE_POINTS = \[5, 10, 20, 25, 30, 50\]/);
   assert.match(desk, /scoreCatalogRelative/);
   assert.match(desk, /scoreCatalogPace\(prior\?\.catalog, games, days/);

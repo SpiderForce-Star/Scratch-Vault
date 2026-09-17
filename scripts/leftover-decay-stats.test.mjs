@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { applyPace } from "../src/lib/pace.ts";
+import { applyPace, scoreCatalogPace } from "../src/lib/pace.ts";
 import {
   catalogHeat,
   catalogHeatFromReports,
@@ -156,6 +156,25 @@ test("Tonight ranks leftover mix + pace (deskScore) ahead of fatter secondary re
   assert.ok(fastHeat.deskScore > slowHeat.deskScore);
   assert.equal(cards[0].number, 11);
   assert.equal(cards[1].number, 10);
+});
+
+test("thin Fast leftover books count as Quiet in desk leftover-decay totals", () => {
+  const thin = jackpot(31, 20);
+  const prior = jackpot(31, 22);
+  prior.tiers = [{ amount: 500, remaining: 100 }];
+  thin.tiers = [{ amount: 500, remaining: 92 }, { amount: 5_000, remaining: 20 }];
+  const heat = scoreGame(thin, NO_HOLDBACK);
+  const paced = scoreCatalogPace([prior], [thin], 16, new Map([[31, heat]]));
+  const report = paced.get(31);
+  assert.equal(report.paceBand, "quiet");
+  assert.ok(report.leftoverConfidence < 1);
+  assert.ok((report.deskScore ?? report.vault) - report.vault < 10);
+  const stats = catalogHeatFromReports([thin], paced);
+  assert.equal(stats.leftover.fast, 0);
+  assert.equal(stats.leftover.moving, 0);
+  assert.equal(stats.leftover.quiet, 1);
+  assert.equal(stats.leftover.movers, 0);
+  assert.ok(stats.heat < heat.vault + 10);
 });
 
 test("retail-top-gone stays off Tonight look-ats even when leftover is Fast", () => {
