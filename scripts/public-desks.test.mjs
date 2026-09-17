@@ -54,14 +54,35 @@ test("selector and deep-links ignore hidden desks", () => {
 test("every public state has remaining-prizes and new-games URLs", () => {
   const src = read("src/config/states.ts");
   assert.match(src, /newGamesUrl: string \| null/);
+  assert.match(src, /endedGamesUrl: string \| null/);
   for (const id of PUBLIC) {
     const blockStart = src.indexOf(`  ${id}: {`);
     assert.ok(blockStart >= 0, id);
     const block = src.slice(blockStart, src.indexOf("playResponsiblyUrl:", blockStart));
     assert.match(block, /remainingPrizesUrl:/);
     assert.match(block, /newGamesUrl: "https:\/\//);
+    assert.match(block, /endedGamesUrl:/);
   }
+  assert.match(src.slice(src.indexOf("  sc: {"), src.indexOf("  ok: {")), /endedGamesUrl: null/);
+  assert.match(src.slice(src.indexOf("  ok: {"), src.indexOf("  mi: {")), /endedGamesUrl: null/);
+  assert.match(src.slice(src.indexOf("  mo: {"), src.indexOf("  oh: {")), /endedGamesUrl: null/);
+  assert.match(src, /endedGamesUrl: "https:\/\/tnlottery.com\/ended-games\/"/);
+  assert.match(src, /endedGamesUrl: "https:\/\/www.kylottery.com\/apps\/scratch_offs\/available_games.html"/);
+  assert.match(src, /endedGamesUrl: "https:\/\/nclottery.com\/scratch-off-games-ending"/);
+  assert.match(src, /endedGamesUrl: "https:\/\/www.texaslottery.com\/export\/sites\/lottery\/Games\/Scratch_Offs\/closing.html"/);
+  assert.match(src, /endedGamesUrl: "https:\/\/www.palottery.pa.gov\/Scratch-Offs\/Print-Scratch-Offs.aspx\?gametype=ActivePrint"/);
+  assert.match(src, /endedGamesUrl: "https:\/\/www.idaholottery.com\/games\/claim-scratch"/);
+  assert.match(src, /endedGamesUrl: "https:\/\/www.ialottery.com\/Pages\/Games-Scratch\/ScratchGamesEnd.aspx"/);
   assert.match(src, /HIDDEN_RETURN_MIN_GAMES = 3/);
+  const fetch = read("src/data/states/fetch.server.ts");
+  assert.match(fetch, /archiveSnapshot/);
+  assert.match(fetch, /parseEndedGames/);
+  assert.match(fetch, /mergeEndedDates/);
+  assert.match(fetch, /endedGamesUrl/);
+  const snap = read("src/data/states/snapshots.server.ts");
+  assert.match(snap, /export async function archiveSnapshot/);
+  assert.match(snap, /export async function readSnapshotHistory/);
+  assert.match(snap, /ON CONFLICT \(state_id, fetched_at\) DO NOTHING/);
 });
 
 test("IL and MA stay empty with no last-good JSON", () => {

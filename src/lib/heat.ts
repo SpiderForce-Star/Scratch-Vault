@@ -1,5 +1,5 @@
 import type { Game } from "@/data/games";
-import { isEndedGame } from "../data/ended-games.ts";
+import { isEndedGame, isEndingSoon } from "../data/ended-games.ts";
 import { isNewCatalogGame, isUnpostedNewGame } from "../data/tn-snapshot.ts";
 
 export type HeatBand = "hot" | "warm" | "cool" | "bust" | "new";
@@ -149,6 +149,7 @@ export function soldPricePoints(games: Game[]): PricePoint[] {
 
 export type GamesBoard = {
   newGames: Game[];
+  endingSoon: Game[];
   hot: Game[];
   warm: Game[];
   skip: Game[];
@@ -328,7 +329,18 @@ function matchesBoardQuery(game: Game, query: string): boolean {
   return game.name.toLowerCase().includes(query) || String(game.number).includes(query);
 }
 
-/** Default Games page: New → Hot → Warm → Skip these. $5+ only. */
+/** Official last-day within 30 days. Already-ended stay off this strip. */
+export function pickEndingSoon(games: Game[]): Game[] {
+  return games
+    .filter((g) => isDeskPrice(g.price) && isEndingSoon(g))
+    .sort((a, b) => {
+      const da = a.endDate ?? "";
+      const db = b.endDate ?? "";
+      return da.localeCompare(db) || a.price - b.price || a.number - b.number;
+    });
+}
+
+/** Default Games page: New → Ending soon → Hot → Warm → Skip these. $5+ only. */
 export function buildGamesBoard(
   games: Game[],
   reports: Map<number, HeatReport>,
@@ -344,6 +356,7 @@ export function buildGamesBoard(
   const fresh = pickNewGames(pool, reports, pool.length);
   const freshIds = new Set(fresh.map((g) => g.number));
   const rest = pool.filter((g) => !freshIds.has(g.number));
+  const endingSoon = pickEndingSoon(pool);
   const hot = rest
     .filter((g) => !isEndedGame(g) && reports.get(g.number)?.band === "hot")
     .sort((a, b) => vaultOf(reports, b) - vaultOf(reports, a) || a.price - b.price);
@@ -353,7 +366,7 @@ export function buildGamesBoard(
   const skip = rest
     .filter((g) => isSkipCandidate(g, reports.get(g.number)))
     .sort((a, b) => vaultOf(reports, a) - vaultOf(reports, b) || a.price - b.price);
-  return { newGames: fresh, hot, warm, skip };
+  return { newGames: fresh, endingSoon, hot, warm, skip };
 }
 
 /** Hot/warm tickets at this price, not this game. */
