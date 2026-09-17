@@ -11,7 +11,7 @@ import { readPriorDesk } from "@/data/states/snapshots.server";
 import {
   buildDesk,
   cashBlips,
-  catalogHeat,
+  catalogHeatFromReports,
   guestFacingGame,
   pickTonightHeat,
   publicGame,
@@ -61,6 +61,10 @@ function redactPick(pick: DeskPick): DeskPick {
 function guestDesk(desk: DeskReview): DeskReview {
   return {
     ...desk,
+    stats: {
+      ...desk.stats,
+      leftover: { ...desk.stats.leftover, meanPct16: null },
+    },
     byPrice: desk.byPrice.map((row) =>
       row.pick ? { ...row, pick: redactPick(row.pick) } : row,
     ),
@@ -77,6 +81,17 @@ function guestDesk(desk: DeskReview): DeskReview {
 
 function guestReports(reports: Map<number, HeatReport>): Map<number, HeatReport> {
   return new Map([...reports.entries()].map(([k, v]) => [k, redactHeatReport(v)]));
+}
+
+function guestCatalogStats(
+  games: Parameters<typeof catalogHeatFromReports>[0],
+  reports: Map<number, HeatReport>,
+) {
+  const stats = catalogHeatFromReports(games, reports);
+  return {
+    ...stats,
+    leftover: { ...stats.leftover, meanPct16: null },
+  };
 }
 
 async function subscriberIsPaid(userId: string | null): Promise<boolean> {
@@ -150,7 +165,7 @@ export async function buildDeskSnapshot(
       reports: reportRecord(reports),
       desk: buildDesk(games, reports, ctx),
       blips: cashBlips(games, 12),
-      stats: catalogHeat(games, (game) => scoreGame(game, ctx)),
+      stats: catalogHeatFromReports(games, reports),
       loadError: loaded.error,
       stale: loaded.stale,
       fetchedAt: loaded.fetchedAt,
@@ -184,7 +199,7 @@ export async function buildDeskSnapshot(
     reports: reportRecord(guestReports(pacedReports)),
     desk: guestDesk(desk),
     blips: cashBlips(scoredGames, 12).map((blip) => ({ ...blip, remaining: null })),
-    stats: catalogHeat(scoredGames, (game) => scoreGamePublic(game, ctx)),
+    stats: guestCatalogStats(scoredGames, guestReports(pacedReports)),
     loadError: loaded.error,
     stale: loaded.stale,
     fetchedAt: loaded.fetchedAt,

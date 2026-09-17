@@ -219,8 +219,15 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
     assert.match(explainer, new RegExp(key.replace(".", "\\.")));
   }
   assert.match(read("src/routes/index.tsx"), /HeatExplainer neon/);
+  assert.match(read("src/routes/index.tsx"), /LeftoverDecayStrip/);
+  assert.match(read("src/routes/index.tsx"), /TonightHeatStrip/);
   assert.match(read("src/routes/games.tsx"), /HeatExplainer/);
+  assert.match(read("src/routes/games.tsx"), /LeftoverDecayStrip/);
   assert.match(read("src/routes/game/$number.tsx"), /HeatExplainer/);
+  const decayStrip = read("src/components/leftover-decay-strip.tsx");
+  assert.match(decayStrip, /decay\.body/);
+  assert.match(decayStrip, /decay\.foot/);
+  assert.match(decayStrip, /decay\.heatLine/);
 
   const radar = read("src/components/radar-cash-hero.tsx");
   const scopeAt = radar.indexOf("function RadarScope");
@@ -241,6 +248,7 @@ test("leftover math stays prize-row $50+ on every loaded $5–$50 game", () => {
   assert.match(heat, /export const PRICE_POINTS = \[5, 10, 20, 25, 30, 50\]/);
   assert.match(desk, /scoreCatalogRelative/);
   assert.match(desk, /scoreCatalogPace\(prior\?\.catalog, games, days/);
+  assert.match(desk, /catalogHeatFromReports/);
   const heatServer = read("src/lib/heat.server.ts");
   assert.match(heatServer, /export function scoreCatalogRelative/);
   assert.doesNotMatch(heatServer, /medium >= 68/);

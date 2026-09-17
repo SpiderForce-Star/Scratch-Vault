@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { applyPace } from "../src/lib/pace.ts";
 import {
   SANDBOX_STRIPE_PRICES,
   STRIPE_PRICES,
@@ -591,6 +592,56 @@ test("Tonight remaining heat prefers retail tops and skips bust when live games 
   assert.equal(cards.length, 2);
   assert.equal(cards[0].number, hotter.number);
   assert.ok(cards.every((card) => card.number !== drained.number));
+});
+
+test("Tonight look-ats follow leftover mix plus leftover-pace deskScore", () => {
+  const ctx = { topHoldback: 0 };
+  const stillGame = fixture({
+    number: 401,
+    name: "Still book",
+    tiers: [
+      { amount: 200_000, remaining: 4 },
+      { amount: 8_000, remaining: 20 },
+      { amount: 500, remaining: 10 },
+    ],
+  });
+  const fastGame = fixture({
+    number: 402,
+    name: "Fast book",
+    tiers: [
+      { amount: 200_000, remaining: 4 },
+      { amount: 8_000, remaining: 20 },
+      { amount: 500, remaining: 10 },
+    ],
+  });
+  const stillHeat = applyPace(scoreGame(stillGame, ctx), {
+    band: "still",
+    leftoverPct: 0.2,
+    leftoverDaily: 0.2 / 16,
+    leftoverNow: 34,
+    leftoverPrior: 34,
+    days: 16,
+    lift: -3,
+  });
+  const fastHeat = applyPace(scoreGame(fastGame, ctx), {
+    band: "fast",
+    leftoverPct: 10,
+    leftoverDaily: 10 / 16,
+    leftoverNow: 30,
+    leftoverPrior: 34,
+    days: 16,
+    lift: 10,
+  });
+  assert.ok(fastHeat.deskScore > stillHeat.deskScore);
+  const { cards } = pickTonightHeat(
+    [stillGame, fastGame],
+    new Map([
+      [401, stillHeat],
+      [402, fastHeat],
+    ]),
+    2,
+  );
+  assert.equal(cards[0].number, 402);
 });
 
 test("Tonight remaining heat shows Pass list when the desk has no retail top", () => {
