@@ -92,12 +92,11 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   assert.match(banner, /banner\.leftover/);
   assert.match(banner, /banner\.deskSnapshot/);
   assert.match(home, /leftover/);
-  assert.match(home, /<DeskRibbon/);
+  assert.doesNotMatch(home, /<DeskRibbon/);
 
   const bannerAt = home.indexOf("<DataModeBanner");
-  const ribbonAt = home.indexOf("<DeskRibbon");
   const deskAt = home.indexOf('id="desk"');
-  assert.ok(bannerAt >= 0 && ribbonAt > bannerAt && deskAt > ribbonAt);
+  assert.ok(bannerAt >= 0 && deskAt > bannerAt);
 
   assert.match(ribbon, /PUBLIC_STATE_LIST/);
   assert.match(ribbon, /to="\/pricing"/);
@@ -139,13 +138,13 @@ test("desk ribbon names are the 10 public desks and hide AZ MI OH CT IL MA", () 
   }
 });
 
-test("desk ribbon is homepage-only", () => {
+test("desk ribbon is not a second home banner", () => {
   const home = read("src/routes/index.tsx");
   const rootSrc = read("src/routes/__root.tsx");
-  assert.match(home, /from "@\/components\/desk-ribbon"/);
-  assert.match(home, /<DeskRibbon/);
+  assert.doesNotMatch(home, /DeskRibbon/);
+  assert.doesNotMatch(home, /desk-ribbon/);
   assert.doesNotMatch(rootSrc, /DeskRibbon/);
-  for (const page of ["signup", "login", "pricing", "account", "games"]) {
+  for (const page of ["signup", "login", "pricing", "account", "games", "strategy"]) {
     const src = read(`src/routes/${page}.tsx`);
     assert.doesNotMatch(src, /DeskRibbon/);
     assert.doesNotMatch(src, /desk-ribbon/);

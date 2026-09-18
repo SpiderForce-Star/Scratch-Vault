@@ -290,6 +290,19 @@ test("Locale: en and es have the same strategy.* keys; English+Spanish forbid od
   assert.match(en["hero.titleAll"], /Three tickets to look at\. A list to walk past/);
 });
 
+test("look-at with count 0 is dropped; nothing spent is empty", () => {
+  const { games, reports } = fixtureDesk();
+  const grand = buildStrategyDesk({
+    games,
+    reports,
+    filter: "50",
+    budget: 20,
+  }).grand;
+  assert.equal(grand.lookAt.length, 0);
+  assert.equal(grand.empty, true);
+  assert.ok(grand.lookAt.every((row) => row.count > 0));
+});
+
 test("Budget $50 at all-price: Heat ticketCount >= 3; Grand concentrate can spend a single $50", () => {
   const { games, reports } = fixtureDesk();
   const desk = buildStrategyDesk({

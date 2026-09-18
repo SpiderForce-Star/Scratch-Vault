@@ -161,7 +161,7 @@ test("public home mounts remaining-prize radar beside the trip desk for phone an
   const radar = read("src/components/radar-cash-hero.tsx");
   assert.equal(home.includes("RadarCashHero"), true);
   assert.equal(home.includes('id="desk"'), true);
-  assert.equal(home.includes("lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]"), true);
+  assert.equal(home.includes("hidden lg:block"), true);
   assert.equal(radar.includes("hidden lg:block"), false);
   assert.equal(radar.includes("playGoldBleeps"), true);
   assert.equal(radar.includes("GoldBar"), true);

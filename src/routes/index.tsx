@@ -8,7 +8,6 @@ import {
   isPublicStateId,
 } from "@/config/states";
 import {
-  pickNewGames,
   pickSkipGames,
   pickTripGames,
   reportMap,
@@ -20,16 +19,12 @@ import {
 } from "@/lib/heat";
 import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
-import { BandChip, NewGameChip, TicketCard } from "@/components/ticket-card";
+import { BandChip, TicketCard } from "@/components/ticket-card";
 import { FullCatalogLink } from "@/components/full-catalog-link";
-import { TicketFace } from "@/components/ticket-face";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
-import { DeskRibbon } from "@/components/desk-ribbon";
 import { HeatExplainer } from "@/components/heat-explainer";
-import { LeftoverDecayStrip } from "@/components/leftover-decay-strip";
-import { TonightHeatStrip } from "@/components/tonight-heat-strip";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
@@ -200,10 +195,6 @@ function VaultHome() {
       ),
     [catalog, reports, filter, tripGames],
   );
-  const newGames = useMemo(
-    () => pickNewGames(catalog, reports, 8),
-    [catalog, reports],
-  );
 
   const priceLabel = pricePrefLabel(filter) ?? "$10";
   const tripEmptyCopy = noSnapshot
@@ -222,158 +213,60 @@ function VaultHome() {
         loadError={snap?.loadError}
         stale={snap?.stale}
       />
-      <DeskRibbon />
-      <HeatExplainer neon />
-      <LeftoverDecayStrip stats={snap?.stats} locked={locked} />
-      {snap?.tonight?.length ? (
-        <TonightHeatStrip
-          stateId={snap.stateId}
-          cards={snap.tonight}
-          depleted={snap.tonightDepleted}
-          dataMode={snap.dataMode}
-        />
-      ) : null}
 
       <section id="desk" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
-            <div className="min-w-0 order-2 lg:order-1">
-              <RadarCashHero
-                key={viewState}
-                stateId={viewState}
-                captures={radar.captures}
-                contacts={radar.contacts}
-                cycleId={radar.cycleId}
-                bleeps={radar.bleeps}
-              />
+          <h1 className="font-display text-2xl tracking-tight sm:text-3xl">
+            {t("hero.titleAll")}
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-muted">{t("hero.body")}</p>
+          {sold.length ? (
+            <PriceChipBar
+              sold={sold}
+              filter={filter}
+              onSelect={setPrice}
+              sticky
+              stateName={deskState.name}
+            />
+          ) : null}
+          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+            {t("trip.kicker", { price: priceLabel })}
+          </p>
+          {tripGames.length === 0 ? (
+            <p className="mt-4 text-muted">{tripEmptyCopy}</p>
+          ) : (
+            <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3">
+              {tripGames.map((game) => {
+                const heat = reports.get(game.number);
+                if (!heat) return null;
+                return (
+                  <TicketCard
+                    key={game.number}
+                    game={game}
+                    heat={heat}
+                    locked={locked}
+                  />
+                );
+              })}
             </div>
-            <div className="min-w-0 order-1 lg:order-2">
-              <h1 className="font-display text-2xl tracking-tight sm:text-3xl">
-                {t("hero.titleAll")}
-              </h1>
-              <p className="mt-2 max-w-xl text-sm text-muted">{t("hero.body")}</p>
-              {locked ? (
-                <>
-                  <p className="mt-2 max-w-xl text-sm text-gold">{t("hero.priceLine")}</p>
-                  <Link
-                    to="/signup"
-                    search={{ next: "/account?complete=1&plan=monthly" }}
-                    className="mt-4 mb-6 hidden min-h-12 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg sm:inline-flex"
-                  >
-                    {t("cta.trial")}
-                  </Link>
-                </>
-              ) : null}
-              {sold.length ? (
-                <PriceChipBar
-                  sold={sold}
-                  filter={filter}
-                  onSelect={setPrice}
-                  sticky
-                  stateName={deskState.name}
-                />
-              ) : null}
+          )}
+          {viewState === "tn" ? (
+            <aside className="mt-4 rounded-lg border border-gold/40 bg-raised/40 px-4 py-3">
               <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-                {t("trip.kicker", { price: priceLabel })}
+                {t("pia.title")}
               </p>
-              {viewState === "tn" ? (
-                <aside className="mt-4 hidden rounded-lg border border-gold/40 bg-raised/40 px-4 py-3 sm:block">
-                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-                    {t("pia.title")}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
-                </aside>
-              ) : null}
-              {tripGames.length === 0 ? (
-                <p className="mt-4 text-muted">{tripEmptyCopy}</p>
-              ) : (
-                <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {tripGames.map((game) => {
-                    const heat = reports.get(game.number);
-                    if (!heat) return null;
-                    return (
-                      <TicketCard
-                        key={game.number}
-                        game={game}
-                        heat={heat}
-                        locked={locked}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-              {viewState === "tn" ? (
-                <aside className="mt-4 rounded-lg border border-gold/40 bg-raised/40 px-4 py-3 sm:hidden">
-                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-                    {t("pia.title")}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
-                </aside>
-              ) : null}
-              <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <FullCatalogLink
-                  locked={locked}
-                  className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
-                >
-                  {t("games.seeAll")}
-                </FullCatalogLink>
-                <Link
-                  to="/strategy"
-                  search={deskPageSearch(viewState)}
-                  className="font-mono text-sm tracking-wide text-muted underline underline-offset-4 hover:text-gold"
-                >
-                  {t("strategy.compareCta")}
-                </Link>
-              </p>
-              {!locked && newGames.length > 0 ? (
-                <div className="mt-6 mb-2">
-                  <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-                    {t("home.newKicker")}
-                  </p>
-                  <h2 className="mt-1 font-display text-xl tracking-tight">
-                    {t("home.newTitle")}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted">{t("home.newSub")}</p>
-                  <div className="mt-3 grid grid-cols-1 gap-3 md:flex md:gap-3 md:overflow-x-auto md:pb-2">
-                    {newGames.map((game, index) => {
-                      const heat = reports.get(game.number);
-                      if (!heat) return null;
-                      return (
-                        <Link
-                          key={`new-${game.number}`}
-                          to="/game/$number"
-                          params={{ number: String(game.number) }}
-                          search={deskSearch(game.stateId ?? viewState)}
-                          className={cn(
-                            "w-full overflow-hidden rounded-xl border border-gold/40 bg-surface hover:border-gold md:w-72 md:shrink-0",
-                            index > 0 && "hidden md:block",
-                          )}
-                        >
-                          <div className="overflow-hidden">
-                            <TicketFace game={game} />
-                          </div>
-                          <div className="p-3">
-                            <p className="line-clamp-2 font-display text-lg leading-snug break-normal hyphens-none">
-                              {game.name}
-                            </p>
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                              <BandChip band={heat.band} />
-                              <NewGameChip />
-                              <p className="font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
-                                ${game.price}
-                              </p>
-                            </div>
-                            <p className="mt-1 font-mono text-[10px] text-faint uppercase">
-                              #{game.number}
-                            </p>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </div>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{t("pia.body")}</p>
+            </aside>
+          ) : null}
+          <div className="mt-8 hidden lg:block">
+            <RadarCashHero
+              key={viewState}
+              stateId={viewState}
+              captures={radar.captures}
+              contacts={radar.contacts}
+              cycleId={radar.cycleId}
+              bleeps={radar.bleeps}
+            />
           </div>
         </div>
       </section>
@@ -441,18 +334,34 @@ function VaultHome() {
         </div>
       </section>
 
+      <details className="border-b border-line">
+        <summary className="mx-auto max-w-6xl cursor-pointer list-none px-4 py-4 font-mono text-[10px] tracking-[0.16em] text-gold uppercase sm:px-6 [&::-webkit-details-marker]:hidden">
+          {t("heat.recipeTitle")}
+        </summary>
+        <HeatExplainer neon />
+      </details>
+
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <p className="font-display text-2xl tracking-tight sm:text-3xl">
-            {t("home.done")}
+          <p>
+            <Link
+              to="/strategy"
+              search={deskPageSearch(viewState)}
+              className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
+            >
+              {t("strategy.compareCta")}
+            </Link>
           </p>
           <p className="mt-3">
             <FullCatalogLink
               locked={locked}
-              className="font-mono text-sm tracking-wide text-gold underline underline-offset-4 hover:text-paper"
+              className="font-mono text-sm tracking-wide text-muted underline underline-offset-4 hover:text-gold"
             >
               {t("games.seeAll")}
             </FullCatalogLink>
+          </p>
+          <p className="mt-8 font-display text-2xl tracking-tight sm:text-3xl">
+            {t("home.done")}
           </p>
           <p className="mt-3">
             <Link

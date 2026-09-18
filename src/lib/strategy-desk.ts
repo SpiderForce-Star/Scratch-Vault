@@ -233,10 +233,15 @@ function assemble(
   goal: StrategyGoal,
   spend: (picks: Game[], budget: number) => { counts: number[]; stubs: number[] },
 ): StrategyPlan {
-  const empty = picks.length === 0;
-  const { counts, stubs } = empty ? { counts: [] as number[], stubs: [] as number[] } : spend(picks, budget);
-  const lookAt = empty ? [] : lookAtRows(picks, reports, counts);
+  const emptyPool = picks.length === 0;
+  const { counts, stubs } = emptyPool
+    ? { counts: [] as number[], stubs: [] as number[] }
+    : spend(picks, budget);
+  const lookAt = emptyPool
+    ? []
+    : lookAtRows(picks, reports, counts).filter((row) => row.count > 0);
   const spent = stubs.reduce((sum, price) => sum + price, 0);
+  const empty = lookAt.length === 0;
   return {
     id,
     lookAt,

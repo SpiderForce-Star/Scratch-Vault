@@ -490,6 +490,7 @@ function LookAtRow({
   const { t } = useI18n();
   const deskId = row.game.stateId ?? stateId;
   const cashLeft = row.heat.lowRemaining;
+  const midLeft = row.heat.midRemaining;
   const topLeft = row.heat.effectiveTop;
   const pace = row.heat.leftoverPct;
   return (
@@ -523,6 +524,7 @@ function LookAtRow({
             <span className="font-mono text-[11px] text-muted">
               {t("strategy.paidLine", {
                 top: topLeft == null ? "—" : topLeft.toLocaleString(),
+                mid: midLeft == null ? "—" : midLeft.toLocaleString(),
                 cash: cashLeft == null ? "—" : cashLeft.toLocaleString(),
                 pace: pace == null ? "—" : pace.toFixed(1),
               })}

@@ -650,5 +650,5 @@
   "strategy.mix": "Leftover mix · Grand {{grand}} · Mid {{medium}} · Cash {{cash}}",
   "strategy.footnote": "Leftover remaining is claims on the official list, not store inventory, not a win. 18+ (Iowa tickets 21+).",
   "strategy.spendLine": "{{name}} spends ${{spent}} on {{count}} tickets.",
-  "strategy.paidLine": "{{top}} retail top · {{cash}} cash remaining · {{pace}}% pace"
+  "strategy.paidLine": "{{top}} retail top · {{mid}} mid remaining · {{cash}} cash remaining · {{pace}}% pace"
 }

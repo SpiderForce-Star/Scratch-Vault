@@ -650,5 +650,5 @@
   "strategy.mix": "Mezcla de restantes · Mayor {{grand}} · Medio {{medium}} · Efectivo {{cash}}",
   "strategy.footnote": "Lo que queda son reclamos en la lista oficial, no inventario de tienda, no un premio. 18+ (boletos de Iowa 21+).",
   "strategy.spendLine": "{{name}} gasta ${{spent}} en {{count}} boletos.",
-  "strategy.paidLine": "{{top}} premio mayor de venta · {{cash}} efectivo restante · ritmo {{pace}}%"
+  "strategy.paidLine": "{{top}} premio mayor de venta · {{mid}} medio restante · {{cash}} efectivo restante · ritmo {{pace}}%"
 }

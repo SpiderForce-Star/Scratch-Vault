@@ -224,9 +224,11 @@ test("PUBLIC_STATE_IDS stay locked and decay copy forbids odds language", () => 
   const home = readFileSync(join(root, "src/routes/index.tsx"), "utf8");
   const games = readFileSync(join(root, "src/routes/games.tsx"), "utf8");
   const heatServer = readFileSync(join(root, "src/lib/heat.server.ts"), "utf8");
-  assert.match(home, /LeftoverDecayStrip/);
-  assert.match(home, /TonightHeatStrip/);
+  const firstScreen = home.slice(home.indexOf("return ("), home.indexOf('id="skip"'));
+  assert.doesNotMatch(firstScreen, /LeftoverDecayStrip/);
+  assert.doesNotMatch(firstScreen, /TonightHeatStrip/);
   assert.match(games, /LeftoverDecayStrip/);
+  assert.match(games, /TonightHeatStrip/);
   assert.match(heatServer, /if \(bHeat !== aHeat\) return bHeat - aHeat/);
   assert.match(heatServer, /isDeskPrice\(game\.price\)/);
 });

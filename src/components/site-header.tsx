@@ -170,9 +170,13 @@ function NavLinks({
       {NAV.map((item) => {
         const label = t(item.key);
         const isDesk = item.key === "nav.desk";
+        const menuOnly = item.key === "nav.pricing" || item.key === "nav.responsible";
         const className = stacked
           ? "relative inline-flex min-h-11 items-center px-2 text-sm text-muted hover:text-fg"
-          : "relative inline-flex min-h-11 items-center px-2.5 text-sm text-muted hover:text-fg sm:px-3";
+          : cn(
+              "relative inline-flex min-h-11 items-center px-2.5 text-sm text-muted hover:text-fg sm:px-3",
+              menuOnly && "hidden lg:inline-flex",
+            );
         const pip =
           isDesk && unseen ? (
             <span
