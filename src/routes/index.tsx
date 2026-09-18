@@ -331,19 +331,7 @@ function VaultHome() {
               })}
             </ul>
           )}
-        </div>
-      </section>
-
-      <details className="border-b border-line">
-        <summary className="mx-auto max-w-6xl cursor-pointer list-none px-4 py-4 font-mono text-[10px] tracking-[0.16em] text-gold uppercase sm:px-6 [&::-webkit-details-marker]:hidden">
-          {t("heat.recipeTitle")}
-        </summary>
-        <HeatExplainer neon />
-      </details>
-
-      <section className="border-b border-line">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <p>
+          <p className="mt-6">
             <Link
               to="/strategy"
               search={deskPageSearch(viewState)}
@@ -360,7 +348,19 @@ function VaultHome() {
               {t("games.seeAll")}
             </FullCatalogLink>
           </p>
-          <p className="mt-8 font-display text-2xl tracking-tight sm:text-3xl">
+        </div>
+      </section>
+
+      <details className="border-b border-line">
+        <summary className="mx-auto max-w-6xl cursor-pointer list-none px-4 py-4 font-mono text-[10px] tracking-[0.16em] text-gold uppercase sm:px-6 [&::-webkit-details-marker]:hidden">
+          {t("heat.recipeTitle")}
+        </summary>
+        <HeatExplainer neon />
+      </details>
+
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <p className="font-display text-2xl tracking-tight sm:text-3xl">
             {t("home.done")}
           </p>
           <p className="mt-3">

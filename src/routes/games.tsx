@@ -176,14 +176,6 @@ function GamesCatalog() {
         </section>
         <HeatExplainer />
         <LeftoverDecayStrip stats={snap?.stats} locked />
-        {snap?.tonight?.length ? (
-          <TonightHeatStrip
-            stateId={snap.stateId}
-            cards={snap.tonight}
-            depleted={snap.tonightDepleted}
-            dataMode={snap.dataMode}
-          />
-        ) : null}
       </div>
     );
   }

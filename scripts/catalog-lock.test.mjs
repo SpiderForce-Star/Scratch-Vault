@@ -84,10 +84,11 @@ test("unpaid /games never mounts the board, search, or price chips", () => {
   assert.doesNotMatch(lockedReturn, /catalog-q/);
   assert.doesNotMatch(lockedReturn, /priceFilters/);
   assert.doesNotMatch(lockedReturn, /publicCatalog/);
+  assert.doesNotMatch(lockedReturn, /TonightHeatStrip/);
   assert.match(games, /GamesBoardView/);
 });
 
-test("homepage keeps radar, tonight's 3, and skip teaser for unpaid", () => {
+test("homepage keeps radar, skip teaser, and strategy compare for unpaid", () => {
   const home = read("src/routes/index.tsx");
   assert.match(home, /RadarCashHero/);
   assert.match(home, /pickTripGames/);
@@ -242,10 +243,13 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   }
   const home = read("src/routes/index.tsx");
   const skipAt = home.indexOf('id="skip"');
+  const ctaAt = home.indexOf("strategy.compareCta");
+  const detailsAt = home.indexOf("<details");
   const firstScreen = home.slice(home.indexOf("return ("), skipAt);
   assert.doesNotMatch(firstScreen, /HeatExplainer/);
   assert.doesNotMatch(firstScreen, /LeftoverDecayStrip/);
   assert.doesNotMatch(firstScreen, /TonightHeatStrip/);
+  assert.ok(skipAt >= 0 && ctaAt > skipAt && detailsAt > ctaAt);
   assert.match(home.slice(skipAt), /<details/);
   assert.match(home.slice(skipAt), /HeatExplainer neon/);
   const gamesPage = read("src/routes/games.tsx");
