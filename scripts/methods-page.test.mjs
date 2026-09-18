@@ -79,14 +79,19 @@ test("methods copy locksteps en/es and forbids odds language", () => {
     assert.doesNotMatch(en[key], banned, key);
     assert.doesNotMatch(es[key], banned, key);
   }
+  assert.match(en["methods.kicker"], /leftover ledger/i);
+  assert.match(en["methods.homeTitle"], /three leftover books/);
+  assert.match(en["methods.explain"], /See the method/);
   assert.match(en["methods.s1Body"], /historical leftover/);
+  assert.match(en["methods.s2Title"], /three leftover clocks/);
   assert.match(en["methods.s2Body"], /three bands/);
   assert.match(en["methods.s3Body"], /not a curve drawn back to the first day of sale/);
   assert.match(en["methods.s3Body"], /16-day/);
+  assert.match(en["methods.s4Title"], /Skip stays Skip/);
   assert.match(en["methods.honestTitle"], /do not improve your odds/);
   assert.match(en["methods.lead"], /do not improve your odds/);
-  assert.match(en["methods.foot"], /Printed odds never change/);
   assert.match(en["methods.lead"], /Not a lottery/);
+  assert.match(en["methods.foot"], /Printed odds never change/);
   assert.doesNotMatch(es["methods.honestTitle"], /mejoran las probabilidades de forma/i);
   assert.match(en["hero.titleAll"], /Three tickets to look at/);
 });

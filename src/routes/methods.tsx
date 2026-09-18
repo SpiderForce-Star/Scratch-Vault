@@ -7,9 +7,9 @@ export const Route = createFileRoute("/methods")({
   component: MethodsPage,
   head: () =>
     pageHead({
-      title: "How leftover prizes decay",
+      title: "The leftover ledger",
       description:
-        "Scratch Vault leftover-prize accounting: multi-tier leftover mix plus leftover-prize pace from official lists. Remaining counts do not improve your odds. Printed odds never change. 18+ (Iowa tickets 21+).",
+        "How Scratch Vault reads leftover prizes: three leftover bands after a game starts, plus leftover-prize pace from official lists. Remaining counts do not improve your odds. Printed odds never change. 18+ (Iowa tickets 21+).",
       path: "/methods",
     }),
 });
