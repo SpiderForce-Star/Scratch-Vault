@@ -69,8 +69,6 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   assert.doesNotMatch(home, /home\.sortHeat/);
   assert.match(home, /games\.seeAll/);
   assert.match(home, /hero\.titleAll/);
-  assert.match(home, /hero\.priceLine/);
-  assert.match(home, /cta\.trial/);
   assert.doesNotMatch(home, /trip\.title/);
   assert.match(home, /home\.skipKicker/);
   assert.match(games, /games\.underFive/);
@@ -428,10 +426,9 @@ test("homepage skip rows force Cold or Skip chips", () => {
   assert.match(home, /home\.skipKicker/);
   assert.match(home, /RadarCashHero/);
   assert.match(home, /home\.skipTitle/);
-  assert.match(home, /order-2 lg:order-1/);
+  assert.match(home, /hidden lg:block/);
   assert.match(home, /sm:grid-cols-2 lg:grid-cols-3/);
   assert.match(home, /hero\.titleAll/);
-  assert.match(home, /cta\.trial/);
   assert.match(home, /viewState === "tn"/);
   assert.match(home, /pia\.title/);
   assert.match(home, /pia\.body/);

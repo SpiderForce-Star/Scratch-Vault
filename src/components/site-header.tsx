@@ -16,12 +16,13 @@ import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const NAV: {
-  to: "/" | "/games" | "/pricing" | "/disclaimer";
+  to: "/" | "/games" | "/strategy" | "/pricing" | "/disclaimer";
   hash?: string;
   key: MessageKey;
 }[] = [
   { to: "/", hash: "desk", key: "nav.desk" },
   { to: "/games", key: "nav.games" },
+  { to: "/strategy", key: "nav.strategy" },
   { to: "/pricing", key: "nav.pricing" },
   { to: "/disclaimer", key: "nav.responsible" },
 ];
@@ -118,6 +119,8 @@ function MenuDesk({ onPicked }: { onPicked: () => void }) {
     setStateId(id);
     if (pathname === "/games") {
       void navigate({ to: "/games", search: deskPageSearch(id), replace: true });
+    } else if (pathname === "/strategy") {
+      void navigate({ to: "/strategy", search: deskPageSearch(id), replace: true });
     } else if (pathname === "/") {
       void navigate({ to: "/", search: deskPageSearch(id), replace: true });
     }
@@ -167,9 +170,13 @@ function NavLinks({
       {NAV.map((item) => {
         const label = t(item.key);
         const isDesk = item.key === "nav.desk";
+        const menuOnly = item.key === "nav.pricing" || item.key === "nav.responsible";
         const className = stacked
           ? "relative inline-flex min-h-11 items-center px-2 text-sm text-muted hover:text-fg"
-          : "relative inline-flex min-h-11 items-center px-2.5 text-sm text-muted hover:text-fg sm:px-3";
+          : cn(
+              "relative inline-flex min-h-11 items-center px-2.5 text-sm text-muted hover:text-fg sm:px-3",
+              menuOnly && "hidden lg:inline-flex",
+            );
         const pip =
           isDesk && unseen ? (
             <span
@@ -195,6 +202,17 @@ function NavLinks({
             {label}
             {pip}
           </FullCatalogLink>
+        ) : item.to === "/strategy" ? (
+          <Link
+            key={item.key}
+            to="/strategy"
+            search={deskPageSearch(stateId)}
+            className={className}
+            onClick={onNavigate}
+          >
+            {label}
+            {pip}
+          </Link>
         ) : (
           <Link key={item.key} to={item.to} className={className} onClick={onNavigate}>
             {label}

@@ -52,11 +52,14 @@ test("unpaid catalog links share one signup next=/games path", () => {
   assert.match(link, /to="\/signup"/);
   assert.match(link, /fullCatalogSignupSearch/);
   assert.match(header, /FullCatalogLink/);
+  assert.match(header, /nav\.strategy/);
+  assert.match(read("src/routes/strategy.tsx"), /createFileRoute\("\/strategy"\)/);
   assert.doesNotMatch(
     header.slice(header.indexOf("function NavLinks"), header.indexOf("function HeaderTrial")),
     /to="\/games"/,
   );
   assert.match(home, /FullCatalogLink/);
+  assert.match(home, /strategy\.compareCta/);
   assert.doesNotMatch(home, /to="\/games"/);
   assert.match(games, /LockedPanel/);
   assert.match(games, /locked \? \[\]/);
@@ -81,20 +84,38 @@ test("unpaid /games never mounts the board, search, or price chips", () => {
   assert.doesNotMatch(lockedReturn, /catalog-q/);
   assert.doesNotMatch(lockedReturn, /priceFilters/);
   assert.doesNotMatch(lockedReturn, /publicCatalog/);
+  assert.doesNotMatch(lockedReturn, /TonightHeatStrip/);
   assert.match(games, /GamesBoardView/);
 });
 
-test("homepage keeps radar, tonight's 3, and skip teaser for unpaid", () => {
+test("homepage keeps radar, skip teaser, and strategy compare for unpaid", () => {
   const home = read("src/routes/index.tsx");
   assert.match(home, /RadarCashHero/);
   assert.match(home, /pickTripGames/);
   assert.match(home, /skipNameLocked/);
   assert.match(home, /hero\.titleAll/);
-  assert.match(home, /!locked && newGames/);
+  assert.match(home, /strategy\.compareCta/);
+  assert.doesNotMatch(home, /!locked && newGames/);
   assert.equal(SKIP_TEASER_CLEAR, 2);
   assert.equal(skipNameLocked(0, false), false);
   assert.equal(skipNameLocked(1, false), false);
   assert.equal(skipNameLocked(2, false), true);
+});
+
+test("phone header stays one row at 390px; pricing and responsible stay in the menu below lg", () => {
+  const header = read("src/components/site-header.tsx");
+  const root = read("src/routes/__root.tsx");
+  assert.match(header, /flex h-14 max-w-6xl flex-nowrap/);
+  assert.match(header, /md:hidden/);
+  assert.match(header, /hidden items-center md:flex/);
+  assert.match(header, /key: "nav.desk"/);
+  assert.match(header, /key: "nav.games"/);
+  assert.match(header, /key: "nav.strategy"/);
+  assert.match(header, /key: "nav.pricing"/);
+  assert.match(header, /key: "nav.responsible"/);
+  assert.match(header, /menuOnly && "hidden lg:inline-flex"/);
+  assert.match(root, /overflow-x-clip/);
+  assert.match(root, /min-h-svh overflow-x-clip/);
 });
 
 test("isHomepageTeaseGame is tonight's 3 at that price only", () => {
@@ -137,6 +158,8 @@ test("lock copy does not claim remaining counts improve odds", () => {
     assert.doesNotMatch(es[key], /mejoran las probabilidades/i);
   }
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
+  assert.equal(typeof en["nav.strategy"], "string");
+  assert.equal(typeof es["nav.strategy"], "string");
 });
 
 test("public Heat recipe is listed and locales stay in lockstep", () => {
@@ -218,11 +241,21 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   for (const key of recipeKeys) {
     assert.match(explainer, new RegExp(key.replace(".", "\\.")));
   }
-  assert.match(read("src/routes/index.tsx"), /HeatExplainer neon/);
-  assert.match(read("src/routes/index.tsx"), /LeftoverDecayStrip/);
-  assert.match(read("src/routes/index.tsx"), /TonightHeatStrip/);
-  assert.match(read("src/routes/games.tsx"), /HeatExplainer/);
-  assert.match(read("src/routes/games.tsx"), /LeftoverDecayStrip/);
+  const home = read("src/routes/index.tsx");
+  const skipAt = home.indexOf('id="skip"');
+  const ctaAt = home.indexOf("strategy.compareCta");
+  const detailsAt = home.indexOf("<details");
+  const firstScreen = home.slice(home.indexOf("return ("), skipAt);
+  assert.doesNotMatch(firstScreen, /HeatExplainer/);
+  assert.doesNotMatch(firstScreen, /LeftoverDecayStrip/);
+  assert.doesNotMatch(firstScreen, /TonightHeatStrip/);
+  assert.ok(skipAt >= 0 && ctaAt > skipAt && detailsAt > ctaAt);
+  assert.match(home.slice(skipAt), /<details/);
+  assert.match(home.slice(skipAt), /HeatExplainer neon/);
+  const gamesPage = read("src/routes/games.tsx");
+  assert.match(gamesPage, /HeatExplainer/);
+  assert.match(gamesPage, /LeftoverDecayStrip/);
+  assert.match(gamesPage, /TonightHeatStrip/);
   assert.match(read("src/routes/game/$number.tsx"), /HeatExplainer/);
   const decayStrip = read("src/components/leftover-decay-strip.tsx");
   assert.match(decayStrip, /decay\.body/);
