@@ -57,7 +57,7 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   const home = read("src/routes/index.tsx");
   const css = read("src/styles.css");
 
-  assert.equal(en["marquee.dead"], "Don't spend on a drained game.");
+  assert.equal(en["marquee.dead"], "Three tickets to look at.");
   assert.equal(en["marquee.intel"], "Current Top 3 and what to skip.");
   assert.equal(
     en["banner.leftover"],

@@ -97,7 +97,7 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
     "We read the lottery’s leftover-prize list. You get tonight’s three — and what to skip.",
   );
   assert.equal(en["hero.priceLine"], "$4.99/mo after 7 days. Less than one $5 ticket.");
-  assert.equal(en["marquee.dead"], "Don't spend on a drained game.");
+  assert.equal(en["marquee.dead"], "Three tickets to look at.");
   assert.equal(en["card.middleNone"], "Middle Tier — None");
   assert.doesNotMatch(en["marquee.dead"], /Stop wasting/);
   assert.doesNotMatch(en["story.title"], /See what is still left before you spend/);
