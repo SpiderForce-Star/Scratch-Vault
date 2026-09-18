@@ -95,6 +95,8 @@ test("homepage keeps radar, skip teaser, and strategy compare for unpaid", () =>
   assert.match(home, /skipNameLocked/);
   assert.match(home, /hero\.titleAll/);
   assert.match(home, /strategy\.compareCta/);
+  assert.match(home, /MethodsCallout/);
+  assert.match(read("src/routes/methods.tsx"), /createFileRoute\("\/methods"\)/);
   assert.doesNotMatch(home, /!locked && newGames/);
   assert.equal(SKIP_TEASER_CLEAR, 2);
   assert.equal(skipNameLocked(0, false), false);
@@ -138,6 +140,11 @@ test("remaining counts stay fail-closed under a lock", () => {
   const panel = read("src/components/locked-panel.tsx");
   const desk = read("src/lib/desk.server.ts");
   assert.match(card, /if \(locked \|\| value == null\) return "—"/);
+  assert.match(card, /card\.guestLook/);
+  assert.match(card, /card\.guestTease/);
+  assert.match(card, /locked \? \(/);
+  const paidChips = card.slice(card.indexOf("heat.score"));
+  assert.match(paidChips, /displayedHeat/);
   assert.match(panel, /never render real remaining counts underneath/);
   assert.match(desk, /games: games\.map\(guestFacingGame\)/);
   assert.match(desk, /redactHeatReport/);
@@ -246,6 +253,7 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   const ctaAt = home.indexOf("strategy.compareCta");
   const detailsAt = home.indexOf("<details");
   const firstScreen = home.slice(home.indexOf("return ("), skipAt);
+  assert.match(firstScreen, /MethodsCallout/);
   assert.doesNotMatch(firstScreen, /HeatExplainer/);
   assert.doesNotMatch(firstScreen, /LeftoverDecayStrip/);
   assert.doesNotMatch(firstScreen, /TonightHeatStrip/);

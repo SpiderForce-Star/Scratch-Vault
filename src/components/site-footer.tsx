@@ -49,6 +49,12 @@ export function SiteFooter() {
             </p>
             <div className="mt-3 flex flex-wrap gap-x-4">
               <Link
+                to="/methods"
+                className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+              >
+                {t("footer.methods")}
+              </Link>
+              <Link
                 to="/disclaimer"
                 className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
               >

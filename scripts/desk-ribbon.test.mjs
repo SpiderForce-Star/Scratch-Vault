@@ -57,7 +57,7 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   const home = read("src/routes/index.tsx");
   const css = read("src/styles.css");
 
-  assert.equal(en["marquee.dead"], "Don't spend on a drained game.");
+  assert.equal(en["marquee.dead"], "Three tickets to look at.");
   assert.equal(en["marquee.intel"], "Current Top 3 and what to skip.");
   assert.equal(
     en["banner.leftover"],
@@ -144,7 +144,7 @@ test("desk ribbon is not a second home banner", () => {
   assert.doesNotMatch(home, /DeskRibbon/);
   assert.doesNotMatch(home, /desk-ribbon/);
   assert.doesNotMatch(rootSrc, /DeskRibbon/);
-  for (const page of ["signup", "login", "pricing", "account", "games", "strategy"]) {
+  for (const page of ["signup", "login", "pricing", "account", "games", "strategy", "methods"]) {
     const src = read(`src/routes/${page}.tsx`);
     assert.doesNotMatch(src, /DeskRibbon/);
     assert.doesNotMatch(src, /desk-ribbon/);

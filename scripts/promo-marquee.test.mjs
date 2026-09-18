@@ -17,19 +17,19 @@ test("promo marquee is on every viewport with five locked English beats", () => 
   const rootSrc = read("src/routes/__root.tsx");
   const footer = read("src/components/site-footer.tsx");
 
-  assert.equal(en["marquee.dead"], "Don't spend on a drained game.");
+  assert.equal(en["marquee.dead"], "Three tickets to look at.");
   assert.equal(en["marquee.posted"], "We watch the official leftover-prize list.");
   assert.equal(en["marquee.intel"], "Current Top 3 and what to skip.");
   assert.equal(en["marquee.sweep"], "We constantly sweep for the best prize data.");
   assert.equal(en["marquee.trial"], "Try 7 days free");
-  assert.equal(en["marquee.aria"], "Don't spend on a drained game. Try 7 days free");
+  assert.equal(en["marquee.aria"], "Three tickets to look at. A list to walk past. Try 7 days free");
 
-  assert.equal(es["marquee.dead"], "No gastes en un juego agotado.");
+  assert.equal(es["marquee.dead"], "Tres boletos para mirar.");
   assert.equal(es["marquee.posted"], "Vigilamos la lista oficial de premios que quedan.");
   assert.equal(es["marquee.intel"], "El Top 3 actual y qué saltarte.");
   assert.equal(es["marquee.sweep"], "Barremos sin parar en busca de los mejores datos de premios.");
   assert.equal(es["marquee.trial"], "Prueba 7 días gratis");
-  assert.equal(es["marquee.aria"], "No gastes en un juego agotado. Prueba 7 días gratis");
+  assert.equal(es["marquee.aria"], "Tres boletos para mirar. Una lista para pasar de largo. Prueba 7 días gratis");
 
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 

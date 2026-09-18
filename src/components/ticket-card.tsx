@@ -69,13 +69,17 @@ export function TicketCard({
         <div className="flex flex-wrap items-center gap-2">
           {unposted ? (
             <NewGameChip />
+          ) : locked ? (
+            <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+              {t("card.guestLook")}
+            </p>
           ) : (
             <>
               <span className="inline-flex min-h-10 items-center font-mono text-base font-bold tracking-[0.14em] text-gold uppercase sm:text-lg">
                 {t("heat.score", { score: displayedHeat(heat) })}
               </span>
               <BandChip band={forceBand ?? heat.band} />
-              <PaceChip band={heat.paceBand} leftoverNow={locked ? null : heat.leftoverNow} />
+              <PaceChip band={heat.paceBand} leftoverNow={heat.leftoverNow} />
               {isNew ? <NewGameChip /> : null}
             </>
           )}
@@ -84,6 +88,11 @@ export function TicketCard({
           <OfficialTableControl href={state.remainingPrizesUrl} />
         ) : null}
 
+        {locked ? (
+          <p className="border-t border-line pt-3 text-sm leading-relaxed text-muted">
+            {t("card.guestTease")}
+          </p>
+        ) : (
         <div className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
           <div>
             <p className="text-faint">{t("card.grandPrize")}</p>
@@ -128,6 +137,7 @@ export function TicketCard({
             )}
           </div>
         </div>
+        )}
 
         <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
           {t("card.updated")}

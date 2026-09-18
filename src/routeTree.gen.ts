@@ -19,6 +19,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as MethodsRouteImport } from './routes/methods'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as BillingIndexRouteImport } from './routes/billing/index'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
@@ -77,6 +78,11 @@ const StrategyRoute = StrategyRouteImport.update({
   path: '/strategy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MethodsRoute = MethodsRouteImport.update({
+  id: '/methods',
+  path: '/methods',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/strategy': typeof StrategyRoute
+  '/methods': typeof MethodsRoute
   '/terms': typeof TermsRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/strategy': typeof StrategyRoute
+  '/methods': typeof MethodsRoute
   '/terms': typeof TermsRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/strategy': typeof StrategyRoute
+  '/methods': typeof MethodsRoute
   '/terms': typeof TermsRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/strategy'
+    | '/methods'
     | '/terms'
     | '/billing/success'
     | '/game/$number'
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/strategy'
+    | '/methods'
     | '/terms'
     | '/billing/success'
     | '/game/$number'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/strategy'
+    | '/methods'
     | '/terms'
     | '/billing/success'
     | '/game/$number'
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
   StrategyRoute: typeof StrategyRoute
+  MethodsRoute: typeof MethodsRoute
   TermsRoute: typeof TermsRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
   GameNumberRoute: typeof GameNumberRoute
@@ -323,6 +336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StrategyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/methods': {
+      id: '/methods'
+      path: '/methods'
+      fullPath: '/methods'
+      preLoaderRoute: typeof MethodsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -386,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
   StrategyRoute: StrategyRoute,
+  MethodsRoute: MethodsRoute,
   TermsRoute: TermsRoute,
   BillingSuccessRoute: BillingSuccessRoute,
   GameNumberRoute: GameNumberRoute,
