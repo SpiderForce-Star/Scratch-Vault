@@ -144,7 +144,7 @@ test("desk ribbon is not a second home banner", () => {
   assert.doesNotMatch(home, /DeskRibbon/);
   assert.doesNotMatch(home, /desk-ribbon/);
   assert.doesNotMatch(rootSrc, /DeskRibbon/);
-  for (const page of ["signup", "login", "pricing", "account", "games", "strategy"]) {
+  for (const page of ["signup", "login", "pricing", "account", "games", "strategy", "methods"]) {
     const src = read(`src/routes/${page}.tsx`);
     assert.doesNotMatch(src, /DeskRibbon/);
     assert.doesNotMatch(src, /desk-ribbon/);

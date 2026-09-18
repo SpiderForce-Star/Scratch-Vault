@@ -95,6 +95,8 @@ test("homepage keeps radar, skip teaser, and strategy compare for unpaid", () =>
   assert.match(home, /skipNameLocked/);
   assert.match(home, /hero\.titleAll/);
   assert.match(home, /strategy\.compareCta/);
+  assert.match(home, /MethodsCallout/);
+  assert.match(read("src/routes/methods.tsx"), /createFileRoute\("\/methods"\)/);
   assert.doesNotMatch(home, /!locked && newGames/);
   assert.equal(SKIP_TEASER_CLEAR, 2);
   assert.equal(skipNameLocked(0, false), false);
@@ -246,6 +248,7 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   const ctaAt = home.indexOf("strategy.compareCta");
   const detailsAt = home.indexOf("<details");
   const firstScreen = home.slice(home.indexOf("return ("), skipAt);
+  assert.match(firstScreen, /MethodsCallout/);
   assert.doesNotMatch(firstScreen, /HeatExplainer/);
   assert.doesNotMatch(firstScreen, /LeftoverDecayStrip/);
   assert.doesNotMatch(firstScreen, /TonightHeatStrip/);
