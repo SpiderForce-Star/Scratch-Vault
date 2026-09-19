@@ -210,6 +210,7 @@ test("PUBLIC_STATE_IDS stay locked and decay copy forbids odds language", () => 
     "coverage.plusTen",
     "coverage.recipe",
     "coverage.aria",
+    "banner.leftover",
   ]) {
     assert.doesNotMatch(en[key], banned);
     assert.doesNotMatch(es[key], banned);
