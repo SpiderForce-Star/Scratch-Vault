@@ -54,7 +54,7 @@ function cashOut(overrides = {}) {
 
 const meta = { stateId: "tn", shortName: "TN", snapshotAt: "2026-08-31T12:00:00Z" };
 
-test("radar monitors the 10 public desks and never hidden ones", () => {
+test("radar monitors the 11 public desks and never hidden ones", () => {
   const src = readFileSync(join(root, "src/config/states.ts"), "utf8");
   const publicBlock = src.slice(
     src.indexOf("export const PUBLIC_STATE_IDS"),

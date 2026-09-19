@@ -20,7 +20,8 @@ export const COMPILED_REMAINING: Record<
   | "ma"
   | "ia"
   | "id"
-  | "ct",
+  | "ct"
+  | "fl",
   Record<number, RemainingRow>
 > = {
   ky: {
@@ -212,3 +213,4 @@ export const MA_REMAINING = COMPILED_REMAINING.ma;
 export const IA_REMAINING = COMPILED_REMAINING.ia;
 export const ID_REMAINING = COMPILED_REMAINING.id;
 export const CT_REMAINING = COMPILED_REMAINING.ct;
+export const FL_REMAINING = COMPILED_REMAINING.fl;

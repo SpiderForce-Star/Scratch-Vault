@@ -7,7 +7,7 @@ import { SKIP_TEASER_CLEAR, skipNameLocked } from "../src/lib/skip-teaser.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HIDDEN = ["az", "mi", "oh", "ct", "il", "ma"];
-const PUBLIC = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"];
+const PUBLIC = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "fl"];
 
 function read(rel) {
   return readFileSync(join(root, rel), "utf8");
@@ -64,6 +64,25 @@ test("every public state has remaining-prizes and new-games URLs", () => {
     assert.match(block, /newGamesUrl: "https:\/\//);
   }
   assert.match(src, /HIDDEN_RETURN_MIN_GAMES = 3/);
+});
+
+test("Florida last-good is a compiled leftover desk of $5–$50 games", () => {
+  const fl = JSON.parse(read("src/data/states/last-good/fl.json"));
+  assert.ok(fl.gameCount >= 3);
+  assert.equal(fl.catalog.length, fl.gameCount);
+  assert.equal(
+    fl.catalog.every((g) => [5, 10, 20, 25, 30, 50].includes(g.price) && g.tiers?.[0]),
+    true,
+  );
+  assert.equal(
+    fl.catalog.some((g) => g.number === 7028 && g.tiers[0].remaining === 2),
+    true,
+  );
+  assert.equal(
+    fl.catalog.some((g) => g.number === 1627 && g.tiers[0].remaining === 1 && g.tiers[1].remaining === 19),
+    true,
+  );
+  assert.equal(fl.catalog.some((g) => g.price < 5), false);
 });
 
 test("IL and MA stay empty with no last-good JSON", () => {

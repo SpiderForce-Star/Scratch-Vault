@@ -193,7 +193,7 @@ test("Kentucky uses the same Games board sections", () => {
 });
 
 test("public last-good desks keep $2/$3 out of New, Hot, Warm, and Skip", () => {
-  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "fl"]) {
     const snap = JSON.parse(read(`src/data/states/last-good/${id}.json`));
     const { catalog, reports } = scored(
       snap.catalog.map((g) => ({ ...g, stateId: id })),

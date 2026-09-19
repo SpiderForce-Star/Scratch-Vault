@@ -44,7 +44,7 @@ operation.
    18+ (Iowa tickets 21+); not a lottery; not affiliated.
 6. **Age.** App use is 18+. Ticket purchase / redeem: **21+ Arizona**,
    **21+ Iowa (Iowa Code § 99G.30)**, **18+** in TN KY SC OK MI NC PA TX MO
-   OH IL MA ID CT.
+   OH IL MA ID CT FL.
 7. **Responsible play.** 1-800-GAMBLER plus the state helpline when it differs.
 8. **Subscriptions.** ROSCA still requires (a) clear material terms before
    collecting a card, (b) express consent, (c) a simple same-medium cancel.
@@ -53,7 +53,7 @@ operation.
    customer signed up online (601(b-5)). The FTC’s 2024 “Click to Cancel”
    Negative Option Rule was vacated by the Eighth Circuit in July 2025;
    ROSCA and the FTC Act still govern. A subscriber may live in a state that
-   is not one of the 16 lottery desks (California ARL, New York GBL § 527,
+   is not one of the 17 lottery desks (California ARL, New York GBL § 527,
    etc.); cancel remains one click on /account from every state. “No refunds”
    is disclosed; opt-out still stops the *next* charge. Apple / Google IAP
    refund rules still apply in the native apps.
@@ -89,6 +89,7 @@ See `src/lib/state-legal.ts` and the public page `/legal`. Highlights:
 | IA | **21** | Official table is $50+ remaining | Iowa Code § 99G.30 |
 | ID | 18 | Remaining column | — |
 | CT | 18 | Unclaimed prizes | Conn. Gen. Stat. ch. 229a |
+| FL | 18 | Remaining “N of M” is leftover N | No Play It Again; 60-day claim window |
 
 ## Still for counsel
 
@@ -97,7 +98,7 @@ See `src/lib/state-legal.ts` and the public page `/legal`. Highlights:
 - Confirm Stripe Customer Portal + upcoming-invoice email satisfies Illinois
   30–60 day annual renewal notice, or add a first-party reminder.
 - Confirm California ARL (Bus. & Prof. Code § 17600) and New York GBL § 527
-  if you sell Full Access to residents of those states (desks are 16 states;
+  if you sell Full Access to residents of those states (desks are 17 states;
   customers can live anywhere).
 - Native IAP “no refunds” cannot override Apple / Google policy.
 - FTC Click-to-Cancel rule remains vacated (8th Cir. July 2025); ROSCA

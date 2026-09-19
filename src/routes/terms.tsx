@@ -142,7 +142,7 @@ function TermsPage() {
             Illinois customers on an annual plan also receive Stripe’s upcoming
             invoice email 30–60 days before renewal (815 ILCS 601). Online
             signup means online cancel: Account → opt out. If you live in a
-            state that is not one of the 16 lottery desks, that same Account
+            state that is not one of the 17 lottery desks, that same Account
             control still stops the next charge.
           </li>
         </ul>

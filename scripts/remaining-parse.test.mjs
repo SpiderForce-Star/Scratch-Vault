@@ -43,6 +43,37 @@ test("remaining counts stay published integers or null", () => {
   assert.equal(money("$5,000"), 5000);
 });
 
+test("Florida leftover “N of M” is remaining N, and $1/$2/$3 stay off the desk", () => {
+  assert.equal(remainingCount("2 of 4"), 2);
+  assert.equal(remainingCount("0 of 8"), 0);
+  assert.equal(remainingCount("1,404 of 6,116"), 1404);
+  assert.equal(remainingCount("6 of 20*"), 6);
+  const html = `
+    <table>
+      <thead><tr><th>Game</th><th>Top Prize</th><th>Remaining</th><th>Ticket Price</th></tr></thead>
+      <tbody>
+        <tr><td>THE PERFECT GIFT(#7028)</td><td>$5,000,000</td><td>2 of 4</td><td>$20</td></tr>
+        <tr><td>500X THE CASH(#1627)</td><td>$25,000,000</td><td>1 of 2</td><td>$50</td></tr>
+        <tr><td>500X THE CASH(#1627)</td><td>$1,000,000</td><td>19 of 28</td><td>$50</td></tr>
+        <tr><td>LUCKY BUCKS(#1636)</td><td>$10,000</td><td>19 of 24</td><td>$1</td></tr>
+        <tr><td>GOLD MINE(#1632)</td><td>$150,000</td><td>3 of 4</td><td>$3</td></tr>
+        <tr><td>FIND THE 7S(#5060)</td><td>$50,000</td><td>0 of 8</td><td>$2</td></tr>
+      </tbody>
+    </table>
+  `;
+  const parsed = parseOfficialRemaining("fl", html);
+  assert.equal(parsed.some((g) => [1, 2, 3].includes(g.price)), false);
+  const gift = parsed.find((g) => g.number === 7028);
+  const cash = parsed.find((g) => g.number === 1627);
+  assert.equal(gift.price, 20);
+  assert.equal(gift.prizes[0].remaining, 2);
+  assert.equal(cash.prizes[0].remaining, 1);
+  assert.equal(cash.prizes[1].remaining, 19);
+  const games = gamesFromParse("fl", parsed, []);
+  assert.equal(games.every((g) => [5, 10, 20, 25, 30, 50].includes(g.price)), true);
+  assert.equal(games.some((g) => g.number === 1636 || g.number === 1632 || g.number === 5060), false);
+});
+
 test("Iowa scratch table maps Unclaimed and ignores pull-tabs", () => {
   const html = `
     <table id="RemainPrizes_JS_DATATABLE">

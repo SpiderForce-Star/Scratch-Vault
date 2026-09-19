@@ -34,6 +34,12 @@ export function remainingCount(s: unknown): number | null {
   const t = String(s).replace(/,/g, "").trim();
   if (!t || t === "—" || t === "-" || /n\/a/i.test(t)) return null;
   if (!/\d/.test(t)) return null;
+  // Official Florida leftover list: “2 of 4” → remaining 2. Do not use M.
+  const of = t.match(/^(\d+)\s+of\s+\d+/i);
+  if (of) {
+    const n = Number(of[1]);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  }
   const n = Number(t.replace(/[^0-9-]/g, ""));
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
@@ -464,6 +470,148 @@ function parseMa(html: string): ParsedGame[] {
   return [...map.values()].filter((g) => PRICES.has(g.price));
 }
 
+export function flViewUrl(number: number): string {
+  return `https://floridalottery.com/games/scratch-offs/view?id=${number}`;
+}
+
+export function flPrizePdfUrl(number: number): string {
+  return `https://files.floridalottery.com/exptkt/${number}_WinningTicketInformation.pdf`;
+}
+
+function flGameNumber(name: string, href = ""): number {
+  return Number(
+    name.match(/\(#\s*(\d{3,5})\s*\)/)?.[1] ||
+      href.match(/[?&]id=(\d{3,5})/)?.[1] ||
+      href.match(/exptkt\/(\d{3,5})_WinningTicketInformation/i)?.[1] ||
+      name.match(/\b(\d{3,5})\b/)?.[1],
+  );
+}
+
+function flGameName(name: string): string {
+  return sanitizeGameName(name.replace(/\(#\s*\d{3,5}\s*\)/g, " ").trim());
+}
+
+/** Per-game $50+ leftover rows when a prize table is on the page. Never invent remaining. */
+export function parseFlGamePage(html: string): ParsedPrize[] {
+  const prizes: ParsedPrize[] = [];
+  const seen = new Set<number>();
+  const push = (amount: number | null, remaining: number | null) => {
+    if (amount == null || amount < LEFTOVER_AMOUNT_MIN || seen.has(amount)) return;
+    seen.add(amount);
+    prizes.push({ amount, remaining });
+  };
+  for (const row of html.split(/<tr/i).slice(1)) {
+    const cells = [...row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((m) =>
+      decodeHtml(m[1]),
+    );
+    if (cells.length < 2) continue;
+    const amount =
+      cashPrizeAmount(cells.find((c) => /\$[\d,]+/.test(c)) || "") ??
+      cashPrizeAmount(cells[0] || "");
+    const remaining = remainingCount(
+      cells.find((c) => /^\d[\d,]*\s+of\s+\d/i.test(c) || /^[\d,]+$/.test(c.trim())) ||
+        cells[cells.length - 1],
+    );
+    push(amount, remaining);
+  }
+  return prizes;
+}
+
+/**
+ * WinningTicketInformation PDFs are top-prize winner lists, not mid/cash remaining.
+ * Keep published $50+ amounts only when a leftover “N of M” (or integer remaining) is printed.
+ */
+export function parseFlPrizePdf(text: string): ParsedPrize[] {
+  const prizes: ParsedPrize[] = [];
+  const seen = new Set<number>();
+  const push = (amount: number | null, remaining: number | null) => {
+    if (amount == null || amount <= 0 || seen.has(amount)) return;
+    seen.add(amount);
+    prizes.push({ amount, remaining });
+  };
+  const ofRe =
+    /(?:prize|amount|value)?[:\s]*\$([\d,]+(?:\.\d+)?)[^\n]{0,80}?(\d[\d,]*\s+of\s+[\d,]+)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = ofRe.exec(text))) {
+    push(money(m[1]), remainingCount(m[2]));
+  }
+  return prizes;
+}
+
+function parseFlTableRow(
+  map: Map<number, ParsedGame>,
+  nameRaw: string,
+  prizeRaw: string,
+  remainingRaw: string,
+  priceRaw: string,
+  href = "",
+) {
+  const number = flGameNumber(nameRaw, href);
+  const name = flGameName(nameRaw);
+  const price = money(priceRaw);
+  const amount = cashPrizeAmount(prizeRaw);
+  if (!number || !name || !DESK_PRICES.has(price ?? -1) || amount == null) return;
+  pushPrize(map, { number, name, price: price! }, { amount, remaining: remainingCount(remainingRaw) });
+}
+
+/** Official Florida top-remaining table: Game | Top Prize | Remaining (“N of M”) | Ticket Price. */
+function parseFl(html: string): ParsedGame[] {
+  const map = new Map<number, ParsedGame>();
+
+  const tables = html.split(/<table/i);
+  for (const table of tables.slice(1)) {
+    const header = table.match(/<thead[\s\S]*?<\/thead>|<tr[\s\S]*?<\/tr>/i)?.[0] || "";
+    const heads = [...header.matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((m) =>
+      decodeHtml(m[1]).toLowerCase(),
+    );
+    const remainingIdx = heads.findIndex((h) => /remaining/.test(h));
+    const prizeIdx = heads.findIndex((h) => /prize/.test(h) && !/remaining/.test(h));
+    const priceIdx = heads.findIndex((h) => /price|ticket/.test(h));
+    const nameIdx = heads.findIndex((h) => /game|name/.test(h));
+    if (remainingIdx < 0 || prizeIdx < 0) continue;
+    for (const row of table.split(/<tr/i).slice(1)) {
+      const cells = [...row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((m) => m[1]);
+      if (cells.length <= Math.max(remainingIdx, prizeIdx, priceIdx, nameIdx)) continue;
+      const href =
+        row.match(/scratch-offs\/view\?id=(\d{3,5})/i)?.[0] ||
+        row.match(/exptkt\/(\d{3,5})_WinningTicketInformation/i)?.[0] ||
+        "";
+      parseFlTableRow(
+        map,
+        decodeHtml(cells[nameIdx >= 0 ? nameIdx : 0] || ""),
+        decodeHtml(cells[prizeIdx] || ""),
+        decodeHtml(cells[remainingIdx] || ""),
+        decodeHtml(cells[priceIdx >= 0 ? priceIdx : cells.length - 1] || ""),
+        href,
+      );
+    }
+  }
+
+  const mdRe =
+    /\|?\s*\[?([^|\]]+)\(#\s*(\d{3,5})\s*\)\]?(?:\([^)]+\))?\s*\|\s*([^|\n]+)\|\s*\[?([^|\]]+)\]?(?:\([^)]+\))?\s*\|\s*\$?(\d{1,2})\s*\|?/g;
+  let md: RegExpExecArray | null;
+  while ((md = mdRe.exec(html))) {
+    parseFlTableRow(map, `${decodeHtml(md[1])}(#${md[2]})`, decodeHtml(md[3]), decodeHtml(md[4]), md[5]);
+  }
+
+  if (!map.size) {
+    const lineRe =
+      /([^|\n]{3,80})\(#\s*(\d{3,5})\s*\)[^|\n]*\$([\d,]+(?:\.\d+)?)[^|\n]*?(\d[\d,]*\s+of\s+[\d,*]+)[^|\n]*\$(\d{1,2})/gi;
+    let line: RegExpExecArray | null;
+    while ((line = lineRe.exec(html))) {
+      parseFlTableRow(
+        map,
+        `${decodeHtml(line[1])}(#${line[2]})`,
+        `$${line[3]}`,
+        line[4],
+        line[5],
+      );
+    }
+  }
+
+  return [...map.values()].filter((g) => DESK_PRICES.has(g.price) && g.prizes.length);
+}
+
 function parseId(html: string): ParsedGame[] {
   const games: ParsedGame[] = [];
   const chunks = /data-game-id="/i.test(html)
@@ -623,6 +771,7 @@ export function parseOfficialRemaining(
     tx: parseTx,
     ia: parseIa,
     id: parseId,
+    fl: parseFl,
     ct: parseCtIndex,
     il: parseIl,
     ma: parseMa,
