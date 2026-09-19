@@ -4,7 +4,7 @@
  */
 import type { Game } from "../data/games";
 
-/** Same list as PUBLIC_STATE_IDS. Hidden AZ MI OH CT IL MA stay off the scope. */
+/** Same list as PUBLIC_STATE_IDS. Hidden AZ CT IL MA stay off the scope. */
 export const RADAR_STATE_IDS = [
   "tn",
   "ky",
@@ -16,9 +16,11 @@ export const RADAR_STATE_IDS = [
   "mo",
   "ia",
   "id",
+  "mi",
+  "oh",
 ] as const;
 
-const BLOCKED_DESKS = new Set(["az", "mi", "oh", "ct", "il", "ma"]);
+const BLOCKED_DESKS = new Set(["az", "ct", "il", "ma"]);
 
 export type RadarCapture = {
   id: string;

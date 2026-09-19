@@ -214,7 +214,7 @@ test("PUBLIC_STATE_IDS stay locked and decay copy forbids odds language", () => 
     states.indexOf("export const PUBLIC_STATE_IDS"),
     states.indexOf("export const HIDDEN_STATE_IDS"),
   );
-  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "mi", "oh"]) {
     assert.match(publicBlock, new RegExp(`"${id}"`));
   }
   const desk = readFileSync(join(root, "src/lib/desk.server.ts"), "utf8");
