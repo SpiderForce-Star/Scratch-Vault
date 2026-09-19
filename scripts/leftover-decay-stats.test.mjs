@@ -195,7 +195,18 @@ test("PUBLIC_STATE_IDS stay locked and decay copy forbids odds language", () => 
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
   const banned =
     /higher probability|better odds|current odds|expected value|\bEV\b|tickets purchased|more likely to win/i;
-  for (const key of ["decay.body", "decay.foot", "decay.heatLine", "heatTonight.sub"]) {
+  for (const key of [
+    "decay.body",
+    "decay.foot",
+    "decay.heatLine",
+    "heatTonight.sub",
+    "decayMarquee.meter",
+    "decayMarquee.overlap",
+    "decayMarquee.window",
+    "decayMarquee.bands",
+    "decayMarquee.skip",
+    "decayMarquee.aria",
+  ]) {
     assert.doesNotMatch(en[key], banned);
     assert.doesNotMatch(es[key], banned);
   }

@@ -26,6 +26,7 @@ import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
 import { HeatExplainer } from "@/components/heat-explainer";
 import { MethodsCallout } from "@/components/methods-callout";
+import { DecayMarquee } from "@/components/decay-marquee";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
@@ -272,6 +273,8 @@ function VaultHome() {
           </div>
         </div>
       </section>
+
+      <DecayMarquee />
 
       <section id="skip" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
