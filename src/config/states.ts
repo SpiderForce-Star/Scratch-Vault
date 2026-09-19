@@ -25,6 +25,7 @@ export const STATE_IDS = [
   "ia",
   "id",
   "ct",
+  "fl",
 ] as const;
 export type StateId = (typeof STATE_IDS)[number];
 
@@ -46,6 +47,7 @@ export const PUBLIC_STATE_IDS = [
   "mo",
   "ia",
   "id",
+  "fl",
 ] as const satisfies readonly StateId[];
 
 export const HIDDEN_STATE_IDS = [
@@ -667,6 +669,42 @@ export const STATES: Record<StateId, StateConfig> = {
       "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
       "Scratch-off prizes must typically be claimed within 90 days of the announced game end date. The ticket and Connecticut Lottery Corporation rules control.",
       "Not affiliated with the Connecticut Lottery Corporation. Prize payment is solely the Lottery’s under its rules.",
+    ],
+  },
+  fl: {
+    id: "fl",
+    name: "Florida",
+    shortName: "FL",
+    lotteryName: "Florida Lottery",
+    lotteryShort: "Florida Lottery",
+    timezone: "America/New_York",
+    remainingPrizesUrl: "https://floridalottery.com/games/scratch-offs/top-remaining-prizes",
+    newGamesUrl: "https://floridalottery.com/games/scratch-offs",
+    playResponsiblyUrl: "https://floridalottery.com/play-responsibly",
+    dataSourceNotes:
+      "Compiled from the official Florida top-remaining-prizes table. Remaining “N of M” is leftover N, not M. Mid / cash only when a per-game $50+ row is published. Not a live feed and not store inventory. $5–$50 games.",
+    fieldMapping:
+      "game number + name, top prize amount, remaining N of M (additional $50+ rows when published on the game page or WinningTicketInformation PDF)",
+    hasFullMultiTier: false,
+    dataMode: "compiled",
+    holdback: null,
+    pricePoints: [5, 10, 20, 25, 30, 50],
+    helplineExtra: {
+      label: "1-888-ADMIT-IT",
+      tel: "18882364848",
+    },
+    weekLabel: "Compiled · September 18, 2026",
+    publishedAt: "2026-09-18T12:00:00-04:00",
+    minAge: 18,
+    claimWindow:
+      "Florida scratch-off prizes must typically be claimed within 60 days of the official game end date. The ticket and Florida Lottery rules control.",
+    remainingDefinition:
+      "Official leftover list, not store inventory. Remaining “N of M” is leftover N. Do not use M as remaining. Unpublished mid / cash tiers are not invented.",
+    rulesNotes: [
+      "This desk does not subtract a Play It Again holdback. That rule is Tennessee-only.",
+      "Remaining “N of M” on the official leftover list is leftover N, not tickets in a store.",
+      "Scratch-off prizes must typically be claimed within 60 days of the official game end date. The ticket and Florida Lottery rules control.",
+      "Not affiliated with the Florida Lottery. Prize payment is solely the Lottery’s under its rules.",
     ],
   },
 };

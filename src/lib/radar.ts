@@ -16,6 +16,7 @@ export const RADAR_STATE_IDS = [
   "mo",
   "ia",
   "id",
+  "fl",
 ] as const;
 
 const BLOCKED_DESKS = new Set(["az", "mi", "oh", "ct", "il", "ma"]);

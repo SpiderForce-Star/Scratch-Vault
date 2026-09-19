@@ -246,6 +246,19 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     ],
     helpline: { label: "Connecticut Council on Problem Gambling", tel: "18887897777" },
   },
+  fl: {
+    id: "fl",
+    purchaseAge: 18,
+    claimWindow: "Typically 60 days after the official game end date.",
+    statuteHint: "Florida Lottery; Fla. Stat. chapter 24.",
+    remainingSource: "https://floridalottery.com/games/scratch-offs/top-remaining-prizes",
+    issues: [
+      "Not affiliated with the Florida Lottery.",
+      "Remaining “N of M” is leftover N on the official leftover list, not store inventory.",
+      "18+ to buy or redeem. No ticket sales on this site. No Play It Again holdback (Tennessee-only).",
+    ],
+    helpline: { label: "1-888-ADMIT-IT", tel: "18882364848" },
+  },
 };
 
 export const STATE_LEGAL_LIST: StateLegalNote[] = STATE_IDS.map((id) => STATE_LEGAL[id]);

@@ -200,7 +200,7 @@ test("spot-check case-match packs for public desks", () => {
 });
 
 test("every public-state $5+ game gets a unique chrome fingerprint", () => {
-  const desks = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"];
+  const desks = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "fl"];
   const seen = new Set();
   let count = 0;
   for (const id of desks) {

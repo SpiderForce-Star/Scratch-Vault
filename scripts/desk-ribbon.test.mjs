@@ -25,6 +25,7 @@ const PUBLIC_NAMES = [
   "Missouri",
   "Iowa",
   "Idaho",
+  "Florida",
 ];
 
 function read(rel) {
@@ -111,15 +112,15 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   assert.match(css, /\.sv-desk-ribbon-static/);
 });
 
-test("desk ribbon names are the 10 public desks and hide AZ MI OH CT IL MA", () => {
+test("desk ribbon names are the 11 public desks and hide AZ MI OH CT IL MA", () => {
   const ribbon = read("src/components/desk-ribbon.tsx");
   const en = JSON.parse(read("src/locales/en.json"));
   const es = JSON.parse(read("src/locales/es.json"));
   const { ids, names } = publicDeskNames();
 
-  assert.deepEqual(ids, ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]);
+  assert.deepEqual(ids, ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "fl"]);
   assert.deepEqual(names, PUBLIC_NAMES);
-  assert.equal(names.length, 10);
+  assert.equal(names.length, 11);
   assert.match(ribbon, /PUBLIC_STATE_LIST\.map/);
 
   for (const name of PUBLIC_NAMES) {

@@ -11,6 +11,7 @@ import {
 } from "@/config/states";
 import { AZ_GAMES } from "./az";
 import { CT_GAMES } from "./ct";
+import { FL_GAMES } from "./fl";
 import { IA_GAMES } from "./ia";
 import { ID_GAMES } from "./id";
 import { IL_GAMES } from "./il";
@@ -42,6 +43,7 @@ const PUBLIC: Record<StateId, Game[]> = {
   ia: IA_GAMES,
   id: ID_GAMES,
   ct: CT_GAMES,
+  fl: FL_GAMES,
 };
 
 export function publicCatalog(stateId: StateId | string | null | undefined): Game[] {
@@ -82,6 +84,7 @@ export function defaultPublicCatalog(): Game[] {
 export {
   AZ_GAMES,
   CT_GAMES,
+  FL_GAMES,
   IA_GAMES,
   ID_GAMES,
   IL_GAMES,

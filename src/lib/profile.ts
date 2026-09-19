@@ -73,6 +73,7 @@ export function homeStateLabel(id: ProfileHomeState | StateId | "other"): string
     ia: "Iowa",
     id: "Idaho",
     ct: "Connecticut",
+    fl: "Florida",
     other: "Another state / outside these desks",
   };
   return labels[id as ProfileHomeState] ?? id;
