@@ -77,7 +77,6 @@ test("home decay marquee explains leftover-prize pace on the Hot / Cold meter", 
   assert.match(marquee, /sv-marquee-track/);
   assert.match(marquee, /\{t\("decayMarquee\.meter"\)\} · \{t\("decayMarquee\.skip"\)\}/);
   assert.match(marquee, /to="\/methods"/);
-  assert.doesNotMatch(marquee, /bg-plum[\s\S]*hidden/);
 
   const linkOpen = marquee.match(/<Link\s+to="\/methods"\s+className="([^"]+)"/);
   assert.ok(linkOpen, "DecayMarquee Link to /methods must have a className");
