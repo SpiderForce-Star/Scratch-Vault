@@ -14,7 +14,7 @@ export function StateSelector({
   return <DeskSwitcher value={value} onChange={onChange} variant="page" />;
 }
 
-/** Public-desk picker. Page chrome is sm+; the phone menu reuses the same catalog. */
+/** Public leftover-state picker. Page chrome is sm+; the phone menu reuses the same catalog. */
 export function DeskSwitcher({
   value,
   onChange,
@@ -25,12 +25,12 @@ export function DeskSwitcher({
   variant?: "page" | "menu";
 }) {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
+  const menu = variant === "menu";
+  const [open, setOpen] = useState(menu);
   const listId = useId();
   const selected =
     PUBLIC_STATE_LIST.find((state) => state.id === value) ?? PUBLIC_STATE_LIST[0];
-  const others = PUBLIC_STATE_LIST.length - 1;
-  const menu = variant === "menu";
+  const roster = PUBLIC_STATE_LIST.length;
 
   const pick = (id: StateId) => {
     onChange(id);
@@ -53,7 +53,7 @@ export function DeskSwitcher({
         />
       </button>
       <p className="font-mono text-[10px] tracking-[0.14em] text-faint uppercase">
-        {t("states.otherDesks", { count: others })}
+        {t("states.leftoverRoster", { count: roster })}
       </p>
     </div>
   );
@@ -63,10 +63,7 @@ export function DeskSwitcher({
       <div
         role="group"
         aria-label={t("states.kicker")}
-        className={cn(
-          "flex w-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1",
-          menu ? undefined : "sm:hidden",
-        )}
+        className={cn("grid w-full gap-2", menu ? "grid-cols-2" : "grid-cols-5")}
       >
         {PUBLIC_STATE_LIST.map((state) => (
           <StatePill
@@ -74,27 +71,9 @@ export function DeskSwitcher({
             state={state}
             selected={state.id === value}
             onChange={pick}
-            compact
           />
         ))}
       </div>
-
-      {menu ? null : (
-        <div
-          role="group"
-          aria-label={t("states.kicker")}
-          className="hidden grid-cols-5 gap-2 sm:grid"
-        >
-          {PUBLIC_STATE_LIST.map((state) => (
-            <StatePill
-              key={state.id}
-              state={state}
-              selected={state.id === value}
-              onChange={pick}
-            />
-          ))}
-        </div>
-      )}
 
       {menu ? null : (
         <p className="mt-3 max-w-3xl text-xs leading-relaxed text-faint">
@@ -132,12 +111,10 @@ function StatePill({
   state,
   selected,
   onChange,
-  compact = false,
 }: {
   state: (typeof PUBLIC_STATE_LIST)[number];
   selected: boolean;
   onChange: (id: StateId) => void;
-  compact?: boolean;
 }) {
   return (
     <button
@@ -146,10 +123,7 @@ function StatePill({
       aria-pressed={selected}
       aria-label={state.name}
       className={cn(
-        "flex flex-col items-center justify-center rounded-lg border text-center",
-        compact
-          ? "min-h-11 shrink-0 snap-start px-3 py-1.5"
-          : "min-h-14 min-w-0 px-1 py-2",
+        "flex min-h-14 min-w-0 flex-col items-center justify-center rounded-lg border px-1 py-2 text-center",
         selected
           ? "border-gold bg-gold text-accent-fg"
           : "border-line bg-raised text-muted hover:border-gold hover:text-gold",
@@ -158,16 +132,14 @@ function StatePill({
       <span className="font-display text-base leading-none tracking-tight">
         {state.shortName}
       </span>
-      {compact ? null : (
-        <span
-          className={cn(
-            "mt-1 w-full truncate text-[10px] leading-tight sm:text-xs",
-            selected ? "text-accent-fg/90" : "text-faint",
-          )}
-        >
-          {state.name}
-        </span>
-      )}
+      <span
+        className={cn(
+          "mt-1 w-full truncate text-[10px] leading-tight sm:text-xs",
+          selected ? "text-accent-fg/90" : "text-faint",
+        )}
+      >
+        {state.name}
+      </span>
     </button>
   );
 }

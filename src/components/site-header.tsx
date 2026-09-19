@@ -59,7 +59,7 @@ export function SiteHeader() {
             </span>
             <span className="hidden font-display text-base tracking-tight text-fg sm:inline lg:text-lg">Scratch Vault</span>
           </Link>
-          <span className="hidden shrink-0 items-center rounded-md border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-muted uppercase sm:inline-flex">
+          <span className="inline-flex shrink-0 items-center rounded-md border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
             {t("header.deskChip", { short: config.shortName })}
           </span>
         </div>

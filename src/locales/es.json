@@ -240,7 +240,7 @@
   "states.kicker": "Elija un estado",
   "states.title": "¿Qué mesa de lotería necesita?",
   "states.body": "Las mesas de premios restantes se compilan de la página oficial de premios restantes de cada estado. No es inventario en tienda en vivo. Iowa 21+. Los demás 18+. Los conteos restantes no mejoran las probabilidades.",
-  "states.otherDesks": "{{count}} mesas más",
+  "states.leftoverRoster": "{{count}} estados de restantes",
   "status.demo": "Datos de demostración",
   "status.compiled": "Lista de premios que quedan",
   "status.official": "Tabla oficial",

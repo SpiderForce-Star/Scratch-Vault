@@ -240,7 +240,7 @@
   "states.kicker": "Pick a state",
   "states.title": "Which lottery desk do you need?",
   "states.body": "Remaining-prize desks are compiled from each state’s official remaining-prizes page. Not live store inventory. Iowa 21+. All others 18+. Remaining counts do not improve odds.",
-  "states.otherDesks": "{{count}} other desks",
+  "states.leftoverRoster": "{{count}} leftover states",
   "status.demo": "Demo data",
   "status.compiled": "Leftover-prize list",
   "status.official": "Official table",
