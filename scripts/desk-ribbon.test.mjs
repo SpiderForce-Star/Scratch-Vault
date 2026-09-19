@@ -61,11 +61,11 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   assert.equal(en["marquee.intel"], "Current Top 3 and what to skip.");
   assert.equal(
     en["banner.leftover"],
-    "The lottery’s leftover-prize list — not what’s in one store. We keep scanning official updates and give you leftover-prize intel on which games to look at and which to skip.",
+    "We constantly scan each state's lottery website for all prize tiers and factor in decay statistics to give the best game intel!",
   );
   assert.equal(
     es["banner.leftover"],
-    "La lista de premios que quedan según la lotería — no lo que hay en una tienda. Seguimos escaneando las actualizaciones oficiales y te damos información de premios restantes sobre qué juegos mirar y cuáles saltarte.",
+    "¡Escaneamos sin parar el sitio de lotería de cada estado en busca de todos los niveles de premio y tomamos en cuenta las estadísticas de decadencia para darte la mejor información de juegos!",
   );
   assert.equal(en["ribbon.access"], "Full Access on {{count}} desks");
   assert.equal(en["ribbon.trial"], "One trial opens every public desk.");

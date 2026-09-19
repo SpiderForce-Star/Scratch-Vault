@@ -209,7 +209,6 @@ function VaultHome() {
   return (
     <div>
       <StateSelector value={viewState} onChange={selectState} />
-      <CoverageMarquee />
       <DataModeBanner
         leftover
         state={snap ? getState(snap.stateId) : getState(viewState)}
@@ -217,6 +216,7 @@ function VaultHome() {
         loadError={snap?.loadError}
         stale={snap?.stale}
       />
+      <CoverageMarquee />
       <MethodsCallout />
 
       <section id="desk" className="border-b border-line">
