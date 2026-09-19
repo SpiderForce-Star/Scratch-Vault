@@ -20,6 +20,7 @@ import {
 import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
 import { BandChip, TicketCard } from "@/components/ticket-card";
+import { SkipGameLabel } from "@/components/skip-game-label";
 import { FullCatalogLink } from "@/components/full-catalog-link";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { StateSelector } from "@/components/state-selector";
@@ -296,21 +297,7 @@ function VaultHome() {
                 const chip = (
                   <BandChip band={heat ? skipChipBand(heat) : "bust"} />
                 );
-                const label = (
-                  <span className="flex min-w-0 items-center gap-2 truncate text-sm">
-                    <span className="shrink-0">${game.price} ·</span>
-                    {hideName ? (
-                      <span
-                        className="inline-block max-w-[14rem] truncate blur-[8px] select-none"
-                        aria-hidden
-                      >
-                        {t("home.skipHidden")}
-                      </span>
-                    ) : (
-                      <span className="truncate">{game.name}</span>
-                    )}
-                  </span>
-                );
+                const label = <SkipGameLabel game={game} hideName={hideName} />;
                 return (
                   <li key={`${game.stateId ?? stateId}-${game.number}`}>
                     {hideName ? (
@@ -327,6 +314,10 @@ function VaultHome() {
                         to="/game/$number"
                         params={{ number: String(game.number) }}
                         search={deskSearch(game.stateId ?? viewState)}
+                        aria-label={t("home.skipNamedAria", {
+                          name: game.name,
+                          number: game.number,
+                        })}
                         className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
                       >
                         {label}

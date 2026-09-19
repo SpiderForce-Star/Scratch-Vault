@@ -236,9 +236,13 @@ test("guest skip teaser shows two names and locks the rest", () => {
 
 test("homepage skip rows send locked names to pricing", () => {
   const home = readFileSync(join(root, "src/routes/index.tsx"), "utf8");
+  const label = readFileSync(join(root, "src/components/skip-game-label.tsx"), "utf8");
   assert.equal(home.includes('to="/pricing"'), true);
   assert.equal(home.includes("skipNameLocked"), true);
-  assert.equal(home.includes("home.skipHidden"), true);
+  assert.equal(home.includes("SkipGameLabel"), true);
+  assert.equal(label.includes("home.skipHidden"), true);
+  assert.match(label, /#\{game\.number\}/);
+  assert.match(label, /hideName \?/);
 });
 
 test("ticket faces caption independent reconstructions", () => {

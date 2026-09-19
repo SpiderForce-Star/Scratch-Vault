@@ -327,6 +327,7 @@
   "home.skipEmpty": "No drained games flagged on this desk.",
   "home.skipHidden": "•••• ••••",
   "home.skipLockedAria": "Skip name hidden. Open Full Access pricing.",
+  "home.skipNamedAria": "{{name}}, game #{number}",
   "home.fullDisclaimer": "Full disclaimer",
   "home.top": "Top {{prize}}",
   "card.grandPrize": "Grand prize",
