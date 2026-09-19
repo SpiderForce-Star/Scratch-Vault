@@ -214,11 +214,11 @@ test("PUBLIC_STATE_IDS and leftover mix wiring stay locked", () => {
     states.indexOf("export const HIDDEN_STATE_IDS"),
     states.indexOf("export const HIDDEN_RETURN_MIN_GAMES"),
   );
-  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "mi", "oh"]) {
     assert.match(publicBlock, new RegExp(`"${id}"`));
     assert.doesNotMatch(hiddenBlock, new RegExp(`"${id}"`));
   }
-  for (const id of ["az", "mi", "oh", "ct", "il", "ma"]) {
+  for (const id of ["az", "ct", "il", "ma"]) {
     assert.match(hiddenBlock, new RegExp(`"${id}"`));
     assert.doesNotMatch(publicBlock, new RegExp(`"${id}"`));
   }

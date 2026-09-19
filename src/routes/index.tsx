@@ -27,6 +27,7 @@ import { DataModeBanner } from "@/components/data-mode-banner";
 import { HeatExplainer } from "@/components/heat-explainer";
 import { MethodsCallout } from "@/components/methods-callout";
 import { DecayMarquee } from "@/components/decay-marquee";
+import { CoverageMarquee } from "@/components/coverage-marquee";
 import { useAccess } from "@/lib/use-access";
 import { deskPageSearch, deskSearch, useActiveState } from "@/lib/active-state";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
@@ -208,6 +209,7 @@ function VaultHome() {
   return (
     <div>
       <StateSelector value={viewState} onChange={selectState} />
+      <CoverageMarquee />
       <DataModeBanner
         leftover
         state={snap ? getState(snap.stateId) : getState(viewState)}

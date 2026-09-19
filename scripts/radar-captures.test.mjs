@@ -54,7 +54,7 @@ function cashOut(overrides = {}) {
 
 const meta = { stateId: "tn", shortName: "TN", snapshotAt: "2026-08-31T12:00:00Z" };
 
-test("radar monitors the 10 public desks and never hidden ones", () => {
+test("radar monitors the 12 public desks and never hidden ones", () => {
   const src = readFileSync(join(root, "src/config/states.ts"), "utf8");
   const publicBlock = src.slice(
     src.indexOf("export const PUBLIC_STATE_IDS"),
@@ -64,7 +64,7 @@ test("radar monitors the 10 public desks and never hidden ones", () => {
     assert.equal(isMonitoredDesk(id), true);
     assert.match(publicBlock, new RegExp(`"${id}"`));
   }
-  for (const id of ["az", "mi", "oh", "ct", "il", "ma"]) {
+  for (const id of ["az", "ct", "il", "ma"]) {
     assert.equal(isMonitoredDesk(id), false);
     assert.doesNotMatch(publicBlock, new RegExp(`"${id}"`));
   }
@@ -127,7 +127,7 @@ test("does not invent captures from null remaining, increases, or cash-out drops
 test("hidden desks never produce captures", () => {
   const prior = [jackpot({ tiers: [{ amount: 500_000, remaining: 3 }, { amount: 10_000, remaining: 1 }, { amount: 1_000, remaining: 1 }] })];
   const current = [jackpot({ tiers: [{ amount: 500_000, remaining: 1 }, { amount: 10_000, remaining: 1 }, { amount: 1_000, remaining: 1 }] })];
-  for (const id of ["az", "mi", "oh", "ct", "il", "ma"]) {
+  for (const id of ["az", "ct", "il", "ma"]) {
     assert.deepEqual(
       detectGrandCaptures(prior, current, { stateId: id, shortName: id.toUpperCase(), snapshotAt: meta.snapshotAt }),
       [],

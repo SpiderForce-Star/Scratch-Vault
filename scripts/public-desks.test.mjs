@@ -6,8 +6,8 @@ import { test } from "node:test";
 import { SKIP_TEASER_CLEAR, skipNameLocked } from "../src/lib/skip-teaser.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const HIDDEN = ["az", "mi", "oh", "ct", "il", "ma"];
-const PUBLIC = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"];
+const HIDDEN = ["az", "ct", "il", "ma"];
+const PUBLIC = ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "mi", "oh"];
 
 function read(rel) {
   return readFileSync(join(root, rel), "utf8");

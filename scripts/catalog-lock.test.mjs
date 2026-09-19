@@ -217,7 +217,7 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   assert.match(en["heat.recipeLead"], /aisle context/i);
   assert.match(en["heat.recipeLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
   assert.match(en["heat.recipeLead"], /leftover mix on that desk at that price/i);
-  assert.match(en["heat.recipe1"], /Same recipe on all 10 public desks/);
+  assert.match(en["heat.recipe1"], /Same recipe on all 12 public desks/);
   assert.match(en["heat.recipe2"], /prize amount, not the ticket price/);
   assert.match(en["heat.recipe3"], /leftover mix \+ a small leftover-pace bump/);
   assert.match(en["heat.recipe3"], /Skip stays Skip/);
@@ -302,11 +302,11 @@ test("leftover math stays prize-row $50+ on every loaded $5–$50 game", () => {
     states.indexOf("export const HIDDEN_STATE_IDS"),
     states.indexOf("export const HIDDEN_RETURN_MIN_GAMES"),
   );
-  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id"]) {
+  for (const id of ["tn", "ky", "sc", "ok", "nc", "pa", "tx", "mo", "ia", "id", "mi", "oh"]) {
     assert.match(publicBlock, new RegExp(`"${id}"`));
     assert.doesNotMatch(hiddenBlock, new RegExp(`"${id}"`));
   }
-  for (const id of ["az", "mi", "oh", "ct", "il", "ma"]) {
+  for (const id of ["az", "ct", "il", "ma"]) {
     assert.match(hiddenBlock, new RegExp(`"${id}"`));
     assert.doesNotMatch(publicBlock, new RegExp(`"${id}"`));
   }
