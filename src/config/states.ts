@@ -46,12 +46,12 @@ export const PUBLIC_STATE_IDS = [
   "mo",
   "ia",
   "id",
+  "mi",
+  "oh",
 ] as const satisfies readonly StateId[];
 
 export const HIDDEN_STATE_IDS = [
   "az",
-  "mi",
-  "oh",
   "ct",
   "il",
   "ma",
