@@ -327,6 +327,7 @@
   "home.skipEmpty": "No hay juegos agotados marcados en esta mesa.",
   "home.skipHidden": "•••• ••••",
   "home.skipLockedAria": "Nombre de omisión oculto. Abra precios de Full Access.",
+  "home.skipNamedAria": "{{name}}, juego #{number}",
   "home.fullDisclaimer": "Aviso legal completo",
   "home.top": "Mayor {{prize}}",
   "card.grandPrize": "Premio mayor",

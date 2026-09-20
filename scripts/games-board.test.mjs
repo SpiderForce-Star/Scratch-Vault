@@ -456,6 +456,32 @@ test("homepage skip rows force Cold or Skip chips", () => {
   );
 });
 
+test("skip rows keep official prize-looking names and stamp the game number", () => {
+  const games = read("src/data/games.ts");
+  const label = read("src/components/skip-game-label.tsx");
+  const home = read("src/routes/index.tsx");
+  const strategy = read("src/routes/strategy.tsx");
+  const card = read("src/components/ticket-card.tsx");
+  const en = JSON.parse(read("src/locales/en.json"));
+  const es = JSON.parse(read("src/locales/es.json"));
+
+  assert.match(games, /number: 1354/);
+  assert.match(games, /name: "\$100, \$250 And \$500!"/);
+  assert.doesNotMatch(label, /\$100, \$250 And \$500!/);
+  assert.match(label, /#\{game\.number\}/);
+  assert.match(label, /game\.name/);
+  assert.match(card, /#\{game\.number\} · \$\{game\.price\}/);
+  assert.match(home, /SkipGameLabel/);
+  assert.match(home, /home\.skipNamedAria/);
+  assert.match(strategy, /SkipGameLabel/);
+  assert.match(strategy, /home\.skipNamedAria/);
+  assert.equal(en["home.skipNamedAria"], "{{name}}, game #{number}");
+  assert.equal(es["home.skipNamedAria"], "{{name}}, juego #{number}");
+  assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
+  assert.doesNotMatch(en["home.skipNamedAria"], /improve odds|better odds/i);
+  assert.doesNotMatch(es["home.skipNamedAria"], /improve odds|better odds/i);
+});
+
 test("Texas last-good date names yield to bundled names", () => {
   const tx = JSON.parse(read("src/data/states/last-good/tx.json"));
   assert.equal(tx.catalog.some((g) => looksLikeDateName(g.name)), false);

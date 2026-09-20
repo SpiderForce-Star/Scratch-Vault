@@ -18,6 +18,7 @@ import {
 import { displayedHeat } from "@/lib/pace";
 import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { BandChip, PaceChip } from "@/components/ticket-card";
+import { SkipGameLabel } from "@/components/skip-game-label";
 import { FullCatalogLink } from "@/components/full-catalog-link";
 import { StateSelector } from "@/components/state-selector";
 import { DataModeBanner } from "@/components/data-mode-banner";
@@ -558,21 +559,7 @@ function WalkPastRow({
       className="min-h-8 px-2 py-1 text-xs"
     />
   );
-  const label = (
-    <span className="flex min-w-0 items-center gap-2 truncate text-sm">
-      <span className="shrink-0">${row.game.price} ·</span>
-      {hideName ? (
-        <span
-          className="inline-block max-w-[14rem] truncate blur-[8px] select-none"
-          aria-hidden
-        >
-          {t("home.skipHidden")}
-        </span>
-      ) : (
-        <span className="truncate">{row.game.name}</span>
-      )}
-    </span>
-  );
+  const label = <SkipGameLabel game={row.game} hideName={hideName} />;
   return (
     <li>
       {hideName ? (
@@ -589,6 +576,10 @@ function WalkPastRow({
           to="/game/$number"
           params={{ number: String(row.game.number) }}
           search={deskSearch(deskId)}
+          aria-label={t("home.skipNamedAria", {
+            name: row.game.name,
+            number: row.game.number,
+          })}
           className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
         >
           {label}
