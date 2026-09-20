@@ -6,7 +6,10 @@ export const BOOT_SHOWN_KEY = "vsv.boot.shown";
 /** 6s vault clip + fade + slow-net slack. Hard-hide even if the video stalls. */
 export const BOOT_FORCE_MS = 8000;
 export const BOOT_VIDEO_SRC = "/boot-vault.mp4";
-export const BOOT_POSTER_SRC = "/boot-vault.jpg";
+/** First frame of the clip: closed steel door. Do not use the $V hold as poster. */
+export const BOOT_DOOR_SRC = "/boot-vault-door.jpg";
+/** End-hold still for reduced motion only — last frame, not the entrance. */
+export const BOOT_HOLD_SRC = "/boot-vault.jpg";
 
 const FADE_MS = 480;
 const REDUCED_HOLD_MS = 1100;
@@ -98,7 +101,6 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     document.documentElement.setAttribute("data-sv-boot", "playing");
-    document.getElementById("sv-boot-paint")?.remove();
     setReduced(preferReduce);
     setPhase("play");
 
@@ -122,6 +124,11 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
       window.removeEventListener("keydown", onKey);
     };
   }, []);
+
+  useEffect(() => {
+    if (!phase) return;
+    document.getElementById("sv-boot-paint")?.remove();
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "play" || reduced) return;
@@ -154,7 +161,7 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
       {reduced ? (
         <img
           className="sv-boot-media"
-          src={BOOT_POSTER_SRC}
+          src={BOOT_HOLD_SRC}
           alt=""
           width={720}
           height={1280}
@@ -164,7 +171,7 @@ export function BootSplash({ onFinished }: { onFinished?: () => void }) {
           ref={videoRef}
           className="sv-boot-media"
           src={BOOT_VIDEO_SRC}
-          poster={BOOT_POSTER_SRC}
+          poster={BOOT_DOOR_SRC}
           muted
           playsInline
           autoPlay

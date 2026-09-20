@@ -12,7 +12,12 @@ test("boot splash is once per session, 8s cap, skippable photoreal vault", () =>
   assert.match(src, /BOOT_SHOWN_KEY = "vsv\.boot\.shown"/);
   assert.match(src, /BOOT_FORCE_MS = 8000/);
   assert.match(src, /BOOT_VIDEO_SRC = "\/boot-vault\.mp4"/);
-  assert.match(src, /BOOT_POSTER_SRC = "\/boot-vault\.jpg"/);
+  assert.match(src, /BOOT_DOOR_SRC = "\/boot-vault-door\.jpg"/);
+  assert.match(src, /BOOT_HOLD_SRC = "\/boot-vault\.jpg"/);
+  assert.match(src, /poster=\{BOOT_DOOR_SRC\}/);
+  assert.match(src, /src=\{BOOT_HOLD_SRC\}/);
+  assert.doesNotMatch(src, /poster=\{BOOT_HOLD_SRC\}/);
+  assert.doesNotMatch(src, /BOOT_POSTER_SRC/);
   assert.match(src, /prefers-reduced-motion/);
   assert.match(src, /onClick/);
   assert.match(src, /muted/);
@@ -24,6 +29,12 @@ test("boot splash is once per session, 8s cap, skippable photoreal vault", () =>
   assert.match(css, /object-fit: contain/);
   assert.ok(existsSync(join(ROOT, "public/boot-vault.mp4")));
   assert.ok(existsSync(join(ROOT, "public/boot-vault.jpg")));
+  assert.ok(existsSync(join(ROOT, "public/boot-vault-door.jpg")));
+  assert.match(src, /sv-boot-paint"\)\?\.remove\(\)/);
+  assert.doesNotMatch(
+    src.slice(src.indexOf('data-sv-boot", "playing"'), src.indexOf("setPhase(\"play\")")),
+    /sv-boot-paint/,
+  );
 });
 
 test("NativeRoot mounts BootSplash above AgeGate and holds the gate", () => {
