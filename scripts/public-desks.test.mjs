@@ -137,7 +137,7 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   assert.equal(desktopNav.includes("StudioLink"), false);
   assert.match(header, /StudioLink stacked/);
   assert.match(header, /DeskSwitcher/);
-  assert.match(header, /states\.otherDesks|variant="menu"/);
+  assert.match(header, /states\.leftoverRoster|variant="menu"/);
   assert.equal(header.includes("weekLabel"), false);
   assert.equal(home.includes("weekLabel"), false);
   assert.equal(radar.includes("weekLabel"), false);
@@ -183,6 +183,7 @@ test("phone menu opens on the current public desk", () => {
   const selector = read("src/components/state-selector.tsx");
   const footer = read("src/components/site-footer.tsx");
   const en = JSON.parse(read("src/locales/en.json"));
+  const es = JSON.parse(read("src/locales/es.json"));
   assert.match(header, /variant="menu"/);
   assert.match(selector, /PUBLIC_STATE_LIST/);
   assert.match(selector, /hidden border-b border-line sm:block/);
@@ -194,4 +195,24 @@ test("phone menu opens on the current public desk", () => {
   assert.match(footer, /TicketCopyright/);
   assert.equal(en["header.deskChip"], "{{short}} · Current");
   assert.doesNotMatch(en["home.listCurrent"], /live store|inventory/i);
+  assert.match(header, /inline-flex shrink-0 items-center rounded-md border border-line bg-raised px-1.5/);
+  assert.doesNotMatch(header, /hidden shrink-0 items-center rounded-md border border-line bg-raised[\s\S]*sm:inline-flex/);
+
+  assert.doesNotMatch(selector, /overflow-x-auto/);
+  assert.doesNotMatch(selector, /snap-x/);
+  assert.doesNotMatch(selector, /\bcompact\b/);
+  assert.match(selector, /grid-cols-2/);
+  assert.match(selector, /grid-cols-5/);
+  assert.match(selector, /useState\(menu\)/);
+  assert.match(selector, /states\.leftoverRoster/);
+  assert.match(selector, /PUBLIC_STATE_LIST\.length/);
+  assert.doesNotMatch(selector, /otherDesks/);
+  assert.equal(en["states.leftoverRoster"], "{{count}} leftover states");
+  assert.equal(es["states.leftoverRoster"], "{{count}} estados de restantes");
+  assert.doesNotMatch(en["states.leftoverRoster"], /desk/i);
+  assert.doesNotMatch(es["states.leftoverRoster"], /mesa/i);
+  assert.doesNotMatch(en["states.leftoverRoster"], /improve odds|better odds|guaranteed/i);
+  assert.doesNotMatch(es["states.leftoverRoster"], /improve odds|better odds|guaranteed/i);
+  assert.equal(Object.hasOwn(en, "states.otherDesks"), false);
+  assert.equal(Object.hasOwn(es, "states.otherDesks"), false);
 });
