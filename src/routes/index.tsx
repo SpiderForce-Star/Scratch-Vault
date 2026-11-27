@@ -242,7 +242,7 @@ function VaultHome() {
           {tripGames.length === 0 ? (
             <p className="mt-4 text-muted">{tripEmptyCopy}</p>
           ) : (
-            <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid items-start gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3">
               {tripGames.map((game) => {
                 const heat = reports.get(game.number);
                 if (!heat) return null;

@@ -1,12 +1,8 @@
 import type { Game, TicketTheme } from "../data/games";
+import { lookupTicketFace } from "./ticket-faces.ts";
+import type { TicketPalette } from "./ticket-palette";
 
-export type TicketPalette = {
-  bg: string;
-  bg2: string;
-  foil: string;
-  accent: string;
-  ink: string;
-};
+export type { TicketPalette } from "./ticket-palette";
 
 export type TicketFamily =
   | "holiday"
@@ -25,6 +21,14 @@ export type TicketFamily =
   | "currency";
 
 export type SportsKind = "cowboys" | "texans" | "nascar" | "football";
+
+/** Geometric scratch window. Inferred from the name, never traced from art. */
+export type TicketMotif = "grid" | "diamonds" | "circles" | "crossword";
+
+export type TicketOrientation = "portrait" | "landscape" | "square";
+
+/** Store-rack portrait when a ticket has not been measured. */
+export const DEFAULT_TICKET_ASPECT = 0.54;
 
 /** One palette per pack — case-match color, not a photocopy. */
 export const FAMILY_PALETTES: Record<TicketFamily, TicketPalette> = {
@@ -67,6 +71,10 @@ export type TicketChrome = {
   extraCount: number;
   nudge: number;
   mark: string;
+  motif: TicketMotif;
+  aspect: number;
+  orientation: TicketOrientation;
+  paletteSource: "measured" | "family";
 };
 
 function fnv1a(input: string): number {
@@ -84,7 +92,10 @@ function stateCode(game: Game): string {
 }
 
 function nameMark(name: string): string {
-  const letters = name.replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase();
+  const letters = name
+    .replace(/[^A-Za-z0-9]/g, "")
+    .slice(0, 2)
+    .toUpperCase();
   return letters || "SV";
 }
 
@@ -136,16 +147,58 @@ export function ticketFamily(name: string, theme: TicketTheme): TicketFamily {
   return "cash";
 }
 
+export function orientationOf(aspect: number): TicketOrientation {
+  if (aspect < 0.92) return "portrait";
+  if (aspect > 1.08) return "landscape";
+  return "square";
+}
+
+/**
+ * Scratch-window shape from the name. Crossword grids, multiplier diamonds,
+ * fat/spot tickets as circles plus cells, everything else a prize grid.
+ */
+export function ticketMotif(name: string, theme: TicketTheme, family: TicketFamily): TicketMotif {
+  const n = name.toLowerCase();
+  if (
+    /\b(crossword|cashword|word\s*search|bingo|slingo)\b/.test(n) ||
+    family === "crossword" ||
+    theme === "crossword"
+  ) {
+    return "crossword";
+  }
+  if (/\bfat\b|\bcircles?\b|\bspots?\b/.test(n)) return "circles";
+  if (
+    /\b\d+\s*x\b|\bmultiplier\b|\btimes\b/.test(n) ||
+    family === "multiplier" ||
+    theme === "multiplier"
+  ) {
+    return "diamonds";
+  }
+  return "grid";
+}
+
 /** Deterministic original chrome. Palette/motif from the pack; hash only nudges. */
 export function ticketChrome(game: Game): TicketChrome {
   const state = stateCode(game);
   const family = ticketFamily(game.name, game.theme);
-  const kind = family === "sports" ? sportsKind(game.name) ?? "football" : null;
-  const palette = kind ? SPORTS_PALETTES[kind] : FAMILY_PALETTES[family];
+  const kind = family === "sports" ? (sportsKind(game.name) ?? "football") : null;
+  const measured = lookupTicketFace(state, game.number);
+  const palette: TicketPalette = measured
+    ? {
+        bg: measured.bg,
+        bg2: measured.bg2,
+        foil: measured.foil,
+        accent: measured.accent,
+        ink: measured.ink,
+      }
+    : kind
+      ? SPORTS_PALETTES[kind]
+      : FAMILY_PALETTES[family];
   const seed = fnv1a(`${state}:${game.number}`);
   const sashAngle = (seed % 21) - 10;
   const extraCount = 3 + (seed % 4);
   const nudge = seed % 17;
+  const aspect = measured?.aspect ?? DEFAULT_TICKET_ASPECT;
   return {
     state,
     number: game.number,
@@ -161,6 +214,10 @@ export function ticketChrome(game: Game): TicketChrome {
     extraCount,
     nudge,
     mark: nameMark(game.name),
+    motif: ticketMotif(game.name, game.theme, family),
+    aspect,
+    orientation: measured?.orientation ?? orientationOf(aspect),
+    paletteSource: measured ? "measured" : "family",
   };
 }
 
@@ -179,5 +236,11 @@ export function ticketChromeFingerprint(game: Game): string {
     c.price,
     c.mark,
     c.name,
+    c.motif,
+    c.aspect.toFixed(3),
+    c.orientation,
+    c.paletteSource,
+    c.palette.bg,
+    c.palette.accent,
   ].join("|");
 }

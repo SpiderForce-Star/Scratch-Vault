@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-11-27T20:45:34.072Z",
+  "states": {
+    "tn": {
+      "desk": 58,
+      "resolved": 0,
+      "failed": 58,
+      "reasons": {
+        "game-page-403": 58
+      }
+    },
+    "ky": {
+      "desk": 76,
+      "resolved": 55,
+      "failed": 21,
+      "reasons": {
+        "no-game-page": 14,
+        "no-image-on-page": 7
+      }
+    },
+    "sc": {
+      "desk": 20,
+      "resolved": 20,
+      "failed": 0,
+      "reasons": {}
+    },
+    "ok": {
+      "desk": 26,
+      "resolved": 23,
+      "failed": 3,
+      "reasons": {
+        "no-game-page": 3
+      }
+    },
+    "nc": {
+      "desk": 68,
+      "resolved": 39,
+      "failed": 29,
+      "reasons": {
+        "image-not-found": 29
+      }
+    },
+    "pa": {
+      "desk": 121,
+      "resolved": 24,
+      "failed": 97,
+      "reasons": {
+        "image-not-found": 97
+      }
+    },
+    "tx": {
+      "desk": 60,
+      "resolved": 60,
+      "failed": 0,
+      "reasons": {}
+    },
+    "mo": {
+      "desk": 59,
+      "resolved": 55,
+      "failed": 4,
+      "reasons": {
+        "image-not-found": 4
+      }
+    },
+    "ia": {
+      "desk": 39,
+      "resolved": 0,
+      "failed": 39,
+      "reasons": {
+        "no-image-on-page": 39
+      }
+    },
+    "id": {
+      "desk": 79,
+      "resolved": 12,
+      "failed": 67,
+      "reasons": {
+        "no-game-page": 67
+      }
+    },
+    "mi": {
+      "desk": 19,
+      "resolved": 18,
+      "failed": 1,
+      "reasons": {
+        "no-game-page": 1
+      }
+    },
+    "oh": {
+      "desk": 50,
+      "resolved": 47,
+      "failed": 3,
+      "reasons": {
+        "no-game-page": 3
+      }
+    }
+  }
+}
