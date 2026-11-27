@@ -18,9 +18,11 @@ const numbers = [
   ]),
 ];
 
-// Build date, so lastmod moves on every production build instead of freezing
-// on the Tennessee desk's publishedAt.
-const published = new Date().toISOString().slice(0, 10);
+// Prize pages follow the Tennessee catalog stamp, not the build clock.
+// A build-date lastmod would call months-old prize lists current.
+const metaSrc = readFileSync(join(root, "src/data/desk-meta.ts"), "utf8");
+const publishedMatch = metaSrc.match(/publishedAt:\s*"([^"]+)"/);
+const published = (publishedMatch?.[1] ?? "2026-09-03T12:00:00-05:00").slice(0, 10);
 
 const staticPaths = ["/", "/games", "/strategy", "/methods", "/pricing", "/privacy", "/terms", "/disclaimer", "/legal"];
 

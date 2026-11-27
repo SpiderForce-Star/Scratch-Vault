@@ -1,5 +1,7 @@
-import type { DataMode, StateConfig } from "@/config/states";
-import { deskAsOfIso, formatDeskAsOf, isDeskDataStale } from "@/lib/desk-freshness";
+import { useEffect } from "react";
+import { postCadenceFor, type DataMode, type StateConfig } from "@/config/states";
+import { deskFreshnessLabel } from "@/lib/desk-freshness";
+import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 
 export function DataModeBanner({
@@ -18,16 +20,21 @@ export function DataModeBanner({
   leftover?: boolean;
 }) {
   const { t, locale } = useI18n();
+  const { setDeskAsOf } = useActiveState();
   const mode = dataMode ?? state.dataMode;
-  const asOfIso = deskAsOfIso(fetchedAt, stale ? state.publishedAt : fetchedAt);
-  const aged =
-    mode !== "sample" &&
-    isDeskDataStale({
-      stale,
-      fetchedAt,
-      publishedAt: state.publishedAt,
-    });
-  const asOfLabel = asOfIso ? formatDeskAsOf(asOfIso, locale === "es" ? "es" : "en-US") : "";
+  const freshness = deskFreshnessLabel({
+    fetchedAt,
+    publishedAt: state.publishedAt,
+    stale,
+    cadence: postCadenceFor(state.id),
+    locale: locale === "es" ? "es" : "en-US",
+  });
+  const aged = mode !== "sample" && freshness.stale;
+  const asOfLabel = freshness.when;
+
+  useEffect(() => {
+    setDeskAsOf(freshness.asOfIso);
+  }, [freshness.asOfIso, setDeskAsOf]);
 
   if (loadError) {
     return (

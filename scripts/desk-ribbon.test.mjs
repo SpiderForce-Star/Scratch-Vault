@@ -58,18 +58,20 @@ test("homepage leftover banner and desk ribbon copy stay locked", () => {
   const css = read("src/styles.css");
 
   assert.equal(en["marquee.dead"], "Three tickets to look at.");
-  assert.equal(en["marquee.intel"], "Current Top 3 and what to skip.");
+  assert.equal(en["marquee.intel"], "A top 3 from the posted list, and what to skip.");
   assert.equal(
     en["banner.leftover"],
-    "We constantly scan each state's lottery website for all prize tiers and factor in decay statistics to give the best game intel!",
+    "Read from each lottery's official prize list. Not store inventory.",
   );
   assert.equal(
     es["banner.leftover"],
-    "¡Escaneamos sin parar el sitio de lotería de cada estado en busca de todos los niveles de premio y tomamos en cuenta las estadísticas de decadencia para darte la mejor información de juegos!",
+    "Leído de la lista oficial de premios de cada lotería. No es inventario de tienda.",
   );
-  assert.equal(en["ribbon.access"], "Full Access on {{count}} desks");
-  assert.equal(en["ribbon.trial"], "One trial opens every public desk.");
-  assert.equal(es["ribbon.trial"], "Una prueba abre cada mesa pública.");
+  assert.doesNotMatch(en["banner.leftover"], /best game intel|constantly/i);
+  assert.doesNotMatch(es["banner.leftover"], /decadencia|mejor información|sin parar/i);
+  assert.equal(en["ribbon.access"], "Full Access on the {{count}} public states we show");
+  assert.equal(en["ribbon.trial"], "One trial opens the public states we show.");
+  assert.equal(es["ribbon.trial"], "Una prueba abre los estados públicos que mostramos.");
 
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 

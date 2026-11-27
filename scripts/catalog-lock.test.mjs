@@ -217,7 +217,8 @@ test("public Heat recipe is listed and locales stay in lockstep", () => {
   assert.match(en["heat.recipeLead"], /aisle context/i);
   assert.match(en["heat.recipeLead"], /\$5, \$10, \$20, \$25, \$30, and \$50 cards/);
   assert.match(en["heat.recipeLead"], /leftover mix on that desk at that price/i);
-  assert.match(en["heat.recipe1"], /Same recipe on all 12 public desks/);
+  assert.match(en["heat.recipe1"], /Same recipe on each public state we show/);
+  assert.doesNotMatch(en["heat.recipe1"], /all 12 public desks/);
   assert.match(en["heat.recipe2"], /prize amount, not the ticket price/);
   assert.match(en["heat.recipe3"], /leftover mix \+ a small leftover-pace bump/);
   assert.match(en["heat.recipe3"], /Skip stays Skip/);

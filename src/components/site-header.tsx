@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { DEFAULT_STATE_ID, type StateId } from "@/config/states";
@@ -12,6 +12,7 @@ import { SpiderMark } from "@/components/mechanical-spider";
 import { DeskSwitcher } from "@/components/state-selector";
 import { useAccess } from "@/lib/use-access";
 import { useI18n } from "@/lib/locale";
+import { useDeskStamp } from "@/lib/use-desk-freshness";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -30,9 +31,22 @@ const NAV: {
 export function SiteHeader() {
   const { unseen, markSeen } = useDeskAlert();
   const { t } = useI18n();
-  const { config } = useActiveState();
+  const { short, when, stale } = useDeskStamp();
   const [open, setOpen] = useState(false);
   const menuId = useId();
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const apply = () => {
+      document.documentElement.style.setProperty("--sv-header-offset", `${el.offsetHeight}px`);
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [when, stale]);
 
   useEffect(() => {
     if (!open) return;
@@ -44,7 +58,10 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm"
+    >
       <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-1 px-2 sm:gap-2 sm:px-6">
         <div className="flex min-w-0 items-center gap-2">
           <Link
@@ -59,9 +76,6 @@ export function SiteHeader() {
             </span>
             <span className="hidden font-display text-base tracking-tight text-fg sm:inline lg:text-lg">Scratch Vault</span>
           </Link>
-          <span className="inline-flex shrink-0 items-center rounded-md border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
-            {t("header.deskChip", { short: config.shortName })}
-          </span>
         </div>
 
         <div className="flex shrink-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
@@ -85,6 +99,17 @@ export function SiteHeader() {
             <NavLinks unseen={unseen} markSeen={markSeen} onNavigate={() => setOpen(false)} />
           </nav>
         </div>
+      </div>
+      <div className="border-t border-line px-2 py-1 sm:px-6">
+        <p
+          data-stale={stale ? "true" : "false"}
+          className={cn(
+            "mx-auto flex max-w-6xl items-center rounded-md border px-2 py-1 text-left font-mono text-[11px] leading-tight tracking-wide",
+            stale ? "border-gold bg-gold/20 text-gold" : "border-line bg-raised text-muted",
+          )}
+        >
+          {t(stale ? "header.staleChip" : "header.deskChip", { short, when })}
+        </p>
       </div>
 
       {open ? (

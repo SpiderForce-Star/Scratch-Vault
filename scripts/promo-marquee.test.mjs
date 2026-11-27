@@ -18,18 +18,26 @@ test("promo marquee is on every viewport with five locked English beats", () => 
   const footer = read("src/components/site-footer.tsx");
 
   assert.equal(en["marquee.dead"], "Three tickets to look at.");
-  assert.equal(en["marquee.posted"], "We watch the official leftover-prize list.");
-  assert.equal(en["marquee.intel"], "Current Top 3 and what to skip.");
-  assert.equal(en["marquee.sweep"], "We constantly sweep for the best prize data.");
+  assert.equal(en["marquee.posted"], "We read the official leftover-prize list.");
+  assert.equal(en["marquee.intel"], "A top 3 from the posted list, and what to skip.");
+  assert.equal(
+    en["marquee.sweep"],
+    "Read from each lottery's official prize list · {{state}} updated {{when}}",
+  );
   assert.equal(en["marquee.trial"], "Try 7 days free");
-  assert.equal(en["marquee.aria"], "Three tickets to look at. A list to walk past. Try 7 days free");
+  assert.equal(en["marquee.aria"], "Read from each lottery's official prize list.");
+  assert.doesNotMatch(en["marquee.sweep"], /best prize|constantly|current/i);
 
   assert.equal(es["marquee.dead"], "Tres boletos para mirar.");
-  assert.equal(es["marquee.posted"], "Vigilamos la lista oficial de premios que quedan.");
-  assert.equal(es["marquee.intel"], "El Top 3 actual y qué saltarte.");
-  assert.equal(es["marquee.sweep"], "Barremos sin parar en busca de los mejores datos de premios.");
+  assert.equal(es["marquee.posted"], "Leemos la lista oficial de premios que quedan.");
+  assert.equal(es["marquee.intel"], "Un top 3 de la lista publicada, y qué saltarte.");
+  assert.equal(
+    es["marquee.sweep"],
+    "Leído de la lista oficial de premios de cada lotería · {{state}} actualizado {{when}}",
+  );
   assert.equal(es["marquee.trial"], "Prueba 7 días gratis");
-  assert.equal(es["marquee.aria"], "Tres boletos para mirar. Una lista para pasar de largo. Prueba 7 días gratis");
+  assert.equal(es["marquee.aria"], "Leído de la lista oficial de premios de cada lotería.");
+  assert.doesNotMatch(es["marquee.sweep"], /mejores datos|sin parar/i);
 
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
 
@@ -74,9 +82,11 @@ test("promo marquee is on every viewport with five locked English beats", () => 
   assert.match(copyright, /to="\/disclaimer"/);
   assert.match(copyright, /nav\.responsible/);
 
-  assert.match(marquee, /t\("marquee\.sweep"\)/);
+  assert.match(marquee, /t\("marquee\.sweep"/);
   assert.match(marquee, /sv-marquee-static/);
-  assert.match(marquee, /\{t\("marquee\.dead"\)\} · \{t\("marquee\.trial"\)\}/);
+  assert.match(marquee, /useDeskStamp/);
+  assert.doesNotMatch(marquee, /marquee\.dead/);
+  assert.doesNotMatch(marquee, /best prize data/);
   assert.match(rootSrc, /<AgeGate/);
   assert.match(rootSrc, /<BootSplash/);
 });
