@@ -1,27 +1,37 @@
 import type { DataMode, StateConfig } from "@/config/states";
+import { deskAsOfIso, formatDeskAsOf, isDeskDataStale } from "@/lib/desk-freshness";
 import { useI18n } from "@/lib/locale";
 
 export function DataModeBanner({
   state,
   loadError = null,
+  stale = false,
+  fetchedAt = null,
   dataMode,
   leftover = false,
 }: {
   state: StateConfig;
   loadError?: string | null;
   stale?: boolean;
+  fetchedAt?: string | null;
   dataMode?: DataMode;
   leftover?: boolean;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const mode = dataMode ?? state.dataMode;
+  const asOfIso = deskAsOfIso(fetchedAt, stale ? state.publishedAt : fetchedAt);
+  const aged =
+    mode !== "sample" &&
+    isDeskDataStale({
+      stale,
+      fetchedAt,
+      publishedAt: state.publishedAt,
+    });
+  const asOfLabel = asOfIso ? formatDeskAsOf(asOfIso, locale === "es" ? "es" : "en-US") : "";
 
   if (loadError) {
     return (
-      <div
-        role="alert"
-        className="border-b border-danger/40 bg-danger/10 px-4 py-3 sm:px-6"
-      >
+      <div role="alert" className="border-b border-danger/40 bg-danger/10 px-4 py-3 sm:px-6">
         <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
           {t("banner.loadFail")}
           {state.remainingPrizesUrl ? (
@@ -44,12 +54,34 @@ export function DataModeBanner({
 
   if (mode === "sample") {
     return (
-      <div
-        role="status"
-        className="border-b border-danger/40 bg-danger/10 px-4 py-3 sm:px-6"
-      >
+      <div role="status" className="border-b border-danger/40 bg-danger/10 px-4 py-3 sm:px-6">
         <p className="mx-auto max-w-6xl text-center text-sm leading-relaxed text-paper">
           {t("banner.demo", { name: state.name, lottery: state.lotteryShort })}
+        </p>
+      </div>
+    );
+  }
+
+  if (aged) {
+    return (
+      <div role="status" className="border-b border-gold/70 bg-gold/20 px-4 py-3 sm:px-6">
+        <p className="mx-auto max-w-6xl text-center text-sm font-semibold leading-relaxed text-paper">
+          {t("banner.staleAsOf", { date: asOfLabel || "—" })}
+          {" "}
+          {t("banner.scanHeadline")}
+          {state.remainingPrizesUrl ? (
+            <>
+              {" "}
+              <a
+                className="underline underline-offset-2 hover:text-gold"
+                href={state.remainingPrizesUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t("banner.officialPage", { lottery: state.lotteryShort })}
+              </a>
+            </>
+          ) : null}
         </p>
       </div>
     );

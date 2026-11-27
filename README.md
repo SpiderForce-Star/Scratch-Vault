@@ -22,15 +22,20 @@ Printed overall odds are not used to rank tickets. The desk does **not** improve
 
 ### Multi-state desks
 
-Selector order: **TN KY SC OK MI AZ NC PA TX MO OH IL MA IA ID CT**.
+Public selector: **TN KY SC OK MI NC PA TX MO OH IA ID**.
+
+Hidden until a trusted public catalog is promoted: **AZ, IL, MA, CT**. Those desks still have configs and the daily fetch still tries them. They are not in the selector.
 
 | State | Desk | Holdback | Age |
 |---|---|---|---|
-| Tennessee (default) | Live overlay | Play It Again (subtract 1 top prize) | 18+ |
-| Kentucky, South Carolina, Oklahoma, Michigan, North Carolina, Pennsylvania, Texas, Missouri, Ohio, Illinois, Massachusetts, Idaho, Connecticut | Compiled official remaining-prize tables | None | 18+ |
-| Arizona, Iowa | Compiled official remaining-prize tables (AZ is top-prize heavy) | None | 21+ |
+| Tennessee (default) | Official remaining-prizes table, with the last good snapshot when the live pull fails | Play It Again (subtract 1 top prize) | 18+ |
+| Kentucky, South Carolina, Oklahoma, Michigan, North Carolina, Pennsylvania, Texas, Missouri, Ohio, Idaho | Compiled official remaining-prize tables | None | 18+ |
+| Iowa | Compiled official remaining-prize table | None | 21+ |
+| Arizona, Illinois, Massachusetts, Connecticut | Hidden | None | AZ 21+; IL, MA, CT 18+ |
 
-State configs live in [`src/config/states.ts`](src/config/states.ts). Catalogs load through [`src/data/states/`](src/data/states/). Daily remaining-prize fetch: `GET /api/cron/daily-fetch` at `15 11 * * *` (06:15 CT).
+State configs live in [`src/config/states.ts`](src/config/states.ts). Catalogs load through [`src/data/states/`](src/data/states/). Daily remaining-prize fetch: `GET /api/cron/daily-fetch` at `15 11 * * *` (11:15 UTC, 5:15 AM CST / 6:15 AM CDT).
+
+A desk whose last good pull is older than two days shows a **data as of** banner. Failures on a public desk (including Tennessee) are logged at error level. Set `REMAINING_ALERT_WEBHOOK` to POST a JSON failure report, and optionally `REMAINING_ALERT_EMAIL` as the recipient named on that payload.
 
 ## Stack
 
@@ -59,7 +64,7 @@ Tennessee catalog: [`src/data/games.ts`](src/data/games.ts)
 State configs: [`src/config/states.ts`](src/config/states.ts)  
 Heat / desk: [`src/lib/heat.ts`](src/lib/heat.ts), [`src/lib/heat.server.ts`](src/lib/heat.server.ts)
 
-Tennessee source: [Tennessee Lottery scratch-offs](https://www.tnlottery.com/games/scratch-offs). Other desks use that state’s official remaining-prize page. Counts are compiled snapshots, not live store inventory. Iowa’s official table lists remaining prizes of $50 and greater.
+Tennessee source: [Tennessee Lottery remaining prizes](https://tnlottery.com/remaining-prizes/). Other desks use that state’s official remaining-prize page. Counts are compiled snapshots, not live store inventory. Iowa’s official table lists remaining prizes of $50 and greater.
 
 Ticket faces are independent reconstructions for store identification. They are not official Lottery scans.
 
@@ -74,7 +79,7 @@ Checkout uses the existing live Price IDs. In the Stripe Dashboard:
 - Customer Portal: allow cancel-at-period-end (the in-app Account opt-out uses the API directly)
 - Upcoming invoice emails should stay on for Illinois 30–60 day annual renewal notice
 
-Webhook URL (unchanged): `https://volunteer-scratch-vault.vercel.app/api/stripe/webhook`.
+Webhook URL: `https://scratch-vault.com/api/stripe/webhook`.
 
 Public billing rules: [`src/lib/billing-policy.ts`](src/lib/billing-policy.ts). State lottery notices: [`src/lib/state-legal.ts`](src/lib/state-legal.ts), [`LEGAL.md`](LEGAL.md), `/legal`.
 

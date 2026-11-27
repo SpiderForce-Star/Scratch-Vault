@@ -64,6 +64,7 @@
   "banner.deskSnapshot": "The lottery’s leftover-prize list. Not what’s in one store.",
   "banner.leftover": "We constantly scan each state's lottery website for all prize tiers and factor in decay statistics to give the best game intel!",
   "banner.tableAsOf": "Current",
+  "banner.staleAsOf": "Data as of {{date}}. This leftover list is more than two days old.",
   "ticket.copyright": "Not a lottery. Ticket pictures are reconstructions — we don’t copy official ticket art (copyright). Some lotteries post daily, some weekly. We keep scanning for the next official update. 18+ to use (Iowa tickets 21+). No refunds.",
   "heat.whatTitle": "What the Heat number means",
   "heat.whatBody": "Heat is Scratch Vault’s leftover mix on that desk at that price, plus a small leftover-pace bump — not a chance of winning and not store inventory. Hot / Warm / Cold compare leftover mix against other loaded $5–$50 games on this desk at this price, then leftover-prize pace (how fast listed $50+ prize rows are being claimed). Skip stays Skip. Printed odds never change.",

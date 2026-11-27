@@ -120,7 +120,10 @@ function GamesCatalog() {
   };
 
   // Unpaid: empty list — never fill /games from publicCatalog().
-  const catalog = locked ? [] : (snap?.games ?? publicCatalog(viewState));
+  const catalog = useMemo(
+    () => (locked ? [] : (snap?.games ?? publicCatalog(viewState))),
+    [locked, snap, viewState],
+  );
   const priceFilters = useMemo(() => gamesPriceFilters(catalog), [catalog]);
   const reports = useMemo(() => {
     if (snap) return reportMap(snap.reports);
@@ -188,6 +191,7 @@ function GamesCatalog() {
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
+        fetchedAt={snap?.fetchedAt}
       />
       <HeatExplainer />
       <LeftoverDecayStrip stats={snap?.stats} locked={locked} />

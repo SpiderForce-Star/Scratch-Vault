@@ -23,7 +23,7 @@ class UnavailableConnection implements DatabaseConnection {
   async executeQuery<O>(): Promise<QueryResult<O>> {
     throw new Error(AUTH_DB_REQUIRED);
   }
-  async *streamQuery<O>(): AsyncIterableIterator<QueryResult<O>> {
+  streamQuery<O>(): AsyncIterableIterator<QueryResult<O>> {
     throw new Error(AUTH_DB_REQUIRED);
   }
 }

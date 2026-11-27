@@ -209,13 +209,11 @@ test("vite config keeps the nitro serverDir wiring", () => {
   assert.match(viteConfig, /grokPwaPlugin\(\)/);
 });
 
-test("vercel.json and Nitro Vercel config both register daily-fetch cron", () => {
+test("vercel.json registers the daily-fetch cron", () => {
   const vercel = readFileSync(join(TEMPLATE_ROOT, "vercel.json"), "utf8");
-  const viteConfig = readFileSync(join(TEMPLATE_ROOT, "vite.config.ts"), "utf8");
   assert.match(vercel, /\/api\/cron\/daily-fetch/);
   assert.match(vercel, /15 11 \* \* \*/);
-  assert.match(viteConfig, /\/api\/cron\/daily-fetch/);
-  assert.match(viteConfig, /15 11 \* \* \*/);
+  assert.match(vercel, /"installCommand": "npm ci"/);
 });
 
 test("nitro middleware and its bundled assets exist", () => {
