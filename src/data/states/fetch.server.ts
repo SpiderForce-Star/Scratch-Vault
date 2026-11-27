@@ -7,6 +7,8 @@ import type { Game } from "@/data/games";
 import { fullCatalog as tennesseeFullCatalog } from "@/data/games.full.server";
 import { publicCatalog } from "./index";
 import { loadBundledDesk, seedSnapshotsIfEmpty } from "./load.server";
+import { isAlertDesk, notifyRemainingFailures } from "./alert.server";
+import { fetchText, pullOfficial } from "./feeds.server";
 import {
   extractAsOf,
   gamesFromParse,
@@ -23,14 +25,7 @@ import {
   upsertSnapshot,
 } from "./snapshots.server";
 
-const FETCH_MS = 8_000;
 const CONCURRENCY = 4;
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-
-const FALLBACK_URLS: Partial<Record<StateId, string>> = {
-  ok: "https://www.lottery.ok.gov/scratchers/get",
-};
 
 export type StateFetchResult = {
   stateId: StateId;
@@ -44,25 +39,13 @@ export type DailyFetchReport = {
   results: StateFetchResult[];
 };
 
-async function fetchText(url: string): Promise<{ status: number; type: string; body: string }> {
-  const res = await fetch(url, {
-    redirect: "follow",
-    signal: AbortSignal.timeout(FETCH_MS),
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Cache-Control": "no-cache",
-    },
-  });
-  const type = res.headers.get("content-type") || "";
-  const body = await res.text();
-  return { status: res.status, type, body };
-}
-
 function logResult(result: StateFetchResult): void {
-  console.info("[remaining]", result.stateId, result.ok, result.gameCount, result.reason);
+  const line = ["[remaining]", result.stateId, result.ok, result.gameCount, result.reason] as const;
+  if (!result.ok && isAlertDesk(result.stateId)) {
+    console.error(...line);
+    return;
+  }
+  console.info(...line);
 }
 
 async function failState(
@@ -95,39 +78,19 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
   }
 
   try {
-    const primaryUrl = sourceUrl || "https://www.tnlottery.com/games/scratch-offs";
-    const primary = await fetchText(primaryUrl);
+    const primaryUrl = sourceUrl || "https://tnlottery.com/remaining-prizes/";
+    const primary = await pullOfficial(stateId, primaryUrl);
+    const usedUrl = primary.url || primaryUrl;
     if (primary.status === 403) {
-      return failState(stateId, `HTTP 403`, primaryUrl);
+      return failState(stateId, "HTTP 403", usedUrl);
     }
     if (primary.status >= 400) {
-      const extra = FALLBACK_URLS[stateId];
-      if (!extra || extra === primaryUrl) {
-        return failState(stateId, `HTTP ${primary.status}`, primaryUrl);
-      }
+      return failState(stateId, `HTTP ${primary.status}`, usedUrl);
     }
 
-    let body = primary.status < 400 ? primary.body : "";
-    let type = primary.status < 400 ? primary.type : "";
-    let usedUrl = primaryUrl;
-
-    let parsed = body.trim() ? parseOfficialRemaining(stateId, body, type) : [];
-    if (!parsed.length) {
-      const extra = FALLBACK_URLS[stateId];
-      if (extra && extra !== primaryUrl) {
-        const second = await fetchText(extra);
-        if (second.status === 403) {
-          return failState(stateId, "HTTP 403", extra);
-        }
-        if (second.status >= 400) {
-          return failState(stateId, `HTTP ${second.status}`, extra);
-        }
-        body = second.body;
-        type = second.type;
-        usedUrl = extra;
-        parsed = parseOfficialRemaining(stateId, body, type);
-      }
-    }
+    const body = primary.body;
+    const type = primary.type;
+    const parsed = body.trim() ? parseOfficialRemaining(stateId, body, type) : [];
 
     if (!body.trim()) {
       return failState(stateId, "empty body", usedUrl);
@@ -216,7 +179,16 @@ export async function fetchAllStates(): Promise<DailyFetchReport> {
     }
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
-  return { ranAt, results };
+  const report = { ranAt, results };
+  try {
+    await notifyRemainingFailures(report);
+  } catch (err) {
+    console.error(
+      "[remaining] alert hook failed",
+      err instanceof Error ? err.message : "error",
+    );
+  }
+  return report;
 }
 
 /** @deprecated Use fetchAllStates */

@@ -10,7 +10,6 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const origin = "https://scratch-vault.com";
 const gamesSrc = readFileSync(join(root, "src/data/games.ts"), "utf8");
 const extraSrc = readFileSync(join(root, "src/data/tn-missing.ts"), "utf8");
-const metaSrc = readFileSync(join(root, "src/data/desk-meta.ts"), "utf8");
 
 const numbers = [
   ...new Set([
@@ -19,9 +18,9 @@ const numbers = [
   ]),
 ];
 
-const published =
-  metaSrc.match(/publishedAt:\s*"([^"]+)"/)?.[1]?.slice(0, 10) ??
-  new Date().toISOString().slice(0, 10);
+// Build date, so lastmod moves on every production build instead of freezing
+// on the Tennessee desk's publishedAt.
+const published = new Date().toISOString().slice(0, 10);
 
 const staticPaths = ["/", "/games", "/strategy", "/methods", "/pricing", "/privacy", "/terms", "/disclaimer", "/legal"];
 

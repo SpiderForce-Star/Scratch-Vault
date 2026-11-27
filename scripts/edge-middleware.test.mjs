@@ -32,8 +32,12 @@ test("allowed hosts include public, volunteer, and vercel previews", () => {
   assert.equal(isAllowedHost("volunteer-scratch-vault.vercel.app"), true);
   assert.equal(isAllowedHost("scratch-vault.vercel.app"), true);
   assert.equal(isAllowedHost("scratch-vault-git-main-webb-spinner-visions.vercel.app"), true);
+  assert.equal(isAllowedHost("scratch-vault-git-main-spiderforce-star.vercel.app"), true);
   assert.equal(isAllowedHost("evil.example"), false);
   assert.equal(isAllowedHost("godaddy.com"), false);
+  assert.equal(isAllowedHost("evil.vercel.app"), false);
+  assert.equal(isAllowedHost("not-scratch-vault.vercel.app"), false);
+  assert.equal(isAllowedHost("scratch-vault.attacker.vercel.app"), false);
 });
 
 test("TRACE and TRACK return 405 without touching the body", () => {

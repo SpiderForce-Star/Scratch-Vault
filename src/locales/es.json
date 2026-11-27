@@ -64,6 +64,7 @@
   "banner.deskSnapshot": "La lista de premios que quedan según la lotería. No es lo que hay en una tienda.",
   "banner.leftover": "¡Escaneamos sin parar el sitio de lotería de cada estado en busca de todos los niveles de premio y tomamos en cuenta las estadísticas de decadencia para darte la mejor información de juegos!",
   "banner.tableAsOf": "Actual",
+  "banner.staleAsOf": "Datos al {{date}}. Esta lista de premios restantes tiene más de dos días.",
   "ticket.copyright": "No es una lotería. Las fotos de boletos son reconstrucciones — no copiamos el arte oficial del boleto (derechos de autor). Algunas loterías publican a diario, otras semanalmente. Seguimos escaneando la próxima actualización oficial. 18+ para usar (boletos de Iowa 21+). Sin reembolsos.",
   "heat.whatTitle": "Qué significa el número de Heat",
   "heat.whatBody": "Heat es la mezcla de restantes de Scratch Vault en esa mesa a ese precio, más un pequeño extra por ritmo — no es una probabilidad de ganar ni inventario en tienda. Caliente / Tibio / Frío comparan esa mezcla con los otros juegos de $5–$50 cargados en esta mesa a este precio, luego el ritmo (qué tan rápido se reclaman las filas de premio restantes de $50 o más). Saltar se queda en Saltar. Las probabilidades impresas nunca cambian.",

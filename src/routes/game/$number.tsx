@@ -190,7 +190,12 @@ function GameDetail() {
     return (
       <div>
         <DeskAlertBanner />
-        <DataModeBanner state={state} dataMode={dataMode} />
+        <DataModeBanner
+          state={state}
+          dataMode={dataMode}
+          stale={desk?.stale}
+          fetchedAt={desk?.fetchedAt}
+        />
         <HeatExplainer />
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
           <Link
@@ -215,7 +220,12 @@ function GameDetail() {
   return (
     <div>
       <DeskAlertBanner />
-      <DataModeBanner state={state} dataMode={dataMode} />
+      <DataModeBanner
+        state={state}
+        dataMode={dataMode}
+        stale={desk?.stale}
+        fetchedAt={desk?.fetchedAt}
+      />
       <HeatExplainer />
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <Link

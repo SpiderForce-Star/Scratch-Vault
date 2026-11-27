@@ -40,7 +40,7 @@ export function remainingCount(s: unknown): number | null {
 
 export function extractAsOf(html: string): string | null {
   const monthDay = html.match(
-    /as of\s*(?:<!-- -->)?\s*([A-Za-z]+ \d{1,2}, \d{4})/i,
+    /(?:as of|updated)\s*(?:<!-- -->)?[^A-Za-z0-9]{0,16}([A-Za-z]+ \d{1,2}, \d{4})/i,
   )?.[1];
   if (monthDay) {
     const parsed = Date.parse(monthDay);
@@ -605,15 +605,298 @@ function parseJson(body: string): ParsedGame[] {
   }
 }
 
+/** Next.js flight payloads escape quotes as \". */
+function embeddedJson(html: string): string {
+  if (!html.includes('\\"')) return html;
+  return html.replace(/\\u003c/gi, "<").replace(/\\u003e/gi, ">").replace(/\\"/g, '"');
+}
+
+function parseJsonArrayAt(text: string, start: number): unknown[] | null {
+  if (start < 0 || text[start] !== "[") return null;
+  let depth = 0;
+  let inStr = false;
+  let esc = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === "\\") esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
+    if (c === "[" || c === "{") depth++;
+    else if (c === "]" || c === "}") {
+      depth--;
+      if (depth === 0) {
+        if (c !== "]") return null;
+        try {
+          const value = JSON.parse(text.slice(start, i + 1)) as unknown;
+          return Array.isArray(value) ? value : null;
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function centsToDollars(cents: unknown): number | null {
+  const n = Number(cents);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n / 100;
+}
+
+/** Tennessee remaining-prizes table: top prize plus PL/RP columns when published. */
+export function parseTnTable(html: string): ParsedGame[] {
+  const map = new Map<number, ParsedGame>();
+  for (const table of html.split(/<table/i).slice(1)) {
+    const header = table.match(/<thead[\s\S]*?<\/thead>|<tr[\s\S]*?<\/tr>/i)?.[0] || "";
+    const heads = [...header.matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((m) =>
+      decodeHtml(m[1]).toLowerCase(),
+    );
+    const numberIdx = heads.findIndex((h) => /game\s*(number|no)|game\s*#|^#$/.test(h));
+    const nameIdx = heads.findIndex((h) => /game\s*name|^name$/.test(h));
+    const prizeIdx = heads.findIndex((h) => /^prizes?$/.test(h));
+    const remIdx = heads.findIndex((h) => /remaining/.test(h));
+    if (numberIdx < 0 || nameIdx < 0 || prizeIdx < 0 || remIdx < 0) continue;
+    const pairs: Array<[number, number]> = [];
+    for (let i = 0; i < heads.length - 1; i++) {
+      if (/^pl\b/.test(heads[i]) && /^rp\b/.test(heads[i + 1])) pairs.push([i, i + 1]);
+    }
+    const body = /<tbody/i.test(table) ? table.replace(/[\s\S]*?<tbody[^>]*>/i, "") : table;
+    for (const row of body.split(/<tr/i).slice(1)) {
+      const cells = [...row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((m) =>
+        decodeHtml(m[1]),
+      );
+      const number = Number((cells[numberIdx] || "").replace(/[^\d]/g, ""));
+      const name = sanitizeGameName(cells[nameIdx] || "");
+      if (!number || !name || isImportedJunkGame({ number, name })) continue;
+      const prizes: ParsedPrize[] = [];
+      const top = cashPrizeAmount(cells[prizeIdx] || "");
+      if (top != null) prizes.push({ amount: top, remaining: remainingCount(cells[remIdx]) });
+      for (const [amountIdx, leftIdx] of pairs) {
+        const amount = cashPrizeAmount(cells[amountIdx] || "");
+        if (amount == null || prizes.some((p) => p.amount === amount)) continue;
+        prizes.push({ amount, remaining: remainingCount(cells[leftIdx]) });
+      }
+      if (!prizes.length) continue;
+      map.set(number, { number, name, price: 0, prizes });
+    }
+  }
+  return [...map.values()];
+}
+
+/** Michigan prizes-remaining page embeds the retail prize graph in the document. */
+export function parseMiEmbedded(html: string): ParsedGame[] {
+  const text = embeddedJson(html);
+  const key = text.indexOf('"games":');
+  if (key < 0) return [];
+  const list = parseJsonArrayAt(text, text.indexOf("[", key));
+  if (!list) return [];
+  const games: ParsedGame[] = [];
+  for (const item of list) {
+    const row = asRecord(item);
+    const game = asRecord(row?.game);
+    if (!row || row.gameType !== "INSTANT" || !game) continue;
+    const number = Number(row.igtId);
+    const name = sanitizeGameName(String(game.name ?? ""));
+    const range = asRecord(game.ticketPriceRange);
+    const min = asRecord(range?.min);
+    const price = centsToDollars(min?.cents);
+    if (!number || !name || price == null || !PRICES.has(price)) continue;
+    const tiers = Array.isArray(row.prizeTiers) ? row.prizeTiers : [];
+    const prizes: ParsedPrize[] = [];
+    for (const tier of tiers) {
+      const p = asRecord(tier);
+      const amount = centsToDollars(p?.prizeAmountCents);
+      if (amount == null) continue;
+      prizes.push({ amount, remaining: remainingCount(p?.remainingCount) });
+    }
+    if (prizes.length) games.push({ number, name, price, prizes });
+  }
+  return games;
+}
+
+/** Ohio GetFullPrizesRemainingList (api-solutions.ohiolottery.com). */
+export function parseOhApi(data: unknown): ParsedGame[] {
+  const root = asRecord(data);
+  const list = Array.isArray(data) ? data : (root?.data as unknown);
+  if (!Array.isArray(list)) return [];
+  const games: ParsedGame[] = [];
+  for (const item of list) {
+    const g = asRecord(item);
+    if (!g) continue;
+    const price = Number(g.ticketPrice ?? g.price);
+    const number = Number(String(g.gameCode ?? g.gameId ?? "").trim());
+    const name = sanitizeGameName(String(g.gameName ?? g.name ?? ""));
+    if (!PRICES.has(price) || !number || !name) continue;
+    const rows = g.prizeRemainingValues;
+    const prizes: ParsedPrize[] = [];
+    if (Array.isArray(rows)) {
+      for (const row of rows) {
+        const p = asRecord(row);
+        if (!p) continue;
+        const amount = Number(p.prizeValue ?? p.amount);
+        if (!Number.isFinite(amount) || amount <= 0) continue;
+        prizes.push({ amount, remaining: remainingCount(p.prizesLeft ?? p.remaining) });
+      }
+    }
+    if (prizes.length) games.push({ number, name, price, prizes });
+  }
+  return games;
+}
+
+/** Massachusetts /api/v1/instant-game-prizes/special. */
+export function parseMaApi(data: unknown): ParsedGame[] {
+  if (!Array.isArray(data)) return [];
+  const games: ParsedGame[] = [];
+  for (const item of data) {
+    const g = asRecord(item);
+    if (!g) continue;
+    const price = Number(g.ticketCost ?? g.price);
+    const number = Number(g.massGameID ?? g.id);
+    const name = sanitizeGameName(String(g.gameName ?? g.name ?? ""));
+    if (!PRICES.has(price) || !number || !name) continue;
+    const prizes: ParsedPrize[] = [];
+    if (Array.isArray(g.prizeTiers)) {
+      for (const row of g.prizeTiers) {
+        const p = asRecord(row);
+        if (!p) continue;
+        const described = p.prizeDescription ? cashPrizeAmount(String(p.prizeDescription)) : null;
+        const amount = described ?? (Number.isFinite(Number(p.prizeAmount)) ? Number(p.prizeAmount) : null);
+        if (amount == null || amount <= 0) continue;
+        prizes.push({ amount, remaining: remainingCount(p.prizesRemaining) });
+      }
+    }
+    if (prizes.length) games.push({ number, name, price, prizes });
+  }
+  return games;
+}
+
+/** Connecticut scratch catalog embedded on /games/scratch-games (top prize remaining). */
+export function parseCtCatalog(html: string): ParsedGame[] {
+  const text = embeddedJson(html);
+  const at = text.indexOf('"gameNo":');
+  if (at < 0) return [];
+  const list = parseJsonArrayAt(text, text.lastIndexOf("[", at));
+  if (!list) return [];
+  const games: ParsedGame[] = [];
+  for (const item of list) {
+    const g = asRecord(item);
+    if (!g) continue;
+    const status = String(g.status ?? "").toLowerCase();
+    if (status === "ended" || status === "inactive") continue;
+    const number = Number(g.gameNo);
+    const name = sanitizeGameName(String(g.gameName ?? g.displayNameHtml ?? "")).replace(/\$\$/g, "$");
+    const price = Number(g.ticketCostRaw ?? money(String(g.ticketCost ?? "")) ?? NaN);
+    const amount = Number(g.topPrizeRaw ?? money(String(g.topPrize ?? "")) ?? NaN);
+    if (!number || !name || !PRICES.has(price) || !Number.isFinite(amount) || amount <= 0) continue;
+    games.push({
+      number,
+      name,
+      price,
+      prizes: [{ amount, remaining: remainingCount(g.topPrizesRemaining) }],
+    });
+  }
+  return games;
+}
+
+/** $5+ games listed on the Oklahoma scratchers index (no remaining counts). */
+export function listOkScratchers(html: string): { number: number; slug: string; price: number }[] {
+  const text = embeddedJson(html);
+  const key = text.indexOf('"scratchOffs":');
+  if (key < 0) return [];
+  const list = parseJsonArrayAt(text, text.indexOf("[", key));
+  if (!list) return [];
+  const out: { number: number; slug: string; price: number }[] = [];
+  for (const item of list) {
+    const g = asRecord(item);
+    if (!g) continue;
+    const number = Number(g.gameNumber);
+    const slug = String(g.slug ?? "").trim();
+    const price = Number(g.ticketPrice);
+    if (!number || !slug || !DESK_PRICES.has(price)) continue;
+    out.push({ number, slug, price });
+  }
+  return out;
+}
+
+/** One Oklahoma game page: prizeDetails.matches[].remainingPrizes. */
+export function parseOkGamePage(html: string): ParsedGame | null {
+  const text = embeddedJson(html);
+  const numberAt = text.search(/"gameNumber":"\d+"/);
+  if (numberAt < 0) return null;
+  const window = text.slice(numberAt, numberAt + 12000);
+  const number = Number(window.match(/"gameNumber":"(\d+)"/)?.[1]);
+  const name = sanitizeGameName(window.match(/"title":"([^"]+)"/)?.[1] || "");
+  const price = Number(window.match(/"ticketPrice":(\d+)/)?.[1]);
+  const odds = Number(window.match(/"odds":"1 in ([0-9.]+)"/)?.[1]);
+  const detailsAt = window.indexOf('"prizeDetails":');
+  const details = detailsAt >= 0 ? parseJsonArrayAt(window, window.indexOf("[", detailsAt)) : null;
+  if (!number || !name || !PRICES.has(price) || !details) return null;
+  const prizes: ParsedPrize[] = [];
+  for (const block of details) {
+    const matches = asRecord(block)?.matches;
+    if (!Array.isArray(matches)) continue;
+    for (const row of matches) {
+      const p = asRecord(row);
+      if (!p) continue;
+      const amount = cashPrizeAmount(String(p.prize ?? ""));
+      if (amount == null || amount <= 0) continue;
+      prizes.push({ amount, remaining: remainingCount(p.remainingPrizes) });
+    }
+  }
+  if (!prizes.length) return null;
+  return { number, name, price, prizes, odds: Number.isFinite(odds) && odds > 1 ? odds : null };
+}
+
 export function parseOfficialRemaining(
   stateId: StateId,
   body: string,
   contentType = "",
 ): ParsedGame[] {
-  const jsonish = /json/i.test(contentType) || /^\s*[\[{]/.test(body);
+  const jsonish = /json/i.test(contentType) || /^\s*[[{]/.test(body);
   if (jsonish) {
+    let data: unknown = null;
+    try {
+      data = JSON.parse(body);
+    } catch {
+      data = null;
+    }
+    if (data != null) {
+      if (stateId === "oh") {
+        const rows = parseOhApi(data);
+        if (rows.length) return rows;
+      }
+      if (stateId === "ma") {
+        const rows = parseMaApi(data);
+        if (rows.length) return rows;
+      }
+    }
     const fromJson = parseJson(body);
     if (fromJson.length) return fromJson;
+  }
+
+  if (stateId === "tn") {
+    const rows = parseTnTable(body);
+    if (rows.length) return rows;
+  }
+  if (stateId === "mi") {
+    const rows = parseMiEmbedded(body);
+    if (rows.length) return rows;
+  }
+  if (stateId === "ct") {
+    const rows = parseCtCatalog(body);
+    if (rows.length) return rows;
+  }
+  if (stateId === "ok") {
+    const one = parseOkGamePage(body);
+    if (one) return [one];
   }
 
   const specific: Record<string, (html: string) => ParsedGame[]> = {

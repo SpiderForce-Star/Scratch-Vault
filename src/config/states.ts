@@ -122,7 +122,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryName: "Tennessee Education Lottery Corporation",
     lotteryShort: "Tennessee Lottery",
     timezone: "America/Chicago",
-    remainingPrizesUrl: "https://www.tnlottery.com/games/scratch-offs",
+    remainingPrizesUrl: "https://tnlottery.com/remaining-prizes/",
     newGamesUrl: "https://tnlottery.com/games/instant-games/",
     playResponsiblyUrl: "https://tnlottery.com/play-responsibly/",
     dataSourceNotes:
@@ -226,8 +226,8 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryName: "Oklahoma Lottery",
     lotteryShort: "Oklahoma Lottery",
     timezone: "America/Chicago",
-    remainingPrizesUrl: "https://www.lottery.ok.gov/scratchers/remaining-prizes",
-    newGamesUrl: "https://www.lottery.ok.gov/scratchers",
+    remainingPrizesUrl: "https://oklottery.com/games/scratchers",
+    newGamesUrl: "https://oklottery.com/games/scratchers",
     playResponsiblyUrl: "https://www.lottery.ok.gov/",
     dataSourceNotes:
       "Compiled from the official Oklahoma remaining-prizes listing. Not a live feed. $5–$50 games.",
@@ -259,7 +259,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryName: "Michigan Lottery",
     lotteryShort: "Michigan Lottery",
     timezone: "America/Detroit",
-    remainingPrizesUrl: "https://www.michiganlottery.com/resources/instant-games-prizes-remaining",
+    remainingPrizesUrl: "https://www.michiganlottery.com/prizes-remaining",
     newGamesUrl: "https://www.michiganlottery.com/games",
     playResponsiblyUrl: "https://www.michiganlottery.com/resources",
     dataSourceNotes:
@@ -641,7 +641,7 @@ export const STATES: Record<StateId, StateConfig> = {
     lotteryName: "Connecticut Lottery Corporation",
     lotteryShort: "CT Lottery",
     timezone: "America/New_York",
-    remainingPrizesUrl: "https://ctlottery.org/ScratchGamesTable",
+    remainingPrizesUrl: "https://ctlottery.com/games/scratch-games",
     newGamesUrl: "https://ctlottery.org/ScratchGames",
     playResponsiblyUrl: "https://ctlottery.org/ResponsibleGaming",
     dataSourceNotes:

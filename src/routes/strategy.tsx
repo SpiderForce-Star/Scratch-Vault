@@ -202,6 +202,7 @@ function StrategyDeskPage() {
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
+        fetchedAt={snap?.fetchedAt}
       />
 
       <section className="border-b border-line">

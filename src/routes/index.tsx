@@ -216,6 +216,7 @@ function VaultHome() {
         dataMode={snap?.dataMode}
         loadError={snap?.loadError}
         stale={snap?.stale}
+        fetchedAt={snap?.fetchedAt}
       />
       <CoverageMarquee />
       <MethodsCallout />

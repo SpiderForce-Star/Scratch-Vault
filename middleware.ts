@@ -15,10 +15,17 @@ function hostname(request: Request): string {
   return raw.split(",")[0].trim().split(":")[0].toLowerCase();
 }
 
+/** Preview hosts for this Vercel project only — not every *.vercel.app site. */
+const PROJECT_PREVIEW_SUFFIXES = [
+  "-webb-spinner-visions.vercel.app",
+  "-spiderforce-star.vercel.app",
+];
+
 export function isAllowedHost(host: string): boolean {
   if (!host) return false;
   if (ALLOWED_HOSTS.has(host)) return true;
-  return host.endsWith(".vercel.app");
+  if (!host.startsWith("scratch-vault-")) return false;
+  return PROJECT_PREVIEW_SUFFIXES.some((suffix) => host.endsWith(suffix));
 }
 
 function excludedPath(pathname: string): boolean {

@@ -36,7 +36,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     purchaseAge: 18,
     claimWindow: "Typically 90 days after the announced game end date.",
     statuteHint: "Tennessee Education Lottery Corporation; Tenn. Code Ann. Title 4, Chapter 51.",
-    remainingSource: "https://www.tnlottery.com/games/scratch-offs",
+    remainingSource: "https://tnlottery.com/remaining-prizes/",
     issues: [
       "TELC is the exclusive lottery operator. This product is not TELC and must not look official.",
       "Play It Again typically holds one top prize per instant game. A posted “1 left” is treated as no retail jackpot — that is our reading of the public table, not a TELC ruling.",
@@ -76,7 +76,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     purchaseAge: 18,
     claimWindow: "Ended-game prizes are typically claimable for 90 days after the announced end date.",
     statuteHint: "Oklahoma Lottery.",
-    remainingSource: "https://www.lottery.ok.gov/scratchers/remaining-prizes",
+    remainingSource: "https://oklottery.com/games/scratchers",
     issues: [
       "Not affiliated with the Oklahoma Lottery.",
       "Official remaining prizes are typically updated Monday–Friday at 8:00 a.m. This desk is a snapshot, not a live feed.",
@@ -89,7 +89,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     purchaseAge: 18,
     claimWindow: "Typically by the expiration date printed on the ticket (often about one year).",
     statuteHint: "Michigan Lottery; unclaimed prizes generally go to the School Aid Fund.",
-    remainingSource: "https://www.michiganlottery.com/resources/instant-games-prizes-remaining",
+    remainingSource: "https://www.michiganlottery.com/prizes-remaining",
     issues: [
       "Not affiliated with the Michigan Lottery.",
       "Michigan remaining tables count unclaimed prizes and may include unsold tickets. “Left” is not the same as “in a store.”",
@@ -238,7 +238,7 @@ export const STATE_LEGAL: Record<StateId, StateLegalNote> = {
     purchaseAge: 18,
     claimWindow: "Typically 90 days after the announced game end date.",
     statuteHint: "Connecticut Lottery Corporation; Conn. Gen. Stat. Chapter 229a.",
-    remainingSource: "https://ctlottery.org/ScratchGamesTable",
+    remainingSource: "https://ctlottery.com/games/scratch-games",
     issues: [
       "Not affiliated with the Connecticut Lottery Corporation.",
       "Unclaimed Prizes maps to remaining. Cash-option amounts are used when that is the published prize.",

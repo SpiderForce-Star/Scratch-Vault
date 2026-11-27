@@ -5,16 +5,32 @@
   "sideEffects": false,
   "type": "module",
   "overrides": {
-    "nf3": "0.3.17"
+    "nf3": "0.3.17",
+    "@xmldom/xmldom": "0.9.12",
+    "js-yaml": "4.3.2",
+    "source-map-js": "1.2.4",
+    "qs": "6.17.1",
+    "minimatch@3": {
+      "brace-expansion": "1.1.22"
+    },
+    "minimatch@8": {
+      "brace-expansion": "2.1.8"
+    },
+    "minimatch@9": {
+      "brace-expansion": "2.1.8"
+    },
+    "minimatch@10": {
+      "brace-expansion": "5.1.0"
+    }
   },
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 8080",
-    "build": "vite build && npm run db:migrate",
+    "build": "node scripts/generate-sitemap.mjs && vite build && npm run db:migrate",
     "db:migrate": "node scripts/migrate.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test 'scripts/**/*.test.mjs'",
+    "test": "node --experimental-strip-types --test 'scripts/**/*.test.mjs' && vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
     "cap:sync": "npm run build && node scripts/prepare-native.mjs && npx cap sync",
@@ -56,11 +72,11 @@
     "@revenuecat/purchases-capacitor": "^9.2.2",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/react-query": "^5.101.0",
-    "@tanstack/react-router": "^1.170.0",
-    "@tanstack/react-start": "^1.168.0",
+    "@tanstack/react-router": "^1.170.46",
+    "@tanstack/react-start": "^1.169.7",
     "@tanstack/react-table": "^8.21.0",
-    "@tanstack/router-plugin": "^1.168.0",
-    "better-auth": "^1.6.0",
+    "@tanstack/router-plugin": "^1.169.0",
+    "better-auth": "^1.7.28",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -106,8 +122,8 @@
     "playwright": "^1.62.0",
     "prettier": "^3.4.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.56.1",
-    "vite": "^8.2.0",
+    "typescript-eslint": "^8.74.0",
+    "vite": "^8.4.0",
     "vitest": "^4.1.11"
   },
   "optionalDependencies": {

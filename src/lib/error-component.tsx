@@ -15,7 +15,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
       </span>
       <h1 className="text-lg font-semibold">{i18n.t("error.title")}</h1>
       <p className="max-w-md text-sm break-words text-zinc-500 dark:text-zinc-400">
-        {error.message || i18n.t("error.body")}
+        {(error instanceof Error && error.message) || i18n.t("error.body")}
       </p>
     </main>
   );
