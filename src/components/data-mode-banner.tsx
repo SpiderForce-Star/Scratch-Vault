@@ -1,6 +1,7 @@
 import type { DataMode, StateConfig } from "@/config/states";
 import { deskAsOfIso, formatDeskAsOf, isDeskDataStale } from "@/lib/desk-freshness";
 import { useI18n } from "@/lib/locale";
+import { maxDeskAgeMs } from "@/config/refresh-schedule";
 
 export function DataModeBanner({
   state,
@@ -26,6 +27,7 @@ export function DataModeBanner({
       stale,
       fetchedAt,
       publishedAt: state.publishedAt,
+      maxAgeMs: maxDeskAgeMs(state.id),
     });
   const asOfLabel = asOfIso ? formatDeskAsOf(asOfIso, locale === "es" ? "es" : "en-US") : "";
 

@@ -39,11 +39,13 @@ export function isDeskDataStale(input: {
   fetchedAt?: string | null;
   publishedAt?: string | null;
   now?: number;
+  /** Per-state allowance from refresh-schedule (weekly sources get ~8 days). */
+  maxAgeMs?: number;
 }): boolean {
   const iso = deskAsOfIso(input.fetchedAt, input.stale ? input.publishedAt : null);
   if (!iso) return false;
   const age = (input.now ?? Date.now()) - Date.parse(iso);
-  return age > STALE_DESK_MS;
+  return age > (input.maxAgeMs ?? STALE_DESK_MS);
 }
 
 export function formatDeskAsOf(iso: string, locale = "en-US"): string {

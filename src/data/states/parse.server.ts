@@ -48,7 +48,11 @@ export function extractAsOf(html: string): string | null {
   }
   const slash =
     html.match(/DataAsOf[^>]*>([0-9/]+)/i)?.[1] ||
-    html.match(/as of[:\s]+(\d{1,2}\/\d{1,2}\/\d{2,4})/i)?.[1];
+    html.match(/as of[:\s]+(\d{1,2}\/\d{1,2}\/\d{2,4})/i)?.[1] ||
+    // SC "Last Updated on 11/27/2026", KY "as of <b>11/26/2026", NC "claimed through 11/26/2026"
+    decodeHtml(html.slice(0, 400_000)).match(
+      /(?:last updated(?: on)?|as of|claimed through)[:\s]+(\d{1,2}\/\d{1,2}\/\d{4})/i,
+    )?.[1];
   if (slash) {
     const [m, d, y] = slash.split("/");
     const year = y.length === 2 ? `20${y}` : y;
@@ -239,6 +243,56 @@ function pushPrize(
   if (!row.price && game.price) row.price = game.price;
   row.prizes.push(prize);
   map.set(game.number, row);
+}
+
+/** South Carolina PrizesRemaining report: "Name (# 1690 )", price, top prize, remaining top prizes. */
+export function parseSc(html: string): ParsedGame[] {
+  const table = html.match(/<table[^>]*id="prizesremainingReport"[\s\S]*?<\/table>/i)?.[0];
+  if (!table) return [];
+  const map = new Map<number, ParsedGame>();
+  const body = table.replace(/[\s\S]*?<tbody[^>]*>/i, "");
+  for (const row of body.split(/<tr/i).slice(1)) {
+    const cells = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => decodeHtml(m[1]));
+    if (cells.length < 5) continue;
+    const number = Number(cells[0].match(/\(#\s*(\d+)\s*\)/)?.[1]);
+    const name = sanitizeGameName(cells[0].replace(/\(#\s*\d+\s*\)[\s\S]*$/, ""));
+    const price = money(cells[1]) ?? 0;
+    const amount = cashPrizeAmount(cells[3] || "");
+    if (!Number.isFinite(number) || number <= 0 || !name || amount == null) continue;
+    pushPrize(map, { number, name, price }, { amount, remaining: remainingCount(cells[4]) });
+  }
+  return [...map.values()];
+}
+
+/** Missouri scratchers-list: one card per game, # in .scratchers-list__num, tiers in its table. */
+export function parseMo(html: string): ParsedGame[] {
+  const map = new Map<number, ParsedGame>();
+  for (const item of html.split(/class="scratchers-list__item"/i).slice(1)) {
+    const number = Number(
+      item.match(/scratchers-list__num"[^>]*>\s*#\s*(\d+)/i)?.[1] ??
+        item.match(/[?&]game=(\d+)/i)?.[1],
+    );
+    const name = sanitizeGameName(
+      item.match(/scratchers-list__title"[^>]*>([\s\S]*?)<\/div>/i)?.[1] ??
+        item.match(/<img[^>]*alt="?([^">]+)"?/i)?.[1] ??
+        "",
+    );
+    const price =
+      money(
+        item.match(/Ticket Price:<\/div>\s*<div[^>]*>([\s\S]*?)<\/div>/i)?.[1] ?? "",
+      ) ?? 0;
+    const table = item.match(/<table class="scratchers-list__table"[\s\S]*?<\/table>/i)?.[0] || "";
+    if (!Number.isFinite(number) || number <= 0 || !name || !table) continue;
+    const body = table.replace(/[\s\S]*?<tbody[^>]*>/i, "");
+    for (const row of body.split(/<tr/i).slice(1)) {
+      const cells = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => decodeHtml(m[1]));
+      if (cells.length < 3) continue;
+      const amount = cashPrizeAmount(cells[0]);
+      if (amount == null) continue;
+      pushPrize(map, { number, name, price }, { amount, remaining: remainingCount(cells[2]) });
+    }
+  }
+  return [...map.values()];
 }
 
 function parseKy(html: string): ParsedGame[] {
@@ -901,6 +955,8 @@ export function parseOfficialRemaining(
 
   const specific: Record<string, (html: string) => ParsedGame[]> = {
     ky: parseKy,
+    sc: parseSc,
+    mo: parseMo,
     nc: parseNc,
     pa: parsePa,
     tx: parseTx,
