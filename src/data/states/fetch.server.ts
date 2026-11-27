@@ -2,28 +2,13 @@
  * One official remaining-prize pull per state per day. Server-only.
  * Sequential. Does not run on page load. Does not store lottery HTML.
  */
-import { HIDDEN_RETURN_MIN_GAMES, STATE_IDS, STATES, type StateId } from "@/config/states";
-import type { Game } from "@/data/games";
-import { fullCatalog as tennesseeFullCatalog } from "@/data/games.full.server";
-import { publicCatalog } from "./index";
-import { loadBundledDesk, seedSnapshotsIfEmpty } from "./load.server";
+import { STATE_IDS, STATES, type StateId } from "@/config/states";
+import { seedSnapshotsIfEmpty } from "./load.server";
+import { storeParsedRemaining } from "./ingest.server";
 import { isAlertDesk, notifyRemainingFailures } from "./alert.server";
-import { fetchText, pullOfficial } from "./feeds.server";
-import {
-  extractAsOf,
-  gamesFromParse,
-  mergeNewGameListings,
-  parseNewGames,
-  parseOfficialRemaining,
-  unionBundledGames,
-} from "./parse.server";
-import {
-  archivePriorSnapshot,
-  formatWeekLabel,
-  markSnapshotFailed,
-  readSnapshot,
-  upsertSnapshot,
-} from "./snapshots.server";
+import { pullOfficial } from "./feeds.server";
+import { extractAsOf, parseOfficialRemaining } from "./parse.server";
+import { markSnapshotFailed } from "./snapshots.server";
 
 const CONCURRENCY = 4;
 
@@ -99,63 +84,16 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
       return failState(stateId, "0 parseable games", usedUrl);
     }
 
-    const lastGood = await readSnapshot(stateId);
-    const bundled = loadBundledDesk(stateId);
-    const fallbackKnown =
-      stateId === "tn"
-        ? tennesseeFullCatalog()
-        : publicCatalog(stateId).length
-          ? bundled.games
-          : [];
-    const known = lastGood?.catalog?.length
-      ? unionBundledGames(lastGood.catalog, fallbackKnown)
-      : fallbackKnown;
-
-    const games = gamesFromParse(stateId, parsed, known);
-    if (!games.length) {
-      return failState(stateId, "0 parseable games", usedUrl);
-    }
-
-    if (games.length < HIDDEN_RETURN_MIN_GAMES) {
-      return failState(stateId, "untrusted parse", usedUrl, games.length);
-    }
-
-    let catalog: Game[] = games.map((game) => ({ ...game, stateId }));
-    const newGamesUrl = state.newGamesUrl;
-    if (newGamesUrl && newGamesUrl !== usedUrl) {
-      try {
-        const extra = await fetchText(newGamesUrl);
-        if (extra.status < 400 && extra.body.trim()) {
-          const listed = parseNewGames(stateId, extra.body, extra.type);
-          catalog = mergeNewGameListings(catalog, listed, stateId).map((game) => ({
-            ...game,
-            stateId,
-          }));
-        }
-      } catch {
-        /* remaining catalog stands — do not fail the desk */
-      }
-    }
-
-    const asOf = extractAsOf(body) || fetchedAt;
-    const weekLabel = formatWeekLabel(asOf, true);
-    if (lastGood?.catalog?.length) {
-      await archivePriorSnapshot(lastGood);
-    }
-    await upsertSnapshot({
-      stateId,
-      ok: true,
-      stale: false,
-      fetchedAt,
-      weekLabel,
+    const stored = await storeParsedRemaining(stateId, parsed, {
       sourceUrl: usedUrl,
-      reason: "ok",
-      gameCount: catalog.length,
-      catalog,
+      fetchedAt,
+      asOf: extractAsOf(body),
     });
-    const result = { stateId, ok: true, gameCount: catalog.length, reason: "ok" };
-    logResult(result);
-    return result;
+    if (!stored.ok) {
+      return failState(stateId, stored.reason, usedUrl, stored.gameCount);
+    }
+    logResult(stored);
+    return stored;
   } catch (err) {
     const reason =
       err instanceof Error && /timeout|aborted/i.test(err.message)
@@ -167,15 +105,17 @@ export async function fetchStateRemaining(stateId: StateId): Promise<StateFetchR
   }
 }
 
-export async function fetchAllStates(): Promise<DailyFetchReport> {
+export async function fetchAllStates(
+  ids: readonly StateId[] = STATE_IDS,
+): Promise<DailyFetchReport> {
   await seedSnapshotsIfEmpty();
   const ranAt = new Date().toISOString();
-  const results: StateFetchResult[] = new Array(STATE_IDS.length);
+  const results: StateFetchResult[] = new Array(ids.length);
   let cursor = 0;
   async function worker() {
-    while (cursor < STATE_IDS.length) {
+    while (cursor < ids.length) {
       const i = cursor++;
-      results[i] = await fetchStateRemaining(STATE_IDS[i]);
+      results[i] = await fetchStateRemaining(ids[i]);
     }
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));

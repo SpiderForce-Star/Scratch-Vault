@@ -26,6 +26,7 @@ import { Route as BillingSuccessRouteImport } from './routes/billing/success'
 import { Route as GameNumberRouteImport } from './routes/game/$number'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronDailyFetchRouteImport } from './routes/api/cron/daily-fetch'
+import { Route as ApiIngestRemainingRouteImport } from './routes/api/ingest/remaining'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -113,6 +114,11 @@ const ApiCronDailyFetchRoute = ApiCronDailyFetchRouteImport.update({
   path: '/api/cron/daily-fetch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiIngestRemainingRoute = ApiIngestRemainingRouteImport.update({
+  id: '/api/ingest/remaining',
+  path: '/api/ingest/remaining',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe/webhook',
   path: '/api/stripe/webhook',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/billing/': typeof BillingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
+  '/api/ingest/remaining': typeof ApiIngestRemainingRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/billing': typeof BillingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
+  '/api/ingest/remaining': typeof ApiIngestRemainingRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesById {
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/billing/': typeof BillingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
+  '/api/ingest/remaining': typeof ApiIngestRemainingRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRouteTypes {
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/billing/'
     | '/api/auth/$'
     | '/api/cron/daily-fetch'
+    | '/api/ingest/remaining'
     | '/api/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/api/auth/$'
     | '/api/cron/daily-fetch'
+    | '/api/ingest/remaining'
     | '/api/stripe/webhook'
   id:
     | '__root__'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/billing/'
     | '/api/auth/$'
     | '/api/cron/daily-fetch'
+    | '/api/ingest/remaining'
     | '/api/stripe/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   BillingIndexRoute: typeof BillingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronDailyFetchRoute: typeof ApiCronDailyFetchRoute
+  ApiIngestRemainingRoute: typeof ApiIngestRemainingRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
 
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronDailyFetchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ingest/remaining': {
+      id: '/api/ingest/remaining'
+      path: '/api/ingest/remaining'
+      fullPath: '/api/ingest/remaining'
+      preLoaderRoute: typeof ApiIngestRemainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stripe/webhook': {
       id: '/api/stripe/webhook'
       path: '/api/stripe/webhook'
@@ -413,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillingIndexRoute: BillingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronDailyFetchRoute: ApiCronDailyFetchRoute,
+  ApiIngestRemainingRoute: ApiIngestRemainingRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
