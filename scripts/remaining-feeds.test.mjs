@@ -173,3 +173,30 @@ test("stale labeling uses the as-of time and never says current", () => {
   assert.equal(staleAfterMs("daily"), DAILY_STALE_MS);
   assert.equal(DAILY_STALE_MS, 36 * 60 * 60 * 1000);
 });
+
+test("South Carolina report reads the game number from the name, not a count column", async () => {
+  const { parseSc } = await import("../src/data/states/parse.server.ts");
+  const html = `<table id="prizesremainingReport"><thead><tr><th>Game Name</th><th>Ticket Price</th><th>Start</th><th>Top</th><th>Remaining</th></tr></thead><tbody>
+<tr><td>$200,000 Payday &nbsp;(# 1690 )</td><td>$5</td><td>08/04/2026</td><td>$200,000</td><td>1</td></tr>
+<tr><td>200X &nbsp;(# 1665 ) No longer available to purchase.</td><td>$20</td><td>01/06/2026</td><td>$2,000,000</td><td>0</td></tr>
+</tbody></table>`;
+  const rows = parseSc(html);
+  assert.deepEqual(rows.map((r) => [r.number, r.name, r.price, r.prizes[0].remaining]), [
+    [1690, "$200,000 Payday", 5, 1],
+    [1665, "200X", 20, 0],
+  ]);
+});
+
+test("Missouri scratchers list keys games by #, not by prize amount", async () => {
+  const { parseMo } = await import("../src/data/states/parse.server.ts");
+  const html = `<div class="scratchers-list__item"><img alt=Gnome for the Holidays>
+<div class="scratchers-list__num"> # 572 </div><div class="scratchers-list__title"> <span>GNOME FOR THE HOLIDAYS</span> </div>
+<div class="scratchers-list__subtitle">Ticket Price:</div> <div class="scratchers-list__value"> $2 </div>
+<table class="scratchers-list__table"><thead><tr><th>Top Prizes</th><th>Total</th><th>Unclaimed</th></tr></thead>
+<tbody><tr><td>$25,000</td><td>4</td><td>3</td></tr><tr><td>$500</td><td>248</td><td>193</td></tr></tbody></table></div>`;
+  const rows = parseMo(html);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].number, 572);
+  assert.equal(rows[0].price, 2);
+  assert.deepEqual(rows[0].prizes.map((p) => [p.amount, p.remaining]), [[25000, 3], [500, 193]]);
+});

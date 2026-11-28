@@ -28,14 +28,31 @@ async function run(request: Request) {
       });
     }
   }
+  const url = new URL(request.url);
+  const rawSlot = url.searchParams.get("slot");
+  const slot = rawSlot && /^\d{4}$/.test(rawSlot) ? rawSlot : null;
+  if (rawSlot && !slot) return json({ error: "bad slot" }, 400);
+
+  const { STATE_IDS } = await import("@/config/states");
+  const { dueVercelStates } = await import("@/config/refresh-schedule");
   const { fetchAllStates } = await import("@/data/states/fetch.server");
-  const report = await fetchAllStates();
+  const { overdueExternalDesks } = await import("@/data/states/overdue.server");
+  const due = dueVercelStates(STATE_IDS, slot);
+  const report = await fetchAllStates(due);
+  // External (non-Vercel) desks: page when their last good pull is past its cadence.
+  const overdue = await overdueExternalDesks();
+  if (overdue.length) {
+    console.error("[remaining] external desks overdue", overdue);
+  }
   console.info("[remaining] daily-fetch", {
     ranAt: report.ranAt,
+    slot,
+    states: due,
     ok: report.results.filter((row) => row.ok).length,
     failed: report.results.filter((row) => !row.ok).length,
+    overdue: overdue.map((row) => row.stateId),
   });
-  return json(report);
+  return json({ ...report, slot, overdue });
 }
 
 export const Route = createFileRoute("/api/cron/daily-fetch")({
