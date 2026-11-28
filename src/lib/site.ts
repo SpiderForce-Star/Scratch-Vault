@@ -1,3 +1,5 @@
+import { PUBLIC_STATE_LIST } from "@/config/states";
+
 /** Canonical public origin. Stripe webhook stays on the volunteer host. */
 export const SITE_ORIGIN = "https://scratch-vault.com";
 
@@ -14,8 +16,10 @@ export const SITE_MARK = "$V";
 export const SITE_TITLE =
   "Scratch-off remaining prizes · Scratch Vault";
 
+const PUBLIC_STATE_NAMES = PUBLIC_STATE_LIST.map((state) => state.name).join(", ");
+
 export const SITE_DESCRIPTION =
-  "See which scratch-offs still have cash posted at $5, $10, $20, $25, $30, and $50. Skip drained games. Remaining-prize desk for Tennessee, Kentucky, South Carolina, Oklahoma, North Carolina, Pennsylvania, Texas, Missouri, Iowa, and Idaho. Counts do not improve odds. 18+ to use; Iowa lottery tickets are 21+.";
+  `Remaining-prize snapshots for scratch-off games in ${PUBLIC_STATE_NAMES}. Read from each lottery's official prize list. Not a live feed and not store inventory. Counts do not improve odds. 18+ to use; Iowa and Arizona lottery tickets are 21+. Independent, not affiliated with any lottery.`;
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;

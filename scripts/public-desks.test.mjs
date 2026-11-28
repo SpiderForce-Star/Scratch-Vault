@@ -111,15 +111,17 @@ test("cards say Current and the desk uses one compiled-snapshot banner", () => {
   const alert = read("src/components/desk-alert-banner.tsx");
   const states = read("src/config/states.ts");
   const selector = read("src/components/state-selector.tsx");
-  assert.equal(en["card.updated"], "Current");
-  assert.equal(card.includes('t("card.updated")'), true);
+  assert.equal(en["card.updated"], "As of {{when}}");
+  assert.doesNotMatch(en["card.updated"], /\bCurrent\b/);
+  assert.match(card, /t\("card\.updated"/);
   assert.equal(banner.includes('t("banner.deskSnapshot")'), true);
   assert.equal(banner.includes("banner.lastGood"), false);
   assert.equal(
     en["banner.deskSnapshot"],
     "The lottery’s leftover-prize list. Not what’s in one store.",
   );
-  assert.match(en["banner.scanHeadline"], /keep scanning for the next official update/);
+  assert.match(en["banner.scanHeadline"], /once a day/);
+  assert.doesNotMatch(en["banner.scanHeadline"], /keep scanning/i);
   assert.equal(banner.includes('t("banner.scanHeadline")'), true);
   assert.doesNotMatch(en["banner.deskSnapshot"], /August|Week of|as of/);
   assert.doesNotMatch(en["states.body"], /Arizona/);
@@ -193,9 +195,13 @@ test("phone menu opens on the current public desk", () => {
   assert.match(footer, /footer\.built/);
   assert.doesNotMatch(footer, /SpiderMark/);
   assert.match(footer, /TicketCopyright/);
-  assert.equal(en["header.deskChip"], "{{short}} · Current");
+  assert.equal(en["header.deskChip"], "{{short}} · as of {{when}}");
+  assert.equal(en["header.staleChip"], "{{short}} · stale · as of {{when}}");
+  assert.doesNotMatch(en["header.deskChip"], /\bCurrent\b/);
   assert.doesNotMatch(en["home.listCurrent"], /live store|inventory/i);
-  assert.match(header, /inline-flex shrink-0 items-center rounded-md border border-line bg-raised px-1.5/);
+  assert.match(header, /border-line bg-raised text-muted/);
+  assert.match(header, /header\.staleChip/);
+  assert.match(header, /data-stale/);
   assert.doesNotMatch(header, /hidden shrink-0 items-center rounded-md border border-line bg-raised[\s\S]*sm:inline-flex/);
 
   assert.doesNotMatch(selector, /overflow-x-auto/);
@@ -207,8 +213,9 @@ test("phone menu opens on the current public desk", () => {
   assert.match(selector, /states\.leftoverRoster/);
   assert.match(selector, /PUBLIC_STATE_LIST\.length/);
   assert.doesNotMatch(selector, /otherDesks/);
-  assert.equal(en["states.leftoverRoster"], "{{count}} leftover states");
-  assert.equal(es["states.leftoverRoster"], "{{count}} estados de restantes");
+  assert.equal(en["states.leftoverRoster"], "Public prize lists");
+  assert.equal(es["states.leftoverRoster"], "Listas públicas de premios");
+  assert.doesNotMatch(en["states.leftoverRoster"], /12|all states|every game/i);
   assert.doesNotMatch(en["states.leftoverRoster"], /desk/i);
   assert.doesNotMatch(es["states.leftoverRoster"], /mesa/i);
   assert.doesNotMatch(en["states.leftoverRoster"], /improve odds|better odds|guaranteed/i);

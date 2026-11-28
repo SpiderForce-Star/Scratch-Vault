@@ -36,6 +36,8 @@ import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { skipNameLocked } from "@/lib/skip-teaser";
 import { useI18n } from "@/lib/locale";
+import { useDeskStamp } from "@/lib/use-desk-freshness";
+import { ComplianceLine } from "@/components/compliance-line";
 
 export const Route = createFileRoute("/")({
   component: VaultHome,
@@ -227,6 +229,7 @@ function VaultHome() {
             {t("hero.titleAll")}
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted">{t("hero.body")}</p>
+          <ComplianceLine className="mt-3 max-w-xl" />
           {sold.length ? (
             <PriceChipBar
               sold={sold}
@@ -390,9 +393,15 @@ function PriceChipBar({
   stateName: string;
 }) {
   const { t } = useI18n();
+  const { when, stale } = useDeskStamp();
   const freshness = (
-    <p className="w-full font-mono text-[10px] tracking-[0.14em] text-faint uppercase">
-      {t("home.listCurrent", { state: stateName })}
+    <p
+      className={cn(
+        "w-full font-mono text-[10px] tracking-[0.14em]",
+        stale ? "text-gold" : "text-faint",
+      )}
+    >
+      {t("home.listCurrent", { state: stateName, when })}
     </p>
   );
   const chips = sold.map((price) => {
@@ -430,6 +439,7 @@ function PriceChipBar({
         "sticky top-14 z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur-sm",
         "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
       )}
+      style={{ top: "var(--sv-header-offset, 3.5rem)" }}
     >
       {freshness}
       {chips}

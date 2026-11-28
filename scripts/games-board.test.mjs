@@ -101,11 +101,11 @@ test("Games page is New → Hot → Warm → Skip these, $5+ only", () => {
   assert.equal(en["card.middleNone"], "Middle Tier — None");
   assert.doesNotMatch(en["marquee.dead"], /Stop wasting/);
   assert.doesNotMatch(en["story.title"], /See what is still left before you spend/);
-  assert.equal(en["games.hotTitle"], "Hot — better leftover prizes.");
+  assert.equal(en["games.hotTitle"], "Hot — more prizes still listed.");
   assert.equal(en["games.warmTitle"], "Warm — okay, not first pick.");
   assert.equal(en["home.skipTitle"], "Don't waste money on a drained game.");
   assert.equal(en["games.newUnposted"], "New. Leftover prizes not posted yet.");
-  assert.equal(es["games.hotTitle"], "Caliente — mejores premios que quedan.");
+  assert.equal(es["games.hotTitle"], "Caliente — más premios que aún quedan.");
   assert.equal(en["odds.printed"], "About 1 in {{odds}} tickets win something (usually small)");
   assert.equal(en["card.topListed"], "Jackpots still on the lottery’s list");
   assert.equal(en["card.retailTops"], "Jackpots you can still hit in a store");

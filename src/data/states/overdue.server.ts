@@ -4,7 +4,7 @@
  */
 import { STATE_IDS, type StateId } from "@/config/states";
 import { REFRESH_SCHEDULE } from "@/config/refresh-schedule";
-import { isAlertDesk } from "@/lib/desk-freshness";
+import { isAlertDesk, staleAfterMs } from "@/lib/desk-freshness";
 import { readSnapshot } from "./snapshots.server";
 
 export type OverdueDesk = { stateId: StateId; fetchedAt: string | null; ageHours: number | null };
@@ -18,7 +18,7 @@ export async function overdueExternalDesks(now = Date.now()): Promise<OverdueDes
       const row = await readSnapshot(id);
       const at = row?.ok ? Date.parse(row.fetchedAt) : NaN;
       const age = Number.isFinite(at) ? now - at : null;
-      if (age == null || age > r.maxAgeMs) {
+      if (age == null || age > staleAfterMs(r.cadence)) {
         out.push({
           stateId: id,
           fetchedAt: row?.fetchedAt ?? null,

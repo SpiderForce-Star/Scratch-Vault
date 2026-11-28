@@ -25,18 +25,14 @@ export type StateRefresh = {
   /** Weekly states only: 0 = Sunday … 6 = Saturday (UTC). */
   weekday?: number;
   runner: RefreshRunner;
-  /** How old the source as-of can be before the desk is shown as stale. */
-  maxAgeMs: number;
   /** What we observed about the source's own update rhythm. */
   sourceNote: string;
 };
 
-const DAY = 24 * 60 * 60 * 1000;
 const daily = (slot: string, sourceNote: string, runner: RefreshRunner = "vercel"): StateRefresh => ({
   cadence: "daily",
   slot,
   runner,
-  maxAgeMs: 2 * DAY,
   sourceNote,
 });
 const weekly = (
@@ -49,7 +45,6 @@ const weekly = (
   slot,
   weekday,
   runner,
-  maxAgeMs: 8 * DAY,
   sourceNote,
 });
 
@@ -104,9 +99,4 @@ export function dueVercelStates(
     if (r.cadence === "weekly" && r.weekday !== now.getUTCDay()) return false;
     return true;
   });
-}
-
-export function maxDeskAgeMs(stateId: StateId | string | null | undefined): number {
-  const r = stateId ? REFRESH_SCHEDULE[stateId as StateId] : undefined;
-  return r?.maxAgeMs ?? 2 * DAY;
 }

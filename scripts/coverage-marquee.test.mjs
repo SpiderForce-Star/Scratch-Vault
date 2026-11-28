@@ -31,17 +31,18 @@ test("home coverage ribbon sits under the leftover intro and uses copper chrome"
   const promo = read("src/components/promo-marquee.tsx");
   const states = read("src/config/states.ts");
 
-  assert.equal(en["coverage.miOh"], "Now on these states: Michigan and Ohio.");
-  assert.equal(en["coverage.plusTen"], "Plus 10 other leftover states.");
-  assert.equal(en["coverage.recipe"], "Same leftover-prize Heat on every public state.");
+  assert.equal(en["coverage.miOh"], "Prize lists we show.");
+  assert.equal(en["coverage.plusTen"], "Inside the update window: {{count}}.");
+  assert.equal(en["coverage.recipe"], "Older lists keep their as-of time.");
   assert.equal(
     en["coverage.aria"],
-    "Scratch Vault now offers Michigan and Ohio, plus 10 other leftover states.",
+    "Prize lists we show. Inside the update window: {{count}}.",
   );
-  assert.equal(es["coverage.miOh"], "Ahora en estos estados: Michigan y Ohio.");
-  assert.match(es["coverage.plusTen"], /10 estados/);
-  assert.match(es["coverage.aria"], /Michigan y Ohio/);
-  assert.match(es["coverage.aria"], /estados/);
+  assert.equal(es["coverage.miOh"], "Listas de premios que mostramos.");
+  assert.match(es["coverage.plusTen"], /ventana de actualización/);
+  assert.match(es["coverage.aria"], /Listas de premios/);
+  assert.doesNotMatch(en["coverage.miOh"], /12 states|all states|every game/i);
+  assert.doesNotMatch(en["coverage.aria"], /Michigan and Ohio/);
 
   for (const key of ["coverage.miOh", "coverage.plusTen", "coverage.recipe", "coverage.aria"]) {
     assert.doesNotMatch(en[key], /\bdesk\b/i, key);
@@ -78,9 +79,11 @@ test("home coverage ribbon sits under the leftover intro and uses copper chrome"
 
   assert.match(marquee, /export function CoverageMarquee/);
   assert.match(marquee, /PUBLIC_STATE_LIST/);
-  assert.match(marquee, /NEW_DESK_IDS/);
+  assert.match(marquee, /freshPublicStateIds/);
+  assert.match(marquee, /PUBLIC_STATE_LIST/);
   assert.match(marquee, /t\("coverage\.miOh"\)/);
-  assert.match(marquee, /t\("coverage\.plusTen"\)/);
+  assert.match(marquee, /t\("coverage\.plusTen"/);
+  assert.doesNotMatch(marquee, /NEW_DESK_IDS/);
   assert.match(marquee, /sv-desk-ribbon-track/);
   assert.match(marquee, /sv-desk-ribbon-static/);
   assert.match(marquee, /hash="states"/);

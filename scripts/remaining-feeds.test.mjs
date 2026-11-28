@@ -11,7 +11,16 @@ import {
   parseOkGamePage,
   parseTnTable,
 } from "../src/data/states/parse.server.ts";
-import { isAlertDesk, isDeskDataStale, STALE_DESK_MS } from "../src/lib/desk-freshness.ts";
+import {
+  DAILY_STALE_MS,
+  WEEKLY_BUFFER_MS,
+  WEEKLY_CADENCE_MS,
+  deskFreshnessLabel,
+  formatDeskAsOf,
+  isAlertDesk,
+  isDeskDataStale,
+  staleAfterMs,
+} from "../src/lib/desk-freshness.ts";
 
 const TN_TABLE = `<table><thead><tr>
 <th>Game Number</th><th>Game Name</th><th>Prizes</th><th>Remaining Prizes</th>
@@ -107,18 +116,62 @@ test("public desk failures are the alert set; hidden desks are not", () => {
   }
 });
 
-test("a desk older than two days is stale", () => {
-  const now = Date.parse("2026-11-27T12:00:00Z");
+test("stale labeling uses the as-of time and never says current", () => {
+  const now = Date.parse("2026-11-27T18:00:00Z");
+  const cases = [
+    ["tn", "2026-09-03T12:00:00-05:00", "weekly"],
+    ["ok", "2026-08-28T11:14:33.628Z", "daily"],
+    ["mi", "2026-08-15T03:52:00-04:00", "daily"],
+    ["oh", "2026-08-21T06:00:00-04:00", "daily"],
+  ];
+  for (const [id, fetchedAt, cadence] of cases) {
+    const label = deskFreshnessLabel({ fetchedAt, cadence, now, locale: "en-US" });
+    assert.equal(label.stale, true, id);
+    assert.match(label.when, /\d{4}/, id);
+    assert.match(label.when, /\b(AM|PM)\b/, id);
+    assert.match(label.when, /\b(CST|CDT)\b/, id);
+    assert.doesNotMatch(label.when, /\bcurrent\b/i, id);
+    assert.equal(isDeskDataStale({ fetchedAt, cadence, now }), true, id);
+  }
   assert.equal(
-    isDeskDataStale({ fetchedAt: "2026-09-03T12:00:00-05:00", now }),
+    formatDeskAsOf("2026-09-03T12:00:00-05:00", "en-US"),
+    "Sep 3, 2026, 12:00 PM CDT",
+  );
+  assert.equal(
+    isDeskDataStale({
+      fetchedAt: new Date(now - 30 * 60 * 60 * 1000).toISOString(),
+      cadence: "daily",
+      now,
+    }),
+    false,
+  );
+  assert.equal(
+    isDeskDataStale({
+      fetchedAt: new Date(now - 40 * 60 * 60 * 1000).toISOString(),
+      cadence: "daily",
+      now,
+    }),
     true,
   );
   assert.equal(
-    isDeskDataStale({ fetchedAt: new Date(now - 60 * 60 * 1000).toISOString(), now }),
+    isDeskDataStale({
+      fetchedAt: new Date(now - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      cadence: "weekly",
+      now,
+    }),
     false,
   );
+  assert.equal(
+    isDeskDataStale({
+      fetchedAt: new Date(now - (WEEKLY_CADENCE_MS + WEEKLY_BUFFER_MS + 60 * 60 * 1000)).toISOString(),
+      cadence: "weekly",
+      now,
+    }),
+    true,
+  );
   assert.equal(isDeskDataStale({ now }), false);
-  assert.ok(STALE_DESK_MS === 2 * 24 * 60 * 60 * 1000);
+  assert.equal(staleAfterMs("daily"), DAILY_STALE_MS);
+  assert.equal(DAILY_STALE_MS, 36 * 60 * 60 * 1000);
 });
 
 test("South Carolina report reads the game number from the name, not a count column", async () => {

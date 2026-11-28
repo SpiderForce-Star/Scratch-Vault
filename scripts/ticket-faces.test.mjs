@@ -312,8 +312,10 @@ test("store-rack named bills contain left and phone desk stays one column", () =
   assert.match(home, /sm:grid-cols-2 lg:grid-cols-3/);
   assert.equal(en["home.skipTitle"], "Don't waste money on a drained game.");
   assert.equal(en["hero.titleAll"], "Three tickets to look at. A list to walk past.");
-  assert.equal(en["home.listCurrent"], "{{state}} list · Current");
-  assert.equal(en["header.deskChip"], "{{short}} · Current");
+  assert.equal(en["home.listCurrent"], "{{state}} · as of {{when}}");
+  assert.equal(en["header.deskChip"], "{{short}} · as of {{when}}");
+  assert.doesNotMatch(en["home.listCurrent"], /\bCurrent\b/);
+  assert.doesNotMatch(en["header.deskChip"], /\bCurrent\b/);
   assert.match(chrome, /holiday/);
   assert.doesNotMatch(chrome, /lottery seal|official jpeg|tnlottery\.com\/.*\.jpg/i);
 });

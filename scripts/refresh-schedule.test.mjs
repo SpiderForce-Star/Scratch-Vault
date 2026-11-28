@@ -5,8 +5,8 @@ import {
   REFRESH_SCHEDULE,
   VERCEL_REFRESH_SLOTS,
   dueVercelStates,
-  maxDeskAgeMs,
 } from "../src/config/refresh-schedule.ts";
+import { staleAfterMs } from "../src/lib/desk-freshness.ts";
 
 const IDS = Object.keys(REFRESH_SCHEDULE);
 
@@ -28,12 +28,12 @@ test("each Vercel state runs in exactly one slot a day; Tennessee is external an
   assert.equal(REFRESH_SCHEDULE.tn.runner, "external");
   assert.equal(REFRESH_SCHEDULE.tn.cadence, "weekly");
   assert.ok(!seen.includes("tn"));
-  assert.ok(maxDeskAgeMs("tn") > maxDeskAgeMs("ky"));
+  assert.ok(staleAfterMs(REFRESH_SCHEDULE.tn.cadence) > staleAfterMs(REFRESH_SCHEDULE.ky.cadence));
 });
 
 test("weekly Vercel states only run on their weekday", () => {
   const ids = ["xx"];
-  REFRESH_SCHEDULE.xx = { cadence: "weekly", slot: "1115", weekday: 3, runner: "vercel", maxAgeMs: 1, sourceNote: "" };
+  REFRESH_SCHEDULE.xx = { cadence: "weekly", slot: "1115", weekday: 3, runner: "vercel", sourceNote: "" };
   try {
     assert.deepEqual(dueVercelStates(ids, "1115", new Date("2026-11-25T11:15:00Z")), ["xx"]); // Wednesday
     assert.deepEqual(dueVercelStates(ids, "1115", new Date("2026-11-26T11:15:00Z")), []);

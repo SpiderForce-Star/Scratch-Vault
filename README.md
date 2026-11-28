@@ -35,7 +35,7 @@ Hidden until a trusted public catalog is promoted: **AZ, IL, MA, CT**. Those des
 
 State configs live in [`src/config/states.ts`](src/config/states.ts). Catalogs load through [`src/data/states/`](src/data/states/). Daily remaining-prize fetch: `GET /api/cron/daily-fetch` at `15 11 * * *` (11:15 UTC, 5:15 AM CST / 6:15 AM CDT).
 
-A desk whose last good pull is older than two days shows a **data as of** banner. Failures on a public desk (including Tennessee) are logged at error level. Set `REMAINING_ALERT_WEBHOOK` to POST a JSON failure report, and optionally `REMAINING_ALERT_EMAIL` as the recipient named on that payload.
+A daily list older than about 36 hours, or a weekly list older than 7 days plus that 36-hour buffer, shows an **as of** time and a stale banner. The header does not call that data current. The fetch itself runs once a day (`15 11 * * *`), not hourly. Failures on a public desk (including Tennessee) are logged at error level. Set `REMAINING_ALERT_WEBHOOK` to POST a JSON failure report, and optionally `REMAINING_ALERT_EMAIL` as the recipient named on that payload.
 
 ## Stack
 

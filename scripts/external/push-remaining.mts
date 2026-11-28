@@ -29,8 +29,8 @@
  *     check the parse without sending.
  *  4. Expect: `200 {"stateId":"tn","ok":true,"gameCount":…}`. The TN desk then
  *     shows that week's date. If you skip a week, the daily cron logs
- *     "[remaining] external desks overdue" after 8 days and the site shows the
- *     stale banner.
+ *     "[remaining] external desks overdue" once the list is past a week plus
+ *     36 hours, and the site shows the stale banner.
  *
  * Options: --as-of YYYY-MM-DD overrides the report date (default: the date TN
  * prints in every row). --md reads a markdown table instead of HTML.

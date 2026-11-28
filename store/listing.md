@@ -65,7 +65,7 @@ Scratch Vault is an independent remaining-prize desk for scratch-off games. It r
 
 Full Access is $4.99/month after a 7-day card-required trial, or $49.99/year billed now. No refunds. Opt out in Account. Store settings also apply. Radar alerts tell you when new remaining-prize information is on the desk, so you can review rankings before you buy a ticket. Informational only. Remaining counts do not improve your odds of winning.
 
-You must be 18 or older. If gambling is no longer fun, call or text 1-800-GAMBLER (1-800-522-4700) or the Tennessee REDLINE at 1-800-889-9789.
+You must be 18 or older to use Scratch Vault. Iowa and Arizona lottery tickets are 21+. If gambling is no longer fun, call or text 1-800-GAMBLER (1-800-522-4700) or the Tennessee REDLINE at 1-800-889-9789. Independent · not affiliated with any lottery.
 
 Webb Spinner Visions · https://webbspinnervisions.net
 

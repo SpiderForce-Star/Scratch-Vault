@@ -12,6 +12,7 @@ import { deskSearch, useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { heatBandKey, paceBandKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useDeskStamp } from "@/lib/use-desk-freshness";
 
 function remainingText(locked: boolean, value: number | null): string {
   if (locked || value == null) return "—";
@@ -32,6 +33,7 @@ export function TicketCard({
   const { stateId } = useActiveState();
   const deskId = game.stateId ?? stateId;
   const { t } = useI18n();
+  const { when, stale } = useDeskStamp();
   const state = getState(deskId);
   const showStoreJackpot = Boolean(state.holdback && state.holdback.subtractTop > 0);
   const isNew = isNewCatalogGame(game);
@@ -139,8 +141,13 @@ export function TicketCard({
         </div>
         )}
 
-        <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
-          {t("card.updated")}
+        <p
+          className={cn(
+            "font-mono text-[10px] tracking-wide",
+            stale ? "text-gold" : "text-faint",
+          )}
+        >
+          {when ? t("card.updated", { when }) : t("card.updatedPlain")}
         </p>
         {unposted ? (
           <p className="text-xs text-gold">{t("card.unposted")}</p>
@@ -165,6 +172,9 @@ export function BandChip({
     bust: "border-bust bg-bust-ink text-bust",
     new: "border-gold bg-[#14240c] text-[#c8e08a]",
   };
+  const help = band === "hot" || band === "warm" || band === "cool";
+  const label = t(heatBandKey(band));
+  const hint = t("heat.chipHelp");
   return (
     <span
       className={cn(
@@ -172,8 +182,17 @@ export function BandChip({
         map[band],
         className,
       )}
+      title={help ? hint : undefined}
+      aria-label={help ? `${label}. ${hint}` : undefined}
     >
-      {t(heatBandKey(band))}
+      <span className="flex flex-col items-start leading-tight">
+        <span>{label}</span>
+        {help ? (
+          <span className="mt-0.5 text-[10px] font-normal tracking-normal normal-case">
+            {hint}
+          </span>
+        ) : null}
+      </span>
     </span>
   );
 }

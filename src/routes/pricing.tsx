@@ -14,6 +14,7 @@ import {
 import { pageHead } from "@/lib/site";
 import { CHECKOUT_PUBLIC, isNetworkError } from "@/lib/stripe-errors";
 import { useI18n } from "@/lib/locale";
+import { ComplianceLine } from "@/components/compliance-line";
 
 type CheckoutNotice = "canceled" | "failed" | "declined";
 
@@ -156,6 +157,7 @@ function PricingPage() {
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted">
           {t("pricing.lead")}
         </p>
+        <ComplianceLine className="mx-auto mt-4 max-w-2xl" />
       </div>
 
       {checkout === "canceled" ? (
