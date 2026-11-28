@@ -7,10 +7,18 @@ import {
 import { bundledDeskAsOf } from "@/data/desk-as-of";
 import { isDeskDataStale } from "@/lib/desk-freshness";
 
-/** Public states whose committed prize list is still inside its update window. */
-export function freshPublicStateIds(now = Date.now()): StateId[] {
+/**
+ * Public states whose prize list is still inside staleAfterMs(cadence).
+ * Live snapshot times win. A missing time falls back to the committed file.
+ */
+export function freshPublicStateIds(
+  now = Date.now(),
+  fetchedAtByState?: Partial<Record<StateId, string | null>>,
+): StateId[] {
   return PUBLIC_STATE_IDS.filter((id) => {
-    const iso = bundledDeskAsOf(id) || STATES[id].publishedAt;
+    const live = fetchedAtByState?.[id];
+    const iso =
+      (typeof live === "string" && live) || bundledDeskAsOf(id) || STATES[id].publishedAt;
     return !isDeskDataStale({
       fetchedAt: iso,
       cadence: POST_CADENCE[id],

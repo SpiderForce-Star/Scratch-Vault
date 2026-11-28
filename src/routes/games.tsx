@@ -5,7 +5,7 @@ import {
   DEFAULT_STATE_ID,
   type StateId,
   getState,
-  isPublicStateId,
+  publicStateSearch,
 } from "@/config/states";
 import {
   buildGamesBoard,
@@ -31,10 +31,8 @@ import { useI18n } from "@/lib/locale";
 
 export const Route = createFileRoute("/games")({
   component: GamesCatalog,
-  validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
-    if (isPublicStateId(search.state)) return { state: search.state };
-    return {};
-  },
+  validateSearch: (search: Record<string, unknown>): { state?: StateId } =>
+    publicStateSearch(search),
   loaderDeps: ({ search }) => ({
     stateId: search.state ?? DEFAULT_STATE_ID,
   }),
@@ -192,6 +190,7 @@ function GamesCatalog() {
         loadError={snap?.loadError}
         stale={snap?.stale}
         fetchedAt={snap?.fetchedAt}
+        now={snap?.judgedAt}
       />
       <HeatExplainer />
       <LeftoverDecayStrip stats={snap?.stats} locked={locked} />

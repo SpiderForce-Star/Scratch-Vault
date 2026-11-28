@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Game } from "@/data/games";
-import type { StateId } from "@/config/states";
+import { PUBLIC_STATE_IDS, canonicalPublicStateId, type StateId } from "@/config/states";
 import { trustedCatalog } from "./parse.server";
 
 function hasPostgres(): boolean {
@@ -150,6 +150,48 @@ export async function countSnapshots(): Promise<number> {
   const sql = await getSqlOrThrow();
   const rows = await sql.query<{ n: number }>("SELECT count(*)::int AS n FROM desk_snapshots");
   return Number(rows[0]?.n) || 0;
+}
+
+function bundledFetchedAt(stateId: StateId): string | null {
+  for (const [path, row] of Object.entries(bundledLastGood || {})) {
+    if (!path.endsWith(`/${stateId}.json`)) continue;
+    if (typeof row?.fetchedAt === "string" && row.fetchedAt) return row.fetchedAt;
+  }
+  return null;
+}
+
+/** fetchedAt for each public desk: database row, then the committed last-good file. */
+export async function readPublicDeskTimes(): Promise<Partial<Record<StateId, string>>> {
+  const out: Partial<Record<StateId, string>> = {};
+  if (hasPostgres()) {
+    try {
+      const sql = await getSqlOrThrow();
+      const rows = await sql.query<{ state_id: string; fetched_at: string | Date }>(
+        `SELECT state_id, fetched_at FROM desk_snapshots WHERE fetched_at IS NOT NULL`,
+      );
+      for (const row of rows) {
+        const id = canonicalPublicStateId(row.state_id);
+        if (!id || !row.fetched_at) continue;
+        out[id] = asIso(row.fetched_at);
+      }
+    } catch (err) {
+      console.error(
+        "[remaining] coverage read failed",
+        err instanceof Error ? err.message : "error",
+      );
+    }
+  }
+  for (const id of PUBLIC_STATE_IDS) {
+    if (out[id]) continue;
+    const mem = memory.get(id);
+    if (mem?.fetchedAt) {
+      out[id] = mem.fetchedAt;
+      continue;
+    }
+    const file = bundledFetchedAt(id);
+    if (file) out[id] = file;
+  }
+  return out;
 }
 
 export async function readSnapshot(stateId: StateId): Promise<DeskSnapshotRow | null> {

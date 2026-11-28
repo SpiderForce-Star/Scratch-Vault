@@ -14,6 +14,7 @@ import {
   getState,
   parseStateId,
 } from "@/config/states";
+import { snapshotIsStale } from "@/lib/desk-stamp";
 import { publicCatalog } from "./index";
 import type { RemainingRow } from "./compile";
 import { COMPILED_REMAINING } from "./compiled.remaining.server";
@@ -161,12 +162,18 @@ export async function loadDeskCatalog(
       const games = unionBundledGames(snapshot, bundled.games);
       if (games.length) {
         const added = games.length > snapshot.length;
+        const fetchedAt = added ? bundled.fetchedAt : row.fetchedAt;
+        const stale = snapshotIsStale({
+          stateId: id,
+          fetchedAt,
+          storedStale: Boolean(row.stale) || !row.ok,
+        });
         return {
           games,
           error: null,
-          stale: row.stale || !row.ok,
+          stale,
           ok: Boolean(row.ok) && !row.stale && !added,
-          fetchedAt: added ? bundled.fetchedAt : row.fetchedAt,
+          fetchedAt,
           weekLabel: added ? bundled.weekLabel : row.weekLabel,
         };
       }

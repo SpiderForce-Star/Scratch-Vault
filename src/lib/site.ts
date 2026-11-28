@@ -19,7 +19,7 @@ export const SITE_TITLE =
 const PUBLIC_STATE_NAMES = PUBLIC_STATE_LIST.map((state) => state.name).join(", ");
 
 export const SITE_DESCRIPTION =
-  `Remaining-prize snapshots for scratch-off games in ${PUBLIC_STATE_NAMES}. Read from each lottery's official prize list. Not a live feed and not store inventory. Counts do not improve odds. 18+ to use; Iowa and Arizona lottery tickets are 21+. Independent, not affiliated with any lottery.`;
+  `Remaining-prize snapshots for scratch-off games in ${PUBLIC_STATE_NAMES}. Read from each lottery's official prize list. Not a live feed and not store inventory. Counts do not improve odds. 18+ (Iowa 21+). Independent, not affiliated with any lottery.`;
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;

@@ -24,6 +24,7 @@ import {
 import type { DeskPick, DeskReview, HeatReport, TonightCard } from "./heat";
 import type { DeskSnapshot } from "./desk";
 import { accessFromRow, loadUserBilling } from "./subscription.server";
+import { snapshotIsStale } from "./desk-stamp";
 import { daysBetween, scoreCatalogPace } from "./pace";
 
 function reportRecord(reports: Map<number, HeatReport>): Record<string, HeatReport> {
@@ -143,7 +144,15 @@ export async function buildDeskSnapshot(
   const loaded = await loadDeskCatalog(state.id);
   const games = loaded.games;
   const weekLabel = loaded.weekLabel || state.weekLabel;
-  const dataMode = honestDataMode(state, loaded);
+  const judgedAt = Date.now();
+  const stale = snapshotIsStale({
+    stateId: state.id,
+    fetchedAt: loaded.fetchedAt,
+    storedStale: loaded.stale,
+    now: judgedAt,
+  });
+  const dated = { ...loaded, stale };
+  const dataMode = honestDataMode(state, dated);
 
   if (paid) {
     const scored = scoreCatalogRelative(
@@ -167,8 +176,9 @@ export async function buildDeskSnapshot(
       blips: cashBlips(games, 12),
       stats: catalogHeatFromReports(games, reports),
       loadError: loaded.error,
-      stale: loaded.stale,
+      stale,
       fetchedAt: loaded.fetchedAt,
+      judgedAt,
       tonight: tonight.cards,
       tonightDepleted: tonight.depleted,
     };
@@ -201,8 +211,9 @@ export async function buildDeskSnapshot(
     blips: cashBlips(scoredGames, 12).map((blip) => ({ ...blip, remaining: null })),
     stats: guestCatalogStats(scoredGames, guestReports(pacedReports)),
     loadError: loaded.error,
-    stale: loaded.stale,
+    stale,
     fetchedAt: loaded.fetchedAt,
+    judgedAt,
     tonight: tonight.cards.map(redactTonightCard),
     tonightDepleted: tonight.depleted,
   };

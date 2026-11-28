@@ -46,9 +46,9 @@ test("selector and deep-links ignore hidden desks", () => {
   const active = read("src/lib/active-state.tsx");
   assert.equal(selector.includes("PUBLIC_STATE_LIST.map"), true);
   assert.equal(/\bSTATE_LIST\b/.test(selector), false);
-  assert.equal(home.includes("isPublicStateId"), true);
-  assert.equal(strategy.includes("isPublicStateId"), true);
-  assert.equal(game.includes("isPublicStateId"), true);
+  assert.equal(home.includes("publicStateSearch"), true);
+  assert.equal(strategy.includes("publicStateSearch"), true);
+  assert.equal(game.includes("publicStateSearch"), true);
   assert.equal(desk.includes("parsePublicStateId"), true);
   assert.equal(active.includes("parsePublicStateId"), true);
 });

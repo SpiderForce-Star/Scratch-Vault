@@ -184,7 +184,7 @@ test("Kentucky uses the same Games board sections", () => {
   const games = read("src/routes/games.tsx");
   const card = read("src/components/ticket-card.tsx");
   const face = read("src/components/ticket-face.tsx");
-  assert.match(games, /isPublicStateId/);
+  assert.match(games, /publicStateSearch/);
   assert.doesNotMatch(games, /stateId === "tn"/);
   assert.match(games, /viewState/);
   assert.match(card, /game\.stateId/);

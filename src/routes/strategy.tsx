@@ -4,8 +4,9 @@ import { publicCatalog } from "@/data/states";
 import {
   DEFAULT_STATE_ID,
   type StateId,
+  canonicalPublicStateId,
   getState,
-  isPublicStateId,
+  publicStateSearch,
 } from "@/config/states";
 import {
   reportMap,
@@ -43,10 +44,8 @@ import {
 
 export const Route = createFileRoute("/strategy")({
   component: StrategyDeskPage,
-  validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
-    if (isPublicStateId(search.state)) return { state: search.state };
-    return {};
-  },
+  validateSearch: (search: Record<string, unknown>): { state?: StateId } =>
+    publicStateSearch(search),
   loaderDeps: ({ search }) => ({
     stateId: search.state ?? DEFAULT_STATE_ID,
   }),
@@ -120,7 +119,7 @@ function StrategyDeskPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = new URLSearchParams(window.location.search).get("state");
-    if (raw && !isPublicStateId(raw)) {
+    if (raw && !canonicalPublicStateId(raw)) {
       void navigate({ to: "/strategy", search: {}, replace: true });
     }
   }, [navigate]);
@@ -203,6 +202,7 @@ function StrategyDeskPage() {
         loadError={snap?.loadError}
         stale={snap?.stale}
         fetchedAt={snap?.fetchedAt}
+        now={snap?.judgedAt}
       />
 
       <section className="border-b border-line">

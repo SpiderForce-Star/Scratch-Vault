@@ -717,6 +717,29 @@ export function isPublicStateId(value: unknown): value is StateId {
   return typeof value === "string" && (PUBLIC_STATE_IDS as readonly string[]).includes(value);
 }
 
+/**
+ * Public desk code, case-insensitive. "KY" and "ky" are Kentucky.
+ * Hidden desks and unknown codes are null so callers can keep the old fallback.
+ */
+export function canonicalPublicStateId(value: unknown): StateId | null {
+  if (typeof value !== "string") return null;
+  const id = value.trim().toLowerCase();
+  return (PUBLIC_STATE_IDS as readonly string[]).includes(id) ? (id as StateId) : null;
+}
+
+/** Search param for home, games, strategy, and game routes. */
+export function publicStateSearch(search: Record<string, unknown>): { state?: StateId } {
+  const state = canonicalPublicStateId(search.state);
+  if (!state || !isPublicStateId(state)) return {};
+  return { state };
+}
+
+/** Active desk from a location search string. Unknown codes stay on Tennessee. */
+export function stateIdFromSearchString(searchStr: string): StateId {
+  const query = searchStr.startsWith("?") ? searchStr.slice(1) : searchStr;
+  return canonicalPublicStateId(new URLSearchParams(query).get("state")) ?? DEFAULT_STATE_ID;
+}
+
 export function isHiddenStateId(value: unknown): value is StateId {
   return typeof value === "string" && (HIDDEN_STATE_IDS as readonly string[]).includes(value);
 }
@@ -727,7 +750,7 @@ export function parseStateId(value: unknown): StateId {
 
 /** User-facing desks. Hidden / unknown IDs fall back to Tennessee — no fake catalog. */
 export function parsePublicStateId(value: unknown): StateId {
-  return isPublicStateId(value) ? value : DEFAULT_STATE_ID;
+  return canonicalPublicStateId(value) ?? DEFAULT_STATE_ID;
 }
 
 export function getState(id: StateId | string | null | undefined): StateConfig {

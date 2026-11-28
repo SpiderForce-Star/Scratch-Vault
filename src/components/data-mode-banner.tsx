@@ -1,7 +1,5 @@
-import { useEffect } from "react";
 import { postCadenceFor, type DataMode, type StateConfig } from "@/config/states";
 import { deskFreshnessLabel } from "@/lib/desk-freshness";
-import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 
 export function DataModeBanner({
@@ -11,6 +9,7 @@ export function DataModeBanner({
   fetchedAt = null,
   dataMode,
   leftover = false,
+  now,
 }: {
   state: StateConfig;
   loadError?: string | null;
@@ -18,23 +17,21 @@ export function DataModeBanner({
   fetchedAt?: string | null;
   dataMode?: DataMode;
   leftover?: boolean;
+  /** Server clock from the snapshot so the label matches the header. */
+  now?: number;
 }) {
   const { t, locale } = useI18n();
-  const { setDeskAsOf } = useActiveState();
   const mode = dataMode ?? state.dataMode;
   const freshness = deskFreshnessLabel({
     fetchedAt,
     publishedAt: state.publishedAt,
     stale,
     cadence: postCadenceFor(state.id),
+    now,
     locale: locale === "es" ? "es" : "en-US",
   });
   const aged = mode !== "sample" && freshness.stale;
   const asOfLabel = freshness.when;
-
-  useEffect(() => {
-    setDeskAsOf(freshness.asOfIso);
-  }, [freshness.asOfIso, setDeskAsOf]);
 
   if (loadError) {
     return (
