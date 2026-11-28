@@ -342,7 +342,7 @@ function GameDetail() {
             <h2 className="font-display text-2xl tracking-tight">
               {t("games.betterPicks", { price: game.price })}
             </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid items-start gap-4 sm:grid-cols-2">
               {better.map((row) => {
                 const rowHeat = reports.get(row.number);
                 if (!rowHeat) return null;

@@ -1,18 +1,13 @@
 import { ticketArt, type Game } from "@/data/games";
 import { TicketChromeFace } from "@/components/ticket-chrome";
 import { getState, parsePublicStateId } from "@/config/states";
+import { ticketChrome } from "@/lib/ticket-chrome";
 import { useActiveState } from "@/lib/active-state";
 import { useI18n } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 /** Opens the lottery remaining-prize table without following a wrapping card link. */
-export function OfficialTableControl({
-  href,
-  className,
-}: {
-  href: string;
-  className?: string;
-}) {
+export function OfficialTableControl({ href, className }: { href: string; className?: string }) {
   const { t } = useI18n();
   return (
     <button
@@ -49,21 +44,8 @@ export function TicketFace({
   const art = ticketArt(game);
   const desk = getState(parsePublicStateId(game.stateId ?? config.id));
   const href = officialUrl ?? desk.remainingPrizesUrl;
-  const named = Boolean(art);
-
-  const inner = art ? (
-    <img
-      src={art}
-      alt={`Independent reconstruction of ${game.name} #${game.number}`}
-      className={
-        full
-          ? "h-auto w-full object-contain"
-          : "absolute inset-0 h-full w-full object-contain object-left"
-      }
-    />
-  ) : (
-    <TicketChromeFace game={game} />
-  );
+  const spec = ticketChrome(game);
+  const portrait = !art && spec.orientation !== "landscape";
 
   const officialLink =
     href && full ? (
@@ -80,19 +62,24 @@ export function TicketFace({
 
   return (
     <div className={cn("relative w-full overflow-hidden bg-bg", className)}>
-      {full ? (
-        named ? (
-          <div className="relative w-full bg-bg">{inner}</div>
+      <div
+        className={cn(
+          "mx-auto w-full",
+          portrait && "max-w-[14.5rem] sm:max-w-[16rem] lg:max-w-[18rem]",
+        )}
+      >
+        {art ? (
+          <img
+            src={art}
+            alt={`Independent reconstruction of ${game.name} #${game.number}`}
+            className="block h-auto w-full object-contain object-left"
+          />
         ) : (
-          <div className="relative aspect-[3/4] w-full">{inner}</div>
-        )
-      ) : named ? (
-        <div className="relative aspect-[5/2] w-full overflow-hidden bg-bg">{inner}</div>
-      ) : (
-        <div className="relative aspect-[3/2] w-full overflow-hidden">
-          <div className="absolute inset-x-0 top-0 aspect-[3/4] w-full">{inner}</div>
-        </div>
-      )}
+          <div className="relative w-full" style={{ aspectRatio: spec.aspect }}>
+            <TicketChromeFace game={game} />
+          </div>
+        )}
+      </div>
       {full ? (
         <div className="flex items-center justify-between gap-3 px-3 py-2">
           {officialLink ?? <span />}

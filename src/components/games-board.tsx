@@ -19,7 +19,7 @@ function TicketGrid({
   locked: boolean;
 }) {
   return (
-    <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {games.map((game) => {
         const heat = reports.get(game.number);
         if (!heat) return null;
@@ -128,7 +128,7 @@ export function GamesBoardView({
                 <h3 className="font-mono text-sm tracking-[0.14em] text-gold uppercase">
                   {t("games.priceGroup", { price: group.price })}
                 </h3>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {group.games.map((game) => {
                     const heat = reports.get(game.number);
                     if (!heat) return null;

@@ -271,7 +271,7 @@ function GamesCatalog() {
                   {t("games.underFiveHint")}
                 </span>
               </summary>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {cheap.map((game) => {
                   const heat = reports.get(game.number);
                   if (!heat) return null;
