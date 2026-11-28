@@ -5,7 +5,7 @@ import { findPublicGame, publicCatalog, publicGameMatches } from "@/data/states"
 import {
   DEFAULT_STATE_ID,
   getState,
-  isPublicStateId,
+  publicStateSearch,
   type DataMode,
   type StateId,
 } from "@/config/states";
@@ -34,10 +34,8 @@ import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/game/$number")({
   component: GameDetail,
-  validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
-    if (isPublicStateId(search.state)) return { state: search.state };
-    return {};
-  },
+  validateSearch: (search: Record<string, unknown>): { state?: StateId } =>
+    publicStateSearch(search),
   loaderDeps: ({ search }) => ({
     stateId: search.state ?? DEFAULT_STATE_ID,
   }),
@@ -195,6 +193,7 @@ function GameDetail() {
           dataMode={dataMode}
           stale={desk?.stale}
           fetchedAt={desk?.fetchedAt}
+          now={desk?.judgedAt}
         />
         <HeatExplainer />
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -225,6 +224,7 @@ function GameDetail() {
         dataMode={dataMode}
         stale={desk?.stale}
         fetchedAt={desk?.fetchedAt}
+        now={desk?.judgedAt}
       />
       <HeatExplainer />
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">

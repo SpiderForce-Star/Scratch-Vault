@@ -25,6 +25,8 @@ export type DeskSnapshot = {
   loadError: string | null;
   stale: boolean;
   fetchedAt: string | null;
+  /** Server clock for the stale check. Frozen so SSR and the client agree. */
+  judgedAt: number;
   tonight: TonightCard[];
   tonightDepleted: boolean;
 };
@@ -41,6 +43,19 @@ export const getDeskSnapshot = createServerFn({ method: "GET" })
     const { buildDeskSnapshot } = await import("./desk.server");
     return buildDeskSnapshot(context.userId, context.email, data.stateId);
   });
+
+export type DeskCoverage = {
+  now: number;
+  fetchedAt: Partial<Record<StateId, string>>;
+};
+
+/** Live fetchedAt for every public desk, captured once so SSR and the client match. */
+export const getDeskCoverage = createServerFn({ method: "GET" }).handler(
+  async (): Promise<DeskCoverage> => {
+    const { readPublicDeskTimes } = await import("@/data/states/snapshots.server");
+    return { now: Date.now(), fetchedAt: await readPublicDeskTimes() };
+  },
+);
 
 export const getRadarScope = createServerFn({ method: "GET" })
   .validator((data: unknown) => {

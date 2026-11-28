@@ -1,24 +1,48 @@
-import { postCadenceFor } from "@/config/states";
-import { bundledDeskAsOf } from "@/data/desk-as-of";
+import { useMatches } from "@tanstack/react-router";
+import type { StateId } from "@/config/states";
 import { useActiveState } from "@/lib/active-state";
-import { deskFreshnessLabel } from "@/lib/desk-freshness";
+import { deskStampFor } from "@/lib/desk-stamp";
 import { useI18n } from "@/lib/locale";
 
-/** As-of stamp for the active state. Snapshot time wins; otherwise the committed list. */
+function matchedDeskClock(
+  matches: ReturnType<typeof useMatches>,
+  stateId: StateId,
+): { fetchedAt: string | null; judgedAt?: number } {
+  for (let i = matches.length - 1; i >= 0; i -= 1) {
+    const data = matches[i]?.loaderData as
+      | {
+          desk?: {
+            stateId?: string;
+            fetchedAt?: string | null;
+            judgedAt?: number;
+          } | null;
+        }
+      | undefined;
+    const desk = data?.desk;
+    if (desk && desk.stateId === stateId) {
+      return { fetchedAt: desk.fetchedAt ?? null, judgedAt: desk.judgedAt };
+    }
+  }
+  return { fetchedAt: null };
+}
+
+/**
+ * As-of stamp for the active URL state. The route loader's fetchedAt is the
+ * same on the server and the client, so the label does not change after hydration.
+ */
 export function useDeskStamp() {
-  const { config, deskAsOf } = useActiveState();
+  const { config } = useActiveState();
   const { locale } = useI18n();
-  const iso = deskAsOf || bundledDeskAsOf(config.id) || config.publishedAt;
+  const matches = useMatches();
+  const clock = matchedDeskClock(matches, config.id);
   const localeTag = locale === "es" ? "es" : "en-US";
-  const freshness = deskFreshnessLabel({
-    fetchedAt: iso,
-    cadence: postCadenceFor(config.id),
-    locale: localeTag,
-  });
   return {
-    ...freshness,
-    short: config.shortName,
-    name: config.name,
+    ...deskStampFor({
+      stateId: config.id,
+      fetchedAt: clock.fetchedAt,
+      now: clock.judgedAt,
+      locale: localeTag,
+    }),
     localeTag,
   };
 }

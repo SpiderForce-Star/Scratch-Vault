@@ -2,11 +2,11 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import {
   DEFAULT_STATE_ID,
   STATES,
@@ -14,6 +14,7 @@ import {
   type StateConfig,
   type StateId,
   parsePublicStateId,
+  stateIdFromSearchString,
 } from "@/config/states";
 
 const STORAGE_KEY = "sv.state";
@@ -25,17 +26,12 @@ const ActiveStateContext = createContext<{
   config: StateConfig;
   deskMode: DataMode | null;
   setDeskMode: (mode: DataMode | null) => void;
-  /** Snapshot time for the active state, once a desk page has loaded it. */
-  deskAsOf: string | null;
-  setDeskAsOf: (iso: string | null) => void;
 }>({
   stateId: DEFAULT_STATE_ID,
   setStateId: () => undefined,
   config: STATES[DEFAULT_STATE_ID],
   deskMode: null,
   setDeskMode: () => undefined,
-  deskAsOf: null,
-  setDeskAsOf: () => undefined,
 });
 
 export function readStatePref(): StateId {
@@ -61,24 +57,20 @@ export function writeStatePref(id: StateId): void {
 }
 
 export function ActiveStateProvider({ children }: { children: ReactNode }) {
-  const [stateId, setStateIdState] = useState<StateId>(DEFAULT_STATE_ID);
+  // The URL is the desk. Reading localStorage here would paint Tennessee on
+  // the server and a different state after hydration.
+  const searchStr = useRouterState({ select: (s) => s.location.searchStr });
+  const stateId = useMemo(() => stateIdFromSearchString(searchStr), [searchStr]);
   const [deskMode, setDeskMode] = useState<DataMode | null>(null);
-  const [deskAsOf, setDeskAsOfState] = useState<string | null>(null);
-
-  useEffect(() => {
-    setStateIdState(readStatePref());
-  }, []);
+  const [modeFor, setModeFor] = useState(stateId);
+  if (modeFor !== stateId) {
+    setModeFor(stateId);
+    setDeskMode(null);
+  }
 
   const setStateId = useCallback((id: StateId) => {
-    const next = parsePublicStateId(id);
-    setStateIdState(next);
+    writeStatePref(parsePublicStateId(id));
     setDeskMode(null);
-    setDeskAsOfState(null);
-    writeStatePref(next);
-  }, []);
-
-  const setDeskAsOf = useCallback((iso: string | null) => {
-    setDeskAsOfState(iso);
   }, []);
 
   const value = useMemo(
@@ -88,10 +80,8 @@ export function ActiveStateProvider({ children }: { children: ReactNode }) {
       config: STATES[stateId],
       deskMode,
       setDeskMode,
-      deskAsOf,
-      setDeskAsOf,
     }),
-    [stateId, setStateId, deskMode, deskAsOf, setDeskAsOf],
+    [stateId, setStateId, deskMode],
   );
 
   return (

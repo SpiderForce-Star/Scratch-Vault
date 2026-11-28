@@ -4,8 +4,9 @@ import { publicCatalog } from "@/data/states";
 import {
   DEFAULT_STATE_ID,
   type StateId,
+  canonicalPublicStateId,
   getState,
-  isPublicStateId,
+  publicStateSearch,
 } from "@/config/states";
 import {
   pickSkipGames,
@@ -17,7 +18,7 @@ import {
   type PriceFilter,
   type PricePoint,
 } from "@/lib/heat";
-import { getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
+import { getDeskCoverage, getDeskSnapshot, getRadarScope, type DeskSnapshot } from "@/lib/desk";
 import { EMPTY_RADAR, type RadarScopePayload } from "@/lib/radar";
 import { BandChip, TicketCard } from "@/components/ticket-card";
 import { SkipGameLabel } from "@/components/skip-game-label";
@@ -41,22 +42,31 @@ import { ComplianceLine } from "@/components/compliance-line";
 
 export const Route = createFileRoute("/")({
   component: VaultHome,
-  validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
-    if (isPublicStateId(search.state)) return { state: search.state };
-    return {};
-  },
+  validateSearch: (search: Record<string, unknown>): { state?: StateId } =>
+    publicStateSearch(search),
   loaderDeps: ({ search }) => ({
     stateId: search.state ?? DEFAULT_STATE_ID,
   }),
-  loader: async ({ deps }): Promise<{ desk: DeskSnapshot | null; radar: RadarScopePayload }> => {
-    const [desk, radar] = await Promise.all([
+  loader: async ({
+    deps,
+  }): Promise<{
+    desk: DeskSnapshot | null;
+    radar: RadarScopePayload;
+    coverage: { now: number; fetchedAt: Partial<Record<StateId, string>> };
+  }> => {
+    const [desk, radar, coverage] = await Promise.all([
       getDeskSnapshot({ data: { stateId: deps.stateId } }).catch(() => null),
       getRadarScope({ data: { stateId: deps.stateId } }).catch(() => ({
         ...EMPTY_RADAR,
         stateId: deps.stateId,
       })),
+      getDeskCoverage().catch(() => ({ now: Date.now(), fetchedAt: {} })),
     ]);
-    return { desk, radar: radar ?? { ...EMPTY_RADAR, stateId: deps.stateId } };
+    return {
+      desk,
+      radar: radar ?? { ...EMPTY_RADAR, stateId: deps.stateId },
+      coverage,
+    };
   },
   head: () =>
     pageHead({
@@ -105,7 +115,7 @@ function VaultHome() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = new URLSearchParams(window.location.search).get("state");
-    if (raw && !isPublicStateId(raw)) {
+    if (raw && !canonicalPublicStateId(raw)) {
       void navigate({ to: "/", search: {}, replace: true });
     }
   }, [navigate]);
@@ -219,8 +229,12 @@ function VaultHome() {
         loadError={snap?.loadError}
         stale={snap?.stale}
         fetchedAt={snap?.fetchedAt}
+        now={snap?.judgedAt}
       />
-      <CoverageMarquee />
+      <CoverageMarquee
+        now={loaded?.coverage?.now ?? Number.MAX_SAFE_INTEGER}
+        fetchedAtByState={loaded?.coverage?.fetchedAt}
+      />
       <MethodsCallout />
 
       <section id="desk" className="border-b border-line">

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { PUBLIC_STATE_LIST } from "@/config/states";
+import { PUBLIC_STATE_LIST, type StateId } from "@/config/states";
 import { freshPublicStateIds } from "@/lib/desk-coverage";
 import { useI18n } from "@/lib/locale";
 
@@ -21,10 +21,17 @@ function RibbonLoop({ items }: { items: string[] }) {
 }
 
 /** Home ribbon: public states from config, and how many lists are inside the update window. */
-export function CoverageMarquee() {
+export function CoverageMarquee({
+  now,
+  fetchedAtByState,
+}: {
+  /** Server clock from the page loader so the count does not change on hydration. */
+  now: number;
+  fetchedAtByState?: Partial<Record<StateId, string | null>>;
+}) {
   const { t } = useI18n();
   const shown = PUBLIC_STATE_LIST.map((state) => state.shortName).join(" · ");
-  const freshCount = freshPublicStateIds().length;
+  const freshCount = freshPublicStateIds(now, fetchedAtByState).length;
   const items = [
     t("coverage.miOh"),
     shown,
