@@ -54,9 +54,10 @@ test("age gate still shows 1-800-GAMBLER", () => {
   assert.match(src, /tel:18005224700/);
 });
 
-test("cards stay Current and the snapshot banner is not live inventory", () => {
+test("cards show an as-of time and the snapshot banner is not live inventory", () => {
   const en = JSON.parse(readFileSync(join(ROOT, "src/locales/en.json"), "utf8"));
-  assert.equal(en["card.updated"], "Current");
+  assert.equal(en["card.updated"], "As of {{when}}");
+  assert.doesNotMatch(en["card.updated"], /current/i);
   assert.match(en["banner.deskSnapshot"], /leftover-prize list/i);
   assert.match(en["banner.deskSnapshot"], /Not what’s in one store/i);
 });

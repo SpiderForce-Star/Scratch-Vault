@@ -25,12 +25,17 @@ const ActiveStateContext = createContext<{
   config: StateConfig;
   deskMode: DataMode | null;
   setDeskMode: (mode: DataMode | null) => void;
+  /** Snapshot time for the active state, once a desk page has loaded it. */
+  deskAsOf: string | null;
+  setDeskAsOf: (iso: string | null) => void;
 }>({
   stateId: DEFAULT_STATE_ID,
   setStateId: () => undefined,
   config: STATES[DEFAULT_STATE_ID],
   deskMode: null,
   setDeskMode: () => undefined,
+  deskAsOf: null,
+  setDeskAsOf: () => undefined,
 });
 
 export function readStatePref(): StateId {
@@ -58,6 +63,7 @@ export function writeStatePref(id: StateId): void {
 export function ActiveStateProvider({ children }: { children: ReactNode }) {
   const [stateId, setStateIdState] = useState<StateId>(DEFAULT_STATE_ID);
   const [deskMode, setDeskMode] = useState<DataMode | null>(null);
+  const [deskAsOf, setDeskAsOfState] = useState<string | null>(null);
 
   useEffect(() => {
     setStateIdState(readStatePref());
@@ -67,7 +73,12 @@ export function ActiveStateProvider({ children }: { children: ReactNode }) {
     const next = parsePublicStateId(id);
     setStateIdState(next);
     setDeskMode(null);
+    setDeskAsOfState(null);
     writeStatePref(next);
+  }, []);
+
+  const setDeskAsOf = useCallback((iso: string | null) => {
+    setDeskAsOfState(iso);
   }, []);
 
   const value = useMemo(
@@ -77,8 +88,10 @@ export function ActiveStateProvider({ children }: { children: ReactNode }) {
       config: STATES[stateId],
       deskMode,
       setDeskMode,
+      deskAsOf,
+      setDeskAsOf,
     }),
-    [stateId, setStateId, deskMode],
+    [stateId, setStateId, deskMode, deskAsOf, setDeskAsOf],
   );
 
   return (

@@ -22,7 +22,10 @@ test("home decay marquee explains leftover-prize pace on the Hot / Cold meter", 
     en["decayMarquee.overlap"],
     "Overlap leftover $50+ prize rows — prize amount, not ticket price.",
   );
-  assert.equal(en["decayMarquee.window"], "Drop scaled to 16 days. Missing live tiers are ignored.");
+  assert.equal(
+    en["decayMarquee.window"],
+    "Drop scaled to 16 days. Tiers missing from the latest list are ignored.",
+  );
   assert.equal(
     en["decayMarquee.bands"],
     "Still · Quiet · Moving · Fast. Fast +10 · Moving +6 · Still −3.",
@@ -33,7 +36,8 @@ test("home decay marquee explains leftover-prize pace on the Hot / Cold meter", 
     "Hot / Warm / Cold includes leftover-prize decay. Overlapping $50+ prize rows are scaled to 16 days. Claims, not tickets sold. Printed odds never change.",
   );
 
-  assert.equal(es["decayMarquee.meter"], "Caliente / Tibio / Frío incluye la decadencia de restantes.");
+  assert.equal(es["decayMarquee.meter"], "Caliente / Tibio / Frío incluye el ritmo de reclamo.");
+  assert.doesNotMatch(es["decayMarquee.meter"], /decadencia/);
   assert.match(es["decayMarquee.overlap"], /\$50\+/);
   assert.match(es["decayMarquee.window"], /16 días/);
   assert.match(es["decayMarquee.bands"], /Rápido \+10/);
@@ -62,7 +66,8 @@ test("home decay marquee explains leftover-prize pace on the Hot / Cold meter", 
   assert.match(en["decayMarquee.meter"], /leftover-prize decay/);
   assert.match(en["decayMarquee.overlap"], /\$50\+/);
   assert.match(en["decayMarquee.window"], /16 days/);
-  assert.match(en["decayMarquee.window"], /Missing live tiers/);
+  assert.match(en["decayMarquee.window"], /latest list/);
+  assert.doesNotMatch(en["decayMarquee.window"], /\blive\b/i);
   assert.match(en["decayMarquee.bands"], /Fast \+10/);
   assert.match(en["decayMarquee.skip"], /Printed odds never change/);
   assert.match(en["decayMarquee.aria"], /Claims, not tickets sold/);

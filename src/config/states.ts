@@ -60,6 +60,38 @@ export const HIDDEN_STATE_IDS = [
 /** Live fetch must return at least this many clean games before a hidden desk can return. */
 export const HIDDEN_RETURN_MIN_GAMES = 3;
 
+/**
+ * How often that lottery posts a remaining-prize list.
+ * The site fetch still runs once a day either way — not hourly, not live.
+ * Ohio's official report is daily. Oklahoma posts on weekdays.
+ * Tennessee stamps a week. Every other desk is treated as daily so a list
+ * older than about 36 hours is not labeled current.
+ */
+export type PostCadence = "daily" | "weekly";
+
+export const POST_CADENCE: Record<StateId, PostCadence> = {
+  tn: "weekly",
+  ky: "daily",
+  sc: "daily",
+  ok: "daily",
+  mi: "daily",
+  az: "daily",
+  nc: "daily",
+  pa: "daily",
+  tx: "daily",
+  mo: "daily",
+  oh: "daily",
+  il: "daily",
+  ma: "daily",
+  ia: "daily",
+  id: "daily",
+  ct: "daily",
+};
+
+export function postCadenceFor(id: StateId): PostCadence {
+  return POST_CADENCE[id];
+}
+
 export type DataMode = "live" | "compiled" | "sample";
 
 export type HoldbackRule = {
@@ -247,7 +279,7 @@ export const STATES: Record<StateId, StateConfig> = {
       "Compiled from the official remaining-prizes page. Not live retailer inventory. Remaining counts change as tickets sell and as prizes are claimed.",
     rulesNotes: [
       "No Tennessee Play It Again holdback is applied.",
-      "This desk is a compiled snapshot, not a live feed. We keep scanning for the next official update.",
+      "This desk is a compiled snapshot, not a live feed. The fetch runs once a day.",
       "Ended-game prizes are generally claimable for 90 days after the announced end date. The ticket and Oklahoma Lottery rules control.",
       "Not affiliated with the Oklahoma Lottery. Prize payment is solely the Lottery’s under its rules.",
     ],
